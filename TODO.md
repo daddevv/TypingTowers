@@ -50,7 +50,7 @@
 - [x] On each key press, determine which finger group the key belongs to
 - [x] Record the key press in FingerGroupManager with timing and correctness
 - [x] Update the game loop in GameScene to call FingerGroupManager when player input occurs
-- [ ] (Optional) Expose progress/stats for UI or debugging
+- [x] (Optional) Expose progress/stats for UI or debugging
 
 ### World 1: Index Fingers (F, G, R, T, V, B, J, H, Y, U, N, M)
 

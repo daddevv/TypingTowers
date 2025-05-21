@@ -41,15 +41,17 @@ export default class MobSpawner {
     }
 
     spawnMob() {
-        const word = this.getRandomWord();
+        const letter = this.getRandomLetter();
         const x = Phaser.Math.Between(600, 800); // Spawn off to the right
         const y = Phaser.Math.Between(100, 500);
-        const mob = new Mob(this.scene, x, y, word);
+        const mob = new Mob(this.scene, x, y, letter);
         this.mobs.push(mob);
     }
 
-    getRandomWord(): string {
-        return this.words[Phaser.Math.Between(0, this.words.length - 1)];
+    getRandomLetter(): string {
+        // Flatten all words into a string, then pick a random character
+        const allLetters = this.words.join('').split('');
+        return allLetters[Phaser.Math.Between(0, allLetters.length - 1)];
     }
 }
 // Contains AI-generated edits.

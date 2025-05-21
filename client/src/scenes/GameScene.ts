@@ -43,14 +43,14 @@ export default class GameScene extends Phaser.Scene {
     }
 
     update(time: number, delta: number) {
+        // Guard: wait for mobSpawner to be initialized
+        if (!this.mobSpawner) return;
         // Core game loop logic
         if (this.player) {
             this.player.update(time, delta);
         }
         // Update MobSpawner and its mobs
-        if (this.mobSpawner) {
-            this.mobSpawner.update(time, delta);
-        }
+        this.mobSpawner.update(time, delta);
         // Check for mobs reaching the player (collision/proximity)
         const mobs = this.mobSpawner.getMobs();
         for (const mob of mobs) {
@@ -81,7 +81,7 @@ export default class GameScene extends Phaser.Scene {
                 }
             }
             for (const mob of mobs) {
-                if (!mob.isDefeated && input.trim().toLowerCase() === mob.word.toLowerCase()) {
+                if (!mob.isDefeated && input.trim().toLowerCase()[0] === mob.word.toLowerCase()) {
                     mob.defeat();
                     this.inputHandler.clearInput();
                     // TODO: Add visual/audio feedback here
