@@ -19,6 +19,10 @@
 - [ ] Add camera shake and screen flash effects for wave completion and boss defeat
 - [ ] Integrate layered audio cues for typing, combos, and wave clearances
 - [ ] Modularize game states into separate Phaser Scenes (preload, menu, waves, game over)
+- [x] Implement basic mob movement so mobs walk toward the player in GameScene
+- [x] Add a health property to the player and display it on the screen
+- [x] Detect collision or proximity between mobs and the player to reduce health
+- [x] End the game or trigger a game over state when health reaches zero
 - [ ] Store wave configurations and word packs in JSON for data-driven design
 - [ ] Implement escalating difficulty and unlockable word packs
 - [ ] Add leaderboard and achievements integration
@@ -50,11 +54,13 @@
 
 ### World 1: Index Fingers (F, G, R, T, V, B, J, H, Y, U, N, M)
 
-- [ ] Create Level 1-1: Basic F/J training with simple letter targets
-- [ ] Implement wave logic for Level 1-1 (spawn and manage basic mobs)
-- [ ] Integrate Level 1-1 wave logic into the main game loop
-- [ ] Provide basic score and combo feedback during Level 1-1
-- [ ] Test the Level 1-1 loop for functionality and balance
+- [x] Create Level 1-1: Basic F/J training with simple letter targets
+  - [x] Define Level 1-1 configuration in curriculum (worldConfig)
+  - [x] Add F/J-only word list for Level 1-1
+  - [x] Implement Level 1-1 spawning logic in MobSpawner
+  - [x] Integrate Level 1-1 into GameScene (load config, use word list)
+  - [x] Playtest Level 1-1: verify only F/J targets spawn
+  - [x] Mark Level 1-1 as completed in TODO.md
 - [ ] Create Level 1-2: Add G/H home row keys with simple combinations
 - [ ] Create Level 1-3: Add R/U (top row) with more letter combinations
 - [ ] Create Level 1-4: Add T/Y (completing top row) with more complex patterns

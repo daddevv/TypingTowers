@@ -26,6 +26,8 @@ TypeDefense is a web-based typing game designed to help players improve their ty
 - Integrated FingerGroupManager with the main game loop in `GameScene.ts`.
 - Each key press is now recorded and mapped to its finger group using the curriculum mapping (`getKeyInfo`).
 - This enables tracking of finger usage and progress for each finger group in real time.
+- **Mobs now walk toward the player:** Each mob moves toward the player character's position (left side of the screen) after spawning.
+- **Player health system:** The player has a visible health value above their sprite. When a mob reaches the player, the player loses health and the mob is removed. The game ends with a "Game Over" message if health reaches zero.
 
 ## Curriculum Design
 

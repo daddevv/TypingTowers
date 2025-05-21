@@ -15,7 +15,19 @@ export default class Mob extends Phaser.GameObjects.Sprite {
     }
 
     update(time: number, delta: number) {
-        // TODO: Add movement or behavior logic
+        // Move mob toward the player (assume player is at x=100, y=300)
+        if (!this.isDefeated) {
+            const targetX = 100;
+            const targetY = 300;
+            const dx = targetX - this.x;
+            const dy = targetY - this.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist > 1) {
+                const speed = 60; // pixels per second
+                this.x += (dx / dist) * speed * (delta / 1000);
+                this.y += (dy / dist) * speed * (delta / 1000);
+            }
+        }
     }
 
     defeat() {
@@ -24,4 +36,3 @@ export default class Mob extends Phaser.GameObjects.Sprite {
         // TODO: Add defeat animation, sound, and effects
     }
 }
-// Contains AI-generated edits.

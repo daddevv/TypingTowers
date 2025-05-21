@@ -26,6 +26,20 @@ export default class MobSpawner {
         this.mobs = this.mobs.filter(mob => !mob.isDefeated);
     }
 
+    /**
+     * Returns mobs for collision/proximity checks
+     */
+    getMobs(): Mob[] {
+        return this.mobs;
+    }
+
+    /**
+     * Removes a mob from the list (e.g., after hitting the player)
+     */
+    removeMob(mob: Mob) {
+        this.mobs = this.mobs.filter(m => m !== mob);
+    }
+
     spawnMob() {
         const word = this.getRandomWord();
         const x = Phaser.Math.Between(600, 800); // Spawn off to the right
@@ -36,10 +50,6 @@ export default class MobSpawner {
 
     getRandomWord(): string {
         return this.words[Phaser.Math.Between(0, this.words.length - 1)];
-    }
-
-    getMobs(): Mob[] {
-        return this.mobs;
     }
 }
 // Contains AI-generated edits.

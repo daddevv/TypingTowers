@@ -1,9 +1,11 @@
 import Phaser from 'phaser';
 import { getKeyInfo } from '../curriculum/fingerGroups';
+import { WORLDS } from '../curriculum/worldConfig';
 import InputHandler from '../entities/InputHandler';
 import MobSpawner from '../entities/MobSpawner';
 import Player from '../entities/Player';
 import FingerGroupManager from '../managers/fingerGroupManager';
+import { loadWordList } from '../utils/loadWordList';
 
 export default class GameScene extends Phaser.Scene {
     private player!: Player;
@@ -21,7 +23,7 @@ export default class GameScene extends Phaser.Scene {
         // Example: this.load.image('mob', 'assets/images/mob.png');
     }
 
-    create() {
+    async create() {
         // Set up the main game scene here
         this.add.text(400, 300, 'Type Defense', {
             fontSize: '48px',
@@ -33,9 +35,11 @@ export default class GameScene extends Phaser.Scene {
         this.inputHandler = new InputHandler(this);
         this.fingerGroupManager = new FingerGroupManager();
 
-        // Initialize MobSpawner with a sample word list
-        const words = ['type', 'defense', 'phaser', 'enemy', 'challenge'];
-        this.mobSpawner = new MobSpawner(this, words, 2000);
+        // Load Level 1-1 config and word list
+        const world = WORLDS[0];
+        const level = world.levels[0]; // Level 1-1
+        const words = await loadWordList(level.id);
+        this.mobSpawner = new MobSpawner(this, words, level.enemySpawnRate);
     }
 
     update(time: number, delta: number) {
@@ -47,6 +51,25 @@ export default class GameScene extends Phaser.Scene {
         if (this.mobSpawner) {
             this.mobSpawner.update(time, delta);
         }
+        // Check for mobs reaching the player (collision/proximity)
+        const mobs = this.mobSpawner.getMobs();
+        for (const mob of mobs) {
+            if (!mob.isDefeated) {
+                const dx = mob.x - this.player.x;
+                const dy = mob.y - this.player.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 40) { // collision radius
+                    this.player.takeDamage(1);
+                    this.mobSpawner.removeMob(mob);
+                    // Optionally: add hit feedback here
+                    if (this.player.health <= 0) {
+                        this.add.text(400, 300, 'Game Over', { fontSize: '48px', color: '#ff5555' }).setOrigin(0.5);
+                        this.scene.pause();
+                    }
+                    break;
+                }
+            }
+        }
         // Check player input against mobs
         const input = this.inputHandler.getInput();
         if (input.length > 0) {
@@ -57,7 +80,6 @@ export default class GameScene extends Phaser.Scene {
                     this.fingerGroupManager.recordKeyPress(char, true, time); // 'true' for correct finger (future: detect real finger)
                 }
             }
-            const mobs = this.mobSpawner.getMobs();
             for (const mob of mobs) {
                 if (!mob.isDefeated && input.trim().toLowerCase() === mob.word.toLowerCase()) {
                     mob.defeat();
