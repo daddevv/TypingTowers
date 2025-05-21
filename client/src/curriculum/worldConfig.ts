@@ -63,7 +63,7 @@ export const WORLDS: WorldConfig[] = [
             {
                 id: "1-4",
                 name: "Top Row Mastery",
-                description: "Complete the top row with T and Y.",
+                description: "Add T and Y (top row) and practice more complex patterns using all index finger keys so far.",
                 availableKeys: ["f", "j", "g", "h", "r", "u", "t", "y"],
                 targetWPM: 20,
                 enemySpeed: 80,
@@ -72,8 +72,8 @@ export const WORLDS: WorldConfig[] = [
             },
             {
                 id: "1-5",
-                name: "Bottom Dive",
-                description: "Reach down to the bottom row with V and M.",
+                name: "Bottom Row Drills",
+                description: "Add V and M (bottom row) with drills for downward reaches. Emphasizes V/M usage with index finger keys.",
                 availableKeys: ["f", "j", "g", "h", "r", "u", "t", "y", "v", "m"],
                 targetWPM: 22,
                 enemySpeed: 90,

@@ -18,9 +18,41 @@
 ### Level & World Progression
 
 - [ ] Create Level 1-4: Add T/Y (top row) with more complex patterns.
+  - [x] Define Level 1-4 in the curriculum and world configuration files.
+  - [x] Create a word list JSON file for Level 1-4 using only index finger letters plus T and Y, emphasizing T/Y usage.
+  - [ ] Update the level selection menu to include Level 1-4 and ensure it unlocks after 1-3.
+  - [ ] Add tests to verify Level 1-4 unlocks correctly and uses the correct word list.
+  - [ ] Playtest Level 1-4 to ensure word patterns emphasize T/Y and gameplay is challenging but fair.
+  - [ ] Update README.md to document the new level and its focus.
+  - [ ] Update project layout documentation if new files are added.
+  - [ ] Mark this task as complete when all subtasks are finished.
 - [ ] Create Level 1-5: Add V/M (bottom row) with drills for downward reaches.
+  - [x] Define Level 1-5 in the curriculum and world configuration files.
+  - [ ] Create a word list JSON file for Level 1-5 using only index finger letters plus V and M, emphasizing V/M usage.
+  - [ ] Update the level selection menu to include Level 1-5 and ensure it unlocks after 1-4.
+  - [ ] Add tests to verify Level 1-5 unlocks correctly and uses the correct word list.
+  - [ ] Playtest Level 1-5 to ensure word patterns emphasize V/M and gameplay is challenging but fair.
+  - [ ] Update README.md to document the new level and its focus.
+  - [ ] Update project layout documentation if new files are added.
+  - [ ] Mark this task as complete when all subtasks are finished.
 - [ ] Create Level 1-6: Add B/N (completing bottom row) with all index letters.
+  - [x] Define Level 1-6 in the curriculum and world configuration files.
+  - [ ] Create a word list JSON file for Level 1-6 using all index finger letters (F, J, G, H, R, U, T, Y, V, M, B, N).
+  - [ ] Update the level selection menu to include Level 1-6 and ensure it unlocks after 1-5.
+  - [ ] Add tests to verify Level 1-6 unlocks correctly and uses the correct word list.
+  - [ ] Playtest Level 1-6 to ensure word patterns emphasize B/N and gameplay is challenging but fair.
+  - [ ] Update README.md to document the new level and its focus.
+  - [ ] Update project layout documentation if new files are added.
+  - [ ] Mark this task as complete when all subtasks are finished.
 - [ ] Create Level 1-7: Boss level using all index finger letters in combination.
+  - [x] Define Level 1-7 in the curriculum and world configuration files.
+  - [ ] Create a word list JSON file for Level 1-7 using all index finger letters (F, J, G, H, R, U, T, Y, V, M, B, N).
+  - [ ] Update the level selection menu to include Level 1-7 and ensure it unlocks after 1-6.
+  - [ ] Add tests to verify Level 1-7 unlocks correctly and uses the correct word list.
+  - [ ] Playtest Level 1-7 to ensure word patterns are challenging and suitable for a boss level.
+  - [ ] Update README.md to document the new boss level and its focus.
+  - [ ] Update project layout documentation if new files are added.
+  - [ ] Mark this task as complete when all subtasks are finished.
 - [ ] Fix level progression so that completing a level unlocks and advances to the next.
   - [x] Review and update the logic in `LevelManager` to ensure that completing a level marks it as completed and unlocks the next level.
   - [x] Update the game flow in `GameScene` so that after a level is completed, the next level is automatically unlocked and the player is advanced to it (or returned to the menu if at the last level).

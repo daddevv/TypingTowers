@@ -75,7 +75,7 @@ export default class GameScene extends Phaser.Scene {
             this.currentLevelIdx = 0;
         }
         // Use singleton levelManager for progress tracking
-        this.levelManager = levelManager;
+        this.levelManager = data?.levelManager || levelManager;
         this.levelManager.loadProgress();
         const world = WORLDS[this.currentWorldIdx];
         const level = world.levels[this.currentLevelIdx];
@@ -141,6 +141,7 @@ export default class GameScene extends Phaser.Scene {
             emitting: false // Do not emit constantly
         });
 
+        // Keyboard handler for pause menu
         this.input.keyboard?.on('keydown', (event: KeyboardEvent) => {
             if (event.key === 'Escape' && !this.levelCompleteText) {
                 if (!this.isPaused) {
@@ -459,13 +460,22 @@ export default class GameScene extends Phaser.Scene {
         if (this.comboText) this.comboText.setVisible(false);
     }
 
+    /**
+     * Show the pause menu overlay and pause the game logic.
+     */
     private showPauseMenu() {
+        if (this.isPaused) return;
         this.isPaused = true;
         this.scene.pause();
+        // Pause menu UI
         const bg = this.add.rectangle(400, 300, 420, 260, 0x222222, 0.95);
         const title = this.add.text(400, 220, 'Paused', { fontSize: '40px', color: '#fff' }).setOrigin(0.5);
-        const resumeBtn = this.add.text(400, 300, 'Resume (Esc)', { fontSize: '32px', color: '#fff', backgroundColor: '#007bff', padding: { left: 24, right: 24, top: 8, bottom: 8 } }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-        const quitBtn = this.add.text(400, 360, 'Quit to Menu', { fontSize: '28px', color: '#fff', backgroundColor: '#444', padding: { left: 24, right: 24, top: 8, bottom: 8 } }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        const resumeBtn = this.add.text(400, 300, 'Resume (Esc)', {
+            fontSize: '32px', color: '#fff', backgroundColor: '#007bff', padding: { left: 24, right: 24, top: 8, bottom: 8 }
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        const quitBtn = this.add.text(400, 360, 'Quit to Menu', {
+            fontSize: '28px', color: '#fff', backgroundColor: '#444', padding: { left: 24, right: 24, top: 8, bottom: 8 }
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
         resumeBtn.on('pointerdown', () => this.hidePauseMenu());
         quitBtn.on('pointerdown', () => {
             this.scene.stop();
@@ -484,7 +494,11 @@ export default class GameScene extends Phaser.Scene {
         this.input.keyboard?.on('keydown', this.pauseMenuKeyHandler);
     }
 
+    /**
+     * Hide the pause menu overlay and resume the game logic.
+     */
     private hidePauseMenu() {
+        if (!this.isPaused) return;
         this.isPaused = false;
         if (this.pauseMenuContainer) {
             this.pauseMenuContainer.destroy();

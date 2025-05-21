@@ -2,11 +2,11 @@
 // World and Level selection menu with lock/unlock and local storage persistence
 import Phaser from 'phaser';
 import { WorldConfig } from '../curriculum/worldConfig';
-import LevelManager from '../managers/levelManager';
+import { levelManager } from '../managers/levelManager';
 
 export default class MenuScene extends Phaser.Scene {
     private worlds: WorldConfig[] = [];
-    private levelManager!: LevelManager;
+    private levelManager = levelManager;
     private menuItems: Phaser.GameObjects.Text[] = [];
     private selectedWorld: number = 0;
 
@@ -14,9 +14,9 @@ export default class MenuScene extends Phaser.Scene {
         super({ key: 'MenuScene' });
     }
 
-    init(data: { worlds: WorldConfig[], levelManager: LevelManager }) {
+    init(data: { worlds: WorldConfig[], levelManager?: typeof levelManager }) {
         this.worlds = data.worlds;
-        this.levelManager = data.levelManager;
+        this.levelManager = data.levelManager || levelManager;
     }
 
     preload() { }
@@ -72,8 +72,9 @@ export default class MenuScene extends Phaser.Scene {
         }
     }
 
-    selectWorld(worldIdx: number) {
-        this.scene.start('LevelMenuScene', { worldId: this.worlds[worldIdx].id });
+    // When starting LevelMenuScene, always pass the singleton levelManager
+    selectWorld(idx: number) {
+        const world = this.worlds[idx];
+        this.scene.start('LevelMenuScene', { worldId: world.id, levelManager: this.levelManager });
     }
 }
-// Contains AI-generated edits.

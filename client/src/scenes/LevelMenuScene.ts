@@ -8,13 +8,15 @@ export default class LevelMenuScene extends Phaser.Scene {
     private world!: WorldConfig;
     private menuItems: Phaser.GameObjects.Text[] = [];
     private selectedLevel: number = 0;
+    private levelManager = levelManager;
 
     constructor() {
         super({ key: 'LevelMenuScene' });
     }
 
-    init(data: { worldId: number }) {
+    init(data: { worldId: number, levelManager?: typeof levelManager }) {
         this.world = WORLDS.find(w => w.id === data.worldId)!;
+        this.levelManager = data.levelManager || levelManager;
     }
 
     create() {
@@ -37,7 +39,7 @@ export default class LevelMenuScene extends Phaser.Scene {
         const levels = this.world.levels;
         levels.forEach((level, idx) => {
             const y = 120 + idx * 48;
-            const isUnlocked = levelManager.isLevelUnlocked(level.id);
+            const isUnlocked = this.levelManager.isLevelUnlocked(level.id);
             const color = isUnlocked ? '#fff' : '#888';
             const item = this.add.text(400, y, `${level.name}${isUnlocked ? '' : ' (Locked)'}`, {
                 fontSize: '28px',
@@ -69,9 +71,8 @@ export default class LevelMenuScene extends Phaser.Scene {
 
     selectLevel(idx: number) {
         const level = this.world.levels[idx];
-        if (!levelManager.isLevelUnlocked(level.id)) return;
-        levelManager.setCurrentLevel(this.world.id, level.id);
-        this.scene.start('GameScene', { worldId: this.world.id, levelId: level.id });
+        if (!this.levelManager.isLevelUnlocked(level.id)) return;
+        this.levelManager.setCurrentLevel(this.world.id, level.id);
+        this.scene.start('GameScene', { world: this.world.id, level: idx, levelManager: this.levelManager });
     }
 }
-// Contains AI-generated edits.

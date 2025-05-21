@@ -59,6 +59,56 @@ TypeDefense features a unique learning approach based on finger groups rather th
 - Left Hand: F, G, R, T, V, B
 - Right Hand: J, H, Y, U, N, M
 - Progressive levels introduce these keys gradually, starting with home row (F/J)
+  - **1-1 Home Base:** F, J (home row)
+  - **1-2 Extending Reach:** Adds G, H
+  - **1-3 Reaching Up:** Adds R, U
+  - **1-4 Top Row Mastery:** Adds T, Y
+  - **1-5 Bottom Row Drills:** Adds V, M (bottom row)
+  - **1-6 Complete Control:** Adds B, N (all index finger letters)
+  - **1-7 Index Overlord:** Boss level using all index finger letters in combination
+
+#### Level 1-1: Home Base
+
+- Focus: Home row keys F and J
+- Word list: `fjWords.json`
+- Unlocks immediately
+
+#### Level 1-2: Extending Reach
+
+- Focus: Adds G and H to home row keys
+- Word list: `fjghWords.json`
+- Unlocks after completing 1-1
+
+#### Level 1-3: Reaching Up
+
+- Focus: Adds R and U (top row) to the available keys, with a new word pack (`fjghruWords.json`) and more letter combinations.
+- Unlocks after completing 1-2
+
+#### Level 1-4: Top Row Mastery
+
+- Focus: Adds T and Y (top row) to all previous index finger letters (F, J, G, H, R, U, T, Y)
+- Word list: `fjghrutyvmWords.json`
+- Unlocks after completing 1-3
+
+#### Level 1-5: Bottom Row Drills
+
+- Focus: Adds V and M (bottom row) to all previous index finger letters (F, J, G, H, R, U, T, Y, V, M)
+- Word list: `fjghrutyvmWords.json`
+- Unlocks after completing 1-4
+
+#### Level 1-6: Complete Control
+
+- Focus: All index finger letters (F, J, G, H, R, U, T, Y, V, M, B, N)
+- Word list: `fjghrutyvmbnWords.json`
+- Unlocks after completing 1-5
+
+#### Level 1-7: Index Overlord (Boss)
+
+- Focus: All index finger letters, challenging boss patterns
+- Word list: `fjghrutyvmbn_bossWords.json`
+- Unlocks after completing 1-6
+
+Levels are unlocked sequentially. Completing 1-7 unlocks World 2.
 
 ### World 2: Middle Fingers
 

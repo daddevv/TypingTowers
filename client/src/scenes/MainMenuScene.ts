@@ -27,4 +27,3 @@ export default class MainMenuScene extends Phaser.Scene {
         });
     }
 }
-// Contains AI-generated edits.
