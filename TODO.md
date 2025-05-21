@@ -92,3 +92,4 @@ Contains AI-generated edits.
   - [x] If a mob is targeted, next keypress is aimed at them; if correct, stay on target and advance letter; if miss, check other mobs
   - [x] Targeted mob is visually highlighted
   - [x] Matched letters are animated to inactive so player knows which letter is next
+- [x] Add collision detection to mobs to prevent them from overlapping with each other

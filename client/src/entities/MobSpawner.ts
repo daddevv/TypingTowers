@@ -32,7 +32,8 @@ export default class MobSpawner {
             }
             this.spawnTimer = 0;
         }
-        this.mobs.forEach(mob => mob.update(time, delta));
+        // Update mobs and let each mob handle its own avoidance
+        this.mobs.forEach(mob => mob.update(time, delta, this.mobs));
         this.mobs = this.mobs.filter(mob => !mob.isDefeated);
     }
 

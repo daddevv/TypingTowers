@@ -31,8 +31,15 @@ export default class Mob extends Phaser.GameObjects.Sprite {
         }
     }
 
-    update(time: number, delta: number) {
+    /**
+     * Update mob position and handle avoidance of other mobs.
+     * @param time
+     * @param delta
+     * @param allMobs List of all mobs for avoidance (optional)
+     */
+    update(time: number, delta: number, allMobs?: Mob[]) {
         if (!this.isDefeated) {
+            // Move toward player
             const targetX = 100;
             const targetY = 300;
             const dx = targetX - this.x;
@@ -42,6 +49,23 @@ export default class Mob extends Phaser.GameObjects.Sprite {
                 const speed = this.baseSpeed;
                 this.x += (dx / dist) * speed * (delta / 1000);
                 this.y += (dy / dist) * speed * (delta / 1000);
+            }
+            // Avoid overlapping with other mobs
+            if (allMobs) {
+                const minDistance = 70;
+                for (const other of allMobs) {
+                    if (other === this || other.isDefeated) continue;
+                    const ox = other.x - this.x;
+                    const oy = other.y - this.y;
+                    const odist = Math.sqrt(ox * ox + oy * oy);
+                    if (odist < minDistance && odist > 0) {
+                        // Repel slightly
+                        const overlap = (minDistance - odist) / 2;
+                        const angle = Math.atan2(oy, ox);
+                        this.x -= Math.cos(angle) * overlap * 0.2; // 0.2 = gentle repulsion
+                        this.y -= Math.sin(angle) * overlap * 0.2;
+                    }
+                }
             }
             // Update all letter positions and highlight
             let offset = -(this.word.length - 1) * 18 / 2;
