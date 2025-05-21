@@ -6,7 +6,7 @@
 - [x] Implement a basic Phaser game instance in `main.ts` with GameScene
 - [x] Set up the main game scene in `GameScene`
 - [ ] Set up the core game loop in `GameScene`
-- [ ] Implement Player and InputHandler classes
+- [x] Implement Player and InputHandler classes
 - [ ] Implement action-challenge-reward loop with instant visual/audio feedback on word defeat
 - [ ] Display real-time scores, combo multipliers, and particle bursts on each keystroke
 - [ ] Add tweened UI transitions for score pop-ups and wave notifications

@@ -17,6 +17,8 @@ TypeDefense is a web-based typing game designed to help players improve their ty
 - Data-driven wave and word pack configuration for easy tuning
 - Escalating difficulty and unlockable word packs
 - Planned leaderboard and achievements integration
+- Implemented `Player` class in `client/src/entities/Player.ts` as a Phaser sprite for the player character
+- Implemented `InputHandler` class in `client/src/entities/InputHandler.ts` to manage keyboard input and buffer typed characters
 
 ## Getting Started
 
