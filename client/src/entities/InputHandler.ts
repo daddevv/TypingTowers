@@ -21,10 +21,14 @@ export default class InputHandler {
 
         // Unregister the listener when the scene is destroyed or shut down
         this.scene.events.once('shutdown', () => {
-            this.scene.input.keyboard.off('keydown', keydownListener);
+            if (this.scene.input.keyboard) {
+                this.scene.input.keyboard.off('keydown', keydownListener);
+            }
         });
         this.scene.events.once('destroy', () => {
-            this.scene.input.keyboard.off('keydown', keydownListener);
+            if (this.scene.input.keyboard) {
+                this.scene.input.keyboard.off('keydown', keydownListener);
+            }
         });
     }
 
