@@ -75,7 +75,7 @@
   - [ ] Update README.md to mention Level 1-2 and new keys
   - [ ] Update project layout documentation if new files/structure are added
   - [ ] Ensure all new code is well-commented and tested
-- [ ] Create Level 1-3: Add R/U (top row) with more letter combinations
+- [x] Create Level 1-3: Add R/U (top row) with more letter combinations
 - [ ] Create Level 1-4: Add T/Y (completing top row) with more complex patterns
 - [ ] Create Level 1-5: Add V/M (bottom row) with drills for downward reaches
 - [ ] Create Level 1-6: Add B/N (completing bottom row) with all index letters
@@ -110,3 +110,27 @@ Contains AI-generated edits.
 - [ ] Update LevelManager to unlock and move to level 1-2 upon winning
 - [ ] Display a "Level Complete" message and transition to the next level
 - [ ] Update README.md to document the new win/level progression feature
+
+## World & Level Selection Menu
+
+- [x] Design and implement a World/Level selection menu UI in the client (Phaser scene)
+- [x] Implement logic to lock/unlock levels and worlds based on completion status
+- [x] Store and retrieve level/world completion status in local storage
+- [x] Integrate the menu into the game flow (entry point, transitions)
+- [ ] Update README.md and project layout documentation to reflect the new menu and progression system
+
+## Testing & Validation
+
+- [x] Set up a test framework (Vitest) for the project
+- [x] Configure the test environment
+- [x] Add sample unit tests for a core entity (e.g., Mob or Player)
+- [x] Add test scripts to `package.json`
+- [ ] Update `README.md` with testing instructions
+- [ ] Update project layout documentation if new directories are added
+- [x] Add unit tests for FingerGroupManager (client/src/managers/fingerGroupManager.ts)
+- [ ] Add unit tests for WordGenerator (client/src/utils/wordGenerator.ts)
+- [ ] Add unit tests for InputHandler (client/src/entities/InputHandler.ts)
+- [ ] Add unit tests for LevelManager (client/src/managers/levelManager.ts)
+- [ ] Add unit tests for loadWordList utility (client/src/utils/loadWordList.ts)
+- [ ] Add integration test for MobSpawner and mob spawning logic
+- [ ] Ensure all new code is well-commented and tested

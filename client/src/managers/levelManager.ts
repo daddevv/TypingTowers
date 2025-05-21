@@ -153,6 +153,21 @@ export default class LevelManager {
     }
 
     /**
+     * Checks if a specific level is unlocked (overload for string id)
+     */
+    isLevelUnlocked(levelId: string): boolean {
+        return this.progress.has(levelId);
+    }
+
+    /**
+     * Checks if a specific level is completed
+     */
+    isLevelCompleted(levelId: string): boolean {
+        const prog = this.progress.get(levelId);
+        return !!prog && prog.completed;
+    }
+
+    /**
      * Gets all unlocked levels
      */
     getUnlockedLevels(): string[] {

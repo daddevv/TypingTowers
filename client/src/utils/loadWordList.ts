@@ -5,6 +5,8 @@ export async function loadWordList(levelId: string): Promise<string[]> {
             return import('../wordpacks/fjWords.json').then(m => m.default);
         case "1-2":
             return import('../wordpacks/fjghWords.json').then(m => Array.isArray(m.default) ? m.default : []);
+        case "1-3":
+            return import('../wordpacks/fjghruWords.json').then(m => Array.isArray(m.default) ? m.default : []);
         // Add more cases for other levels as needed
         default:
             return [];

@@ -75,36 +75,41 @@ Each world contains multiple levels that introduce letters progressively, with b
 - Added a `baseSpeed` property to `Mob` and updated the spawning system to allow setting mob speed per spawn. This enables more flexible and challenging gameplay tuning.
 - Improved mob input handling: The game now targets the closest matching mob for each keypress, checks others if not matched, and resets all mobs if no match. This fixes the combo bug with multiple mobs on screen.
 - **New mob targeting system:** If no mob is targeted, keypresses identify the closest matching mob. If a mob is targeted, the next keypress is aimed at them; if correct, the target advances, otherwise the system checks for other matches. The targeted mob is visually highlighted, and matched letters are animated to inactive so the player knows which letter is next.
+- **World & Level Selection Menu:**
+  - Added a new menu scene (`MenuScene.ts`) that allows players to select worlds and levels.
+  - Levels are locked/unlocked based on completion status, which is tracked and persisted in local storage.
+  - The menu UI displays locked, unlocked, and completed levels with appropriate visual cues.
+  - Progression is saved and loaded automatically, so players can continue where they left off.
+  - Selecting an unlocked level starts the game at that level.
+- **Level 1-3 ("Reaching Up"):** Adds R and U (top row) to the available keys, with a new word pack (`fjghruWords.json`) and more letter combinations. The curriculum and word loader have been updated to support this level.
 
-## Getting Started
+## Testing & Validation
 
-### Prerequisites
+- The project uses [Vitest](https://vitest.dev/) for unit and integration testing.
+- Test files are located in `client/src/**/__tests__/` and follow the `.test.ts` naming convention.
+- To run all tests:
 
-- Node.js (v18 or newer recommended)
-- npm (comes with Node.js)
+  ```bash
+  cd client
+  npm run test
+  ```
 
-### Setup and Run (Client)
+- To run tests in watch/UI mode:
 
-1. Navigate to the `client` directory:
+  ```bash
+  cd client
+  npm run test:ui
+  ```
 
-   ```bash
-   cd client
-   ```
+- Sample unit tests are provided for core modules:
+  - `Mob`, `MobSpawner`, `InputHandler`, `FingerGroupManager`, `WordGenerator`, `LevelManager`, and `loadWordList` utility.
+- All new code should include appropriate tests and be placed in the corresponding `__tests__` directory.
 
-2. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-3. Start the development server:
-
-   ```bash
-   npm run dev
-   ```
-
-4. Open your browser to the local server URL (usually `http://localhost:5173`).
-
-The main game scene is set up in `client/src/scenes/GameScene.ts` and is ready for core mechanic development.
+- Unit tests for `FingerGroupManager` are located in `client/src/managers/__tests__/fingerGroupManager.test.ts` and cover:
+  - Initialization of stats for all finger types
+  - Recording key presses and updating stats
+  - Calculating average speed for a finger
+  - Retrieving correct keys for a finger
+  - Determining if a key is mastered (accuracy and speed criteria)
 
 Contains AI-generated edits.
