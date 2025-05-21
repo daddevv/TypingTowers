@@ -70,6 +70,9 @@ export default class LevelManager {
         return false;
     }
 
+    /**
+     * Mark a level as completed, update stats, and unlock the next level.
+     */
     public completeLevel(levelId: string, stats: { score: number; wpm: number; accuracy: number; }) {
         const prev = this.progress.get(levelId) || {
             completed: false,
@@ -85,6 +88,27 @@ export default class LevelManager {
             bestAccuracy: Math.max(prev.bestAccuracy, stats.accuracy),
             attempts: prev.attempts + 1,
         });
+        // Unlock the next level if it exists
+        const [world, level] = levelId.split('-').map(Number);
+        const worldConfig = WORLDS.find(w => w.id === world);
+        if (worldConfig) {
+            const levelIdx = worldConfig.levels.findIndex(l => l.id === levelId);
+            if (levelIdx !== -1 && levelIdx < worldConfig.levels.length - 1) {
+                const nextLevel = worldConfig.levels[levelIdx + 1];
+                if (nextLevel && !this.progress.get(nextLevel.id)) {
+                    this.progress.set(nextLevel.id, { completed: false, highScore: 0, bestWPM: 0, bestAccuracy: 0, attempts: 0 });
+                }
+            } else if (levelIdx === worldConfig.levels.length - 1) {
+                // If last level in world, unlock first level of next world
+                const nextWorld = WORLDS.find(w => w.id === world + 1);
+                if (nextWorld && nextWorld.levels.length > 0) {
+                    const firstNextLevel = nextWorld.levels[0];
+                    if (firstNextLevel && !this.progress.get(firstNextLevel.id)) {
+                        this.progress.set(firstNextLevel.id, { completed: false, highScore: 0, bestWPM: 0, bestAccuracy: 0, attempts: 0 });
+                    }
+                }
+            }
+        }
         this.saveProgress();
     }
 

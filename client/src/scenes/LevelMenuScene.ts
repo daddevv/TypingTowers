@@ -21,6 +21,14 @@ export default class LevelMenuScene extends Phaser.Scene {
         this.add.text(400, 40, this.world.name, { fontSize: '36px', color: '#fff' }).setOrigin(0.5);
         this.renderMenu();
         this.input.keyboard?.on('keydown', this.handleInput, this);
+        // Re-render menu when scene is resumed (e.g., after completing a level)
+        this.events.on('resume', () => {
+            this.renderMenu();
+        });
+        // Refresh menu when scene is woken (e.g., after returning from GameScene)
+        this.events.on('wake', () => {
+            this.renderMenu();
+        });
     }
 
     renderMenu() {

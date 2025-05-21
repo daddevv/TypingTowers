@@ -98,6 +98,11 @@ export default class MobSpawner {
                 if (this.wordList && this.wordList.length > 0) {
                     word = this.wordList[this.wordListIndex % this.wordList.length];
                     this.wordListIndex++;
+                    // DEBUG: Log each spawned word for 1-2
+                    if (this.wordList.includes('gh')) {
+                        // eslint-disable-next-line no-console
+                        console.log('Spawning mob with word:', word);
+                    }
                 } else {
                     word = this.wordGenerator.getWord(Phaser.Math.Between(2, 5));
                 }

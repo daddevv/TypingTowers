@@ -36,9 +36,21 @@ export default class MenuScene extends Phaser.Scene {
         this.menuItems = [];
         let y = 120;
         this.worlds.forEach((world, wIdx) => {
-            const color = wIdx === this.selectedWorld ? '#ff0' : '#fff';
-            const txt = this.add.text(400, y, `World ${wIdx + 1}: ${world.name}`, { fontSize: '28px', color, backgroundColor: wIdx === this.selectedWorld ? '#333' : undefined }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-            txt.on('pointerdown', () => this.selectWorld(wIdx));
+            // Only unlock world 1 by default; others require previous world completion
+            let isUnlocked = true;
+            if (wIdx > 0) {
+                // Get last level of previous world
+                const prevWorld = this.worlds[wIdx - 1];
+                const lastLevel = prevWorld.levels[prevWorld.levels.length - 1];
+                const progress = this.levelManager.getLevelProgress(lastLevel.id);
+                isUnlocked = !!(progress && progress.completed);
+            }
+            const color = wIdx === this.selectedWorld ? (isUnlocked ? '#ff0' : '#888') : (isUnlocked ? '#fff' : '#888');
+            const label = `World ${wIdx + 1}: ${world.name}${isUnlocked ? '' : ' (Locked)'}`;
+            const txt = this.add.text(400, y, label, { fontSize: '28px', color, backgroundColor: wIdx === this.selectedWorld ? '#333' : undefined }).setOrigin(0.5).setInteractive({ useHandCursor: isUnlocked });
+            if (isUnlocked) {
+                txt.on('pointerdown', () => this.selectWorld(wIdx));
+            }
             this.menuItems.push(txt);
             y += 48;
         });

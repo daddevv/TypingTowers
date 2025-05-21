@@ -35,6 +35,10 @@ TypeDefense is a web-based typing game designed to help players improve their ty
   - Tracks player progress, key usage, accuracy, and speed for each finger group.
   - Provides methods to record key presses, retrieve stats, and determine mastery.
   - Uses curriculum-defined finger/key mappings for robust tracking.
+  - **Now includes methods to retrieve progress and statistics for each finger group:**
+    - `getAllFingerGroupProgress()` returns accuracy and speed for all finger groups.
+    - `getAllFingerGroupStats()` returns full statistics for all finger groups.
+    - `getFingerGroupSummary()` provides a summary (mastery count, average accuracy, average speed).
 - Integrated FingerGroupManager with the main game loop in `GameScene.ts`.
 - Each key press is now recorded and mapped to its finger group using the curriculum mapping (`getKeyInfo`).
 - This enables tracking of finger usage and progress for each finger group in real time.
@@ -91,6 +95,9 @@ Each world contains multiple levels that introduce letters progressively, with b
 - Add a "Continue" button and Enter key handler to the level complete screen. When a level is completed, players can click the button or press Enter to advance to the next level (if available) or return to the level select menu.
 - Implemented a main menu scene (`MainMenuScene.ts`) with a "Play" button that navigates to the world chooser (MenuScene).
 - Registered the new scene in the Phaser game config and set it as the starting scene.
+- Implemented an ESC pause menu in GameScene. Pressing ESC toggles a pause overlay with Resume and Quit to Menu options. The menu is not shown if the level complete UI is active.
+- Updated world selection in MenuScene: Worlds 2, 3, and 4 are now locked until the previous world is completed (must beat 1-7 to unlock world 2, etc.). Locked worlds are grayed out and not selectable.
+- The Continue button after beating a level is now always clickable and visually responsive.
 
 ### WordGenerator Utility
 
@@ -125,6 +132,17 @@ const valid = gen.filterValidWords(['fish', 'jag', 'hug']); // Only words using 
 - Back returns to the level selection screen for the current world.
 - Both buttons are clickable and accessible via keyboard shortcuts (Enter/Esc).
 - This ensures smooth navigation through the entire game using either mouse or keyboard.
+
+## Level & World Progression System
+
+TypeDefense now features an improved level progression system:
+
+- Completing a level automatically marks it as completed and unlocks the next level.
+- The game flow advances the player to the next unlocked level, or returns to the menu if the last level is completed.
+- The level selection menu (`LevelMenuScene`) immediately reflects unlocked/completed status after finishing a level, with UI updates in real time.
+- Level progression and unlock logic is managed by the `LevelManager` class (`client/src/managers/levelManager.ts`).
+- Tests in `levelManager.test.ts` verify that completing a level unlocks the next.
+- Progress is saved so players can continue from their last unlocked level.
 
 ## Testing
 
@@ -172,6 +190,12 @@ npm run test -- src/utils/__tests__/wordGenerator.test.ts
   - Determining if a key is mastered (accuracy and speed criteria)
 - Unit tests for `LevelManager` are located in `client/src/managers/__tests__/levelManager.test.ts` and cover initialization, progress tracking, unlocking levels, and persistence via localStorage.
 - Added unit and integration tests for the combo multiplier and score system. See `client/src/entities/__tests__/ComboSystem.unit.test.ts` and `client/src/scenes/__tests__/GameScene.combo.integration.test.ts`.
+
+### Level 1-2 Word List Verification
+
+- Level 1-2 uses the correct word list (`fjghWords.json`).
+- Tests confirm that generated words for this level include "g" and "h" and only use the allowed letters: "f", "j", "g", and "h".
+- See `client/src/utils/loadWordList.ts` and `client/src/utils/__tests__/loadWordList.test.ts` for implementation and verification.
 
 ## Changelog
 

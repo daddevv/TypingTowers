@@ -146,6 +146,68 @@ export default class FingerGroupManager {
         }
         localStorage.setItem('fingerStats', JSON.stringify(obj));
     }
+
+    /**
+     * Gets progress (accuracy and speed) for all finger groups
+     */
+    getAllFingerGroupProgress(): Record<FingerType, { accuracy: number; averageSpeed: number }> {
+        const result: Record<FingerType, { accuracy: number; averageSpeed: number }> = {} as any;
+        for (const finger of Object.values(FingerType)) {
+            const stats = this.fingerStats.get(finger);
+            result[finger] = stats
+                ? { accuracy: stats.accuracy, averageSpeed: stats.averageSpeed }
+                : { accuracy: 0, averageSpeed: 0 };
+        }
+        return result;
+    }
+
+    /**
+     * Gets full statistics for all finger groups
+     */
+    getAllFingerGroupStats(): Record<FingerType, FingerStats> {
+        const result: Record<FingerType, FingerStats> = {} as any;
+        for (const finger of Object.values(FingerType)) {
+            const stats = this.fingerStats.get(finger);
+            result[finger] = stats ? { ...stats } : {
+                totalKeyPresses: 0,
+                correctFingerUses: 0,
+                mistypedKeys: 0,
+                accuracy: 1,
+                averageSpeed: 0
+            };
+        }
+        return result;
+    }
+
+    /**
+     * Gets a summary of progress for all finger groups (mastery count, average accuracy, etc.)
+     */
+    getFingerGroupSummary(): {
+        masteredCount: number;
+        totalGroups: number;
+        averageAccuracy: number;
+        averageSpeed: number;
+    } {
+        let masteredCount = 0;
+        let totalGroups = 0;
+        let accuracySum = 0;
+        let speedSum = 0;
+        for (const finger of Object.values(FingerType)) {
+            const stats = this.fingerStats.get(finger);
+            if (stats) {
+                totalGroups++;
+                accuracySum += stats.accuracy;
+                speedSum += stats.averageSpeed;
+                if (stats.accuracy > 0.95 && stats.averageSpeed < 350) masteredCount++;
+            }
+        }
+        return {
+            masteredCount,
+            totalGroups,
+            averageAccuracy: totalGroups > 0 ? accuracySum / totalGroups : 0,
+            averageSpeed: totalGroups > 0 ? speedSum / totalGroups : 0
+        };
+    }
 }
 
 // Contains AI-generated edits.

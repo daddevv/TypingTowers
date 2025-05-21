@@ -40,6 +40,10 @@ export default class GameScene extends Phaser.Scene {
     private currentWorldIdx: number = 0;
     private currentLevelIdx: number = 0;
 
+    private pauseMenuContainer?: Phaser.GameObjects.Container;
+    private pauseMenuKeyHandler?: (event: KeyboardEvent) => void;
+    private isPaused: boolean = false;
+
     constructor() {
         super('GameScene');
     }
@@ -76,6 +80,11 @@ export default class GameScene extends Phaser.Scene {
         const world = WORLDS[this.currentWorldIdx];
         const level = world.levels[this.currentLevelIdx];
         const words = await loadWordList(level.id);
+        // DEBUG: Log loaded word list for level 1-2
+        if (level.id === '1-2') {
+            // eslint-disable-next-line no-console
+            console.log('Loaded word list for 1-2:', words);
+        }
         // Create WordGenerator using allowed keys for this level
         const wordGenerator = new WordGenerator(level.availableKeys, true);
         // Pass word list to MobSpawner; MobSpawner will use these words if available
@@ -130,6 +139,16 @@ export default class GameScene extends Phaser.Scene {
             scale: { start: 0.5, end: 0 },
             alpha: { start: 1, end: 0 },
             emitting: false // Do not emit constantly
+        });
+
+        this.input.keyboard?.on('keydown', (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && !this.levelCompleteText) {
+                if (!this.isPaused) {
+                    this.showPauseMenu();
+                } else {
+                    this.hidePauseMenu();
+                }
+            }
         });
     }
 
@@ -350,6 +369,9 @@ export default class GameScene extends Phaser.Scene {
             padding: { left: 24, right: 24, top: 8, bottom: 8 },
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
         continueButton.on('pointerdown', () => this.handleContinue());
+        continueButton.setInteractive({ useHandCursor: true });
+        continueButton.on('pointerover', () => continueButton.setStyle({ backgroundColor: '#0056b3' }));
+        continueButton.on('pointerout', () => continueButton.setStyle({ backgroundColor: '#007bff' }));
         // Add Back button
         const backButton = this.add.text(400, 440, 'Back to Level Select (Esc)', {
             fontSize: '28px',
@@ -392,9 +414,12 @@ export default class GameScene extends Phaser.Scene {
         const nextLevelIdx = this.currentLevelIdx + 1;
         if (world && nextLevelIdx < world.levels.length) {
             // Advance to next level in the same world
+            this.levelManager.setCurrentLevel(world.id, world.levels[nextLevelIdx].id);
             this.scene.restart({ world: this.currentWorldIdx, level: nextLevelIdx, levelManager: this.levelManager });
         } else if (this.currentWorldIdx < WORLDS.length - 1) {
             // Go to first level of next world
+            const nextWorld = WORLDS[this.currentWorldIdx + 1];
+            this.levelManager.setCurrentLevel(nextWorld.id, nextWorld.levels[0].id);
             this.scene.restart({ world: this.currentWorldIdx + 1, level: 0, levelManager: this.levelManager });
         } else {
             // No more levels, go back to menu
@@ -432,6 +457,45 @@ export default class GameScene extends Phaser.Scene {
     public handleIncorrectKeystroke() {
         this.combo = 0;
         if (this.comboText) this.comboText.setVisible(false);
+    }
+
+    private showPauseMenu() {
+        this.isPaused = true;
+        this.scene.pause();
+        const bg = this.add.rectangle(400, 300, 420, 260, 0x222222, 0.95);
+        const title = this.add.text(400, 220, 'Paused', { fontSize: '40px', color: '#fff' }).setOrigin(0.5);
+        const resumeBtn = this.add.text(400, 300, 'Resume (Esc)', { fontSize: '32px', color: '#fff', backgroundColor: '#007bff', padding: { left: 24, right: 24, top: 8, bottom: 8 } }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        const quitBtn = this.add.text(400, 360, 'Quit to Menu', { fontSize: '28px', color: '#fff', backgroundColor: '#444', padding: { left: 24, right: 24, top: 8, bottom: 8 } }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        resumeBtn.on('pointerdown', () => this.hidePauseMenu());
+        quitBtn.on('pointerdown', () => {
+            this.scene.stop();
+            this.scene.start('MenuScene', { worlds: WORLDS, levelManager: this.levelManager });
+        });
+        this.pauseMenuContainer = this.add.container(0, 0, [bg, title, resumeBtn, quitBtn]);
+        // Keyboard shortcuts for pause menu
+        this.pauseMenuKeyHandler = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                this.hidePauseMenu();
+            } else if (event.key.toLowerCase() === 'q') {
+                this.scene.stop();
+                this.scene.start('MenuScene', { worlds: WORLDS, levelManager: this.levelManager });
+            }
+        };
+        this.input.keyboard?.on('keydown', this.pauseMenuKeyHandler);
+    }
+
+    private hidePauseMenu() {
+        this.isPaused = false;
+        if (this.pauseMenuContainer) {
+            this.pauseMenuContainer.destroy();
+            this.pauseMenuContainer = undefined;
+        }
+        // Remove pause menu key handler
+        if (this.pauseMenuKeyHandler) {
+            this.input.keyboard?.off('keydown', this.pauseMenuKeyHandler);
+            this.pauseMenuKeyHandler = undefined;
+        }
+        this.scene.resume();
     }
 }
 // Contains AI-generated edits.

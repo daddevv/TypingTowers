@@ -40,4 +40,30 @@ describe('LevelManager', () => {
         newManager.loadProgress();
         expect(newManager.getLevelProgress('1-1')).toBeDefined();
     });
+
+    it('completing last level of a world unlocks first level of next world', () => {
+        const manager = new LevelManager();
+        // Complete all levels in world 1 in order
+        const world1Levels = [
+            '1-1', '1-2', '1-3', '1-4', '1-5', '1-6', '1-7'
+        ];
+        world1Levels.forEach((levelId, idx) => {
+            manager.completeLevel(levelId, { score: 100 + idx * 10, wpm: 20 + idx * 2, accuracy: 0.95 });
+        });
+        expect(manager.isLevelUnlocked('2-1')).toBe(true);
+    });
+
+    it('completeLevel unlocks the next level', () => {
+        const manager = new LevelManager();
+        manager.completeLevel('1-1', { score: 100, wpm: 20, accuracy: 0.95 });
+        expect(manager.isLevelUnlocked('1-2')).toBe(true);
+    });
+
+    it('completing 1-2 unlocks 1-3', () => {
+        const manager = new LevelManager();
+        manager.completeLevel('1-1', { score: 100, wpm: 20, accuracy: 0.95 });
+        expect(manager.isLevelUnlocked('1-2')).toBe(true);
+        manager.completeLevel('1-2', { score: 110, wpm: 22, accuracy: 0.97 });
+        expect(manager.isLevelUnlocked('1-3')).toBe(true);
+    });
 });
