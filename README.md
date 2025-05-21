@@ -13,12 +13,9 @@ TypeDefense is a web-based typing game designed to help players improve their ty
 - Real-time scores, combo multipliers, and particle effects for engagement
 - Tweened UI transitions and dramatic camera effects for key events
 - Layered audio cues for typing, combos, and wave clearances
-- Modular scenes for each game state (preload, menu, waves, game over)
-- Data-driven wave and word pack configuration for easy tuning
-- Escalating difficulty and unlockable word packs
-- Planned leaderboard and achievements integration
-- Implemented `Player` class in `client/src/entities/Player.ts` as a Phaser sprite for the player character
-- Implemented `InputHandler` class in `client/src/entities/InputHandler.ts` to manage keyboard input and buffer typed characters
+- Core game loop set up in `GameScene` with Player and InputHandler initialized and updated each frame
+
+Contains AI-generated edits.
 
 ## Getting Started
 
@@ -52,4 +49,3 @@ TypeDefense is a web-based typing game designed to help players improve their ty
 The main game scene is set up in `client/src/scenes/GameScene.ts` and is ready for core mechanic development.
 
 ---
-Contains AI-generated edits.
