@@ -5,6 +5,7 @@ import InputHandler from '../entities/InputHandler';
 import MobSpawner from '../entities/MobSpawner';
 import Player from '../entities/Player';
 import FingerGroupManager from '../managers/fingerGroupManager';
+import LevelManager from '../managers/levelManager';
 import { loadWordList } from '../utils/loadWordList';
 
 export default class GameScene extends Phaser.Scene {
@@ -19,6 +20,16 @@ export default class GameScene extends Phaser.Scene {
     private winThreshold: number = 50; // Number of enemies to defeat to win
     private levelCompleteText?: Phaser.GameObjects.Text;
 
+    protected score: number = 0;
+    protected combo: number = 0;
+    protected particleManager!: Phaser.GameObjects.Particles.ParticleEmitter;
+    protected scoreText!: Phaser.GameObjects.Text;
+    protected comboText!: Phaser.GameObjects.Text;
+
+    private levelManager!: LevelManager;
+    private currentWorldIdx: number = 0;
+    private currentLevelIdx: number = 0;
+
     constructor() {
         super('GameScene');
     }
@@ -29,7 +40,7 @@ export default class GameScene extends Phaser.Scene {
         // Example: this.load.image('mob', 'assets/images/mob.png');
     }
 
-    async create() {
+    async create(data?: { world?: number; level?: number; levelManager?: LevelManager }) {
         // Set up the main game scene here
         this.add.text(400, 300, 'Type Defense', {
             fontSize: '48px',
@@ -41,12 +52,50 @@ export default class GameScene extends Phaser.Scene {
         this.inputHandler = new InputHandler(this);
         this.fingerGroupManager = new FingerGroupManager();
 
-        // Load Level 1-1 config and word list
-        const world = WORLDS[0];
-        const level = world.levels[0]; // Level 1-1
+        // Support starting at a specific world/level
+        if (data && typeof data.world === 'number' && typeof data.level === 'number') {
+            this.currentWorldIdx = data.world;
+            this.currentLevelIdx = data.level;
+        } else {
+            this.currentWorldIdx = 0;
+            this.currentLevelIdx = 0;
+        }
+        // Use LevelManager from data or create new
+        if (data && data.levelManager) {
+            this.levelManager = data.levelManager;
+        } else {
+            this.levelManager = new LevelManager();
+            this.levelManager.loadProgress();
+        }
+        const world = WORLDS[this.currentWorldIdx];
+        const level = world.levels[this.currentLevelIdx];
         const words = await loadWordList(level.id);
         // Spawn 2 mobs per interval for demonstration (can be made configurable)
         this.mobSpawner = new MobSpawner(this, words, level.enemySpawnRate, 2);
+
+        // Score and combo UI
+        this.score = 0;
+        this.combo = 0;
+        this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '28px', color: '#fff', stroke: '#000', strokeThickness: 4 });
+        this.comboText = this.add.text(16, 52, '', { fontSize: '22px', color: '#ff0', stroke: '#000', strokeThickness: 3 });
+        this.comboText.setVisible(false);
+
+        // Particle manager for bursts (white circle texture)
+        if (!this.textures.exists('white')) {
+            const g = this.add.graphics();
+            g.fillStyle(0xffffff, 1);
+            g.fillCircle(8, 8, 8);
+            g.generateTexture('white', 16, 16);
+            g.destroy();
+        }
+        this.particleManager = this.add.particles(0, 0, 'white', {
+            speed: { min: 80, max: 180 },
+            angle: { min: 0, max: 360 },
+            lifespan: 350,
+            quantity: 12,
+            scale: { start: 0.5, end: 0 },
+            alpha: { start: 1, end: 0 }
+        });
     }
 
     update(time: number, delta: number) {
@@ -80,6 +129,7 @@ export default class GameScene extends Phaser.Scene {
         // Improved mob input handling for combos and multiple mobs
         const input = this.inputHandler.getInput();
         if (input.length > 0) {
+            let anyCorrect = false;
             for (const char of input) {
                 const keyInfo = getKeyInfo(char);
                 if (keyInfo) {
@@ -112,7 +162,15 @@ export default class GameScene extends Phaser.Scene {
                 if (this.targetedMob && this.targetedMob.getNextLetter && !this.targetedMob.isDefeated) {
                     if (this.targetedMob.getNextLetter().toLowerCase() === char.toLowerCase()) {
                         this.targetedMob.advanceLetter();
-                        handled = true;
+                        anyCorrect = true;
+                        // Particle burst at mob position
+                        this.particleManager.emitParticleAt(this.targetedMob.x, this.targetedMob.y, 12);
+                        // Score and combo
+                        this.combo++;
+                        this.score += 10 * this.combo;
+                        this.scoreText.setText(`Score: ${this.score}`);
+                        this.comboText.setText(`Combo x${this.combo}`);
+                        this.comboText.setVisible(this.combo > 1);
                         // If mob is defeated, clear target and increment defeated count
                         if (this.targetedMob.isDefeated) {
                             this.targetedMob.setTargeted(false);
@@ -171,6 +229,11 @@ export default class GameScene extends Phaser.Scene {
                     }
                 }
             }
+            // If no correct keypress, reset combo
+            if (!anyCorrect) {
+                this.combo = 0;
+                this.comboText.setVisible(false);
+            }
             this.inputHandler.clearInput();
         }
         this.elapsedTime += delta;
@@ -192,8 +255,77 @@ export default class GameScene extends Phaser.Scene {
             backgroundColor: '#222',
             padding: { left: 24, right: 24, top: 12, bottom: 12 },
         }).setOrigin(0.5);
+        // Add Continue button
+        const continueButton = this.add.text(400, 380, 'Continue', {
+            fontSize: '32px',
+            color: '#fff',
+            backgroundColor: '#007bff',
+            padding: { left: 24, right: 24, top: 8, bottom: 8 },
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        continueButton.on('pointerdown', () => this.handleContinue());
+        // Add Enter key handler
+        const enterHandler = (event: KeyboardEvent) => {
+            if (event.key === 'Enter') {
+                this.handleContinue();
+            }
+        };
+        this.input.keyboard?.on('keydown', enterHandler);
+        // Clean up listeners when scene shuts down
+        this.events.once('shutdown', () => {
+            this.input.keyboard?.off('keydown', enterHandler);
+        });
         this.scene.pause();
-    // TODO: Integrate with LevelManager to unlock and move to level 1-2
+
+        // Mark level as completed and unlock next
+        const world = WORLDS[this.currentWorldIdx];
+        const level = world.levels[this.currentLevelIdx];
+        if (this.levelManager) {
+            this.levelManager.updateLevelProgress(level.id, true, this.score, 0, 1);
+            this.levelManager.saveProgress();
+        }
+    }
+
+    /**
+     * Handles advancing to the next level or returning to menu
+     */
+    private handleContinue() {
+        // Find current world/level
+        const world = WORLDS[this.currentWorldIdx];
+        const nextLevelIdx = this.currentLevelIdx + 1;
+        if (world && nextLevelIdx < world.levels.length) {
+            // Advance to next level in the same world
+            this.scene.restart({ world: this.currentWorldIdx, level: nextLevelIdx, levelManager: this.levelManager });
+        } else if (this.currentWorldIdx < WORLDS.length - 1) {
+            // Go to first level of next world
+            this.scene.restart({ world: this.currentWorldIdx + 1, level: 0, levelManager: this.levelManager });
+        } else {
+            // No more levels, go back to menu
+            this.scene.start('MenuScene', { worlds: WORLDS, levelManager: this.levelManager });
+        }
+    }
+
+    /**
+     * For testing: Simulate a correct keystroke at a given position (triggers particle burst, updates score/combo)
+     */
+    public handleCorrectKeystroke(pos: { x: number; y: number }) {
+        this.combo++;
+        this.score += 10 * this.combo;
+        if (this.particleManager && typeof this.particleManager.emitParticleAt === 'function') {
+            this.particleManager.emitParticleAt(pos.x, pos.y, 12);
+        }
+        if (this.scoreText) this.scoreText.setText(`Score: ${this.score}`);
+        if (this.comboText) {
+            this.comboText.setText(`Combo x${this.combo}`);
+            this.comboText.setVisible(this.combo > 1);
+        }
+    }
+
+    /**
+     * For testing: Simulate an incorrect keystroke (resets combo)
+     */
+    public handleIncorrectKeystroke() {
+        this.combo = 0;
+        if (this.comboText) this.comboText.setVisible(false);
     }
 }
 // Contains AI-generated edits.

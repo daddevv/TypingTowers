@@ -1,7 +1,6 @@
 /**
  * Manages level progression and tracking player progress through worlds.
  */
-import { getAvailableKeysForLevel, getLevelById, LevelConfig, WorldConfig, WORLDS } from '../curriculum/worldConfig';
 
 export interface LevelProgress {
     completed: boolean;
@@ -15,201 +14,100 @@ export default class LevelManager {
     private currentWorldId: number = 1;
     private currentLevelId: string = '1-1';
     private progress: Map<string, LevelProgress> = new Map();
+    private storageKey: string = 'type-defense-progress';
 
     constructor() {
-        // Initialize with first level unlocked
-        this.setLevelProgress('1-1', {
-            completed: false,
-            highScore: 0,
-            bestWPM: 0,
-            bestAccuracy: 0,
-            attempts: 0
-        });
+        this.loadProgress();
     }
 
-    /**
-     * Gets the current world configuration
-     */
-    getCurrentWorld(): WorldConfig | undefined {
-        return WORLDS.find(w => w.id === this.currentWorldId);
+    public getCurrentWorld(): number {
+        return this.currentWorldId;
     }
 
-    /**
-     * Gets the current level configuration
-     */
-    getCurrentLevel(): LevelConfig | undefined {
-        return getLevelById(this.currentWorldId, this.currentLevelId);
+    public getCurrentLevel(): string {
+        return this.currentLevelId;
     }
 
-    /**
-     * Gets the available letters for the current level
-     */
-    getCurrentLevelLetters(): string[] {
-        return getAvailableKeysForLevel(this.currentWorldId, this.currentLevelId);
-    }
-
-    /**
-     * Sets the current level
-     */
-    setCurrentLevel(worldId: number, levelId: string): boolean {
-        const level = getLevelById(worldId, levelId);
-        if (!level) return false;
-
+    public setCurrentLevel(worldId: number, levelId: string) {
         this.currentWorldId = worldId;
         this.currentLevelId = levelId;
-        return true;
     }
 
-    /**
-     * Gets progress for a specific level
-     */
-    getLevelProgress(levelId: string): LevelProgress | undefined {
+    public getLevelProgress(levelId: string): LevelProgress | undefined {
         return this.progress.get(levelId);
     }
 
-    /**
-     * Sets progress for a specific level
-     */
-    setLevelProgress(levelId: string, progress: LevelProgress): void {
-        this.progress.set(levelId, progress);
-    }
-
-    /**
-     * Updates progress after completing a level
-     */
-    updateLevelProgress(
-        levelId: string,
-        completed: boolean,
-        score: number,
-        wpm: number,
-        accuracy: number
-    ): void {
-        const currentProgress = this.getLevelProgress(levelId) || {
+    public setLevelProgress(levelId: string, progress: Partial<LevelProgress>) {
+        const prev = this.progress.get(levelId) || {
             completed: false,
             highScore: 0,
             bestWPM: 0,
             bestAccuracy: 0,
-            attempts: 0
+            attempts: 0,
         };
+        this.progress.set(levelId, { ...prev, ...progress });
+        this.saveProgress();
+    }
 
-        const newProgress: LevelProgress = {
-            completed: completed || currentProgress.completed,
-            highScore: Math.max(score, currentProgress.highScore),
-            bestWPM: Math.max(wpm, currentProgress.bestWPM),
-            bestAccuracy: Math.max(accuracy, currentProgress.bestAccuracy),
-            attempts: currentProgress.attempts + 1
-        };
-
-        this.setLevelProgress(levelId, newProgress);
-
-        // If completed, unlock the next level
-        if (completed && !currentProgress.completed) {
-            this.unlockNextLevel();
+    public isLevelUnlocked(levelId: string): boolean {
+        // Unlock first level by default
+        if (levelId === '1-1') return true;
+        // Unlock if previous level is completed
+        const [world, level] = levelId.split('-').map(Number);
+        if (level > 1) {
+            const prevLevelId = `${world}-${level - 1}`;
+            return this.progress.get(prevLevelId)?.completed ?? false;
+        } else if (world > 1) {
+            const prevWorldLastLevel = `${world - 1}-3`;
+            return this.progress.get(prevWorldLastLevel)?.completed ?? false;
         }
-    }
-
-    /**
-     * Unlocks the next level based on current progress
-     */
-    private unlockNextLevel(): void {
-        const currentWorld = this.getCurrentWorld();
-        if (!currentWorld) return;
-
-        const currentLevelIndex = currentWorld.levels.findIndex(l => l.id === this.currentLevelId);
-        if (currentLevelIndex === -1) return;
-
-        // Check if there's another level in this world
-        if (currentLevelIndex < currentWorld.levels.length - 1) {
-            const nextLevel = currentWorld.levels[currentLevelIndex + 1];
-            this.setLevelProgress(nextLevel.id, {
-                completed: false,
-                highScore: 0,
-                bestWPM: 0,
-                bestAccuracy: 0,
-                attempts: 0
-            });
-        }
-        // If this was the last level in the world, unlock the first level of the next world
-        else if (currentWorld.id < WORLDS.length) {
-            const nextWorld = WORLDS.find(w => w.id === currentWorld.id + 1);
-            if (nextWorld && nextWorld.levels.length > 0) {
-                const nextLevelId = nextWorld.levels[0].id;
-                this.setLevelProgress(nextLevelId, {
-                    completed: false,
-                    highScore: 0,
-                    bestWPM: 0,
-                    bestAccuracy: 0,
-                    attempts: 0
-                });
-            }
-        }
-    }
-
-    /**
-     * Checks if a specific level is unlocked
-     */
-    isLevelUnlocked(worldId: number, levelId: string): boolean {
-        return this.progress.has(levelId);
-    }
-
-    /**
-     * Checks if a specific level is unlocked (overload for string id)
-     */
-    isLevelUnlocked(levelId: string): boolean {
-        return this.progress.has(levelId);
-    }
-
-    /**
-     * Checks if a specific level is completed
-     */
-    isLevelCompleted(levelId: string): boolean {
-        const prog = this.progress.get(levelId);
-        return !!prog && prog.completed;
-    }
-
-    /**
-     * Gets all unlocked levels
-     */
-    getUnlockedLevels(): string[] {
-        return Array.from(this.progress.keys());
-    }
-
-    /**
-     * Saves progress to localStorage
-     */
-    saveProgress(): void {
-        const progressData = Array.from(this.progress.entries());
-        localStorage.setItem('typeDefense_levelProgress', JSON.stringify(progressData));
-        localStorage.setItem('typeDefense_currentWorld', this.currentWorldId.toString());
-        localStorage.setItem('typeDefense_currentLevel', this.currentLevelId);
-    }
-
-    /**
-     * Loads progress from localStorage
-     */
-    loadProgress(): boolean {
-        const progressData = localStorage.getItem('typeDefense_levelProgress');
-        const worldId = localStorage.getItem('typeDefense_currentWorld');
-        const levelId = localStorage.getItem('typeDefense_currentLevel');
-
-        if (progressData) {
-            try {
-                const parsedData = JSON.parse(progressData) as [string, LevelProgress][];
-                this.progress = new Map(parsedData);
-
-                if (worldId && levelId) {
-                    this.currentWorldId = parseInt(worldId, 10);
-                    this.currentLevelId = levelId;
-                }
-
-                return true;
-            } catch (e) {
-                console.error('Failed to load progress data', e);
-            }
-        }
-
         return false;
     }
-}
 
-//Contains AI - generated edits.
+    public completeLevel(levelId: string, stats: { score: number; wpm: number; accuracy: number; }) {
+        const prev = this.progress.get(levelId) || {
+            completed: false,
+            highScore: 0,
+            bestWPM: 0,
+            bestAccuracy: 0,
+            attempts: 0,
+        };
+        this.progress.set(levelId, {
+            completed: true,
+            highScore: Math.max(prev.highScore, stats.score),
+            bestWPM: Math.max(prev.bestWPM, stats.wpm),
+            bestAccuracy: Math.max(prev.bestAccuracy, stats.accuracy),
+            attempts: prev.attempts + 1,
+        });
+        this.saveProgress();
+    }
+
+    public resetProgress() {
+        this.progress.clear();
+        this.saveProgress();
+    }
+
+    private saveProgress() {
+        const obj: Record<string, LevelProgress> = {};
+        this.progress.forEach((v, k) => { obj[k] = v; });
+        localStorage.setItem(this.storageKey, JSON.stringify(obj));
+    }
+
+    public loadProgress() {
+        const raw = localStorage.getItem(this.storageKey);
+        if (raw) {
+            try {
+                const obj = JSON.parse(raw);
+                this.progress = new Map(Object.entries(obj));
+            } catch {
+                this.progress = new Map();
+            }
+        } else {
+            this.progress = new Map();
+        }
+    }
+
+    public getAllProgress(): Map<string, LevelProgress> {
+        return this.progress;
+    }
+}
