@@ -19,6 +19,10 @@ TypeDefense is a web-based typing game designed to help players improve their ty
   - `Mob` represents individual enemy entities (see `client/src/entities/Mob.ts`).
   - Both are now fully integrated and updated within the main game loop in `GameScene`.
 - Added initial design and documentation for the `FingerGroupManager` class, which will track player progress and statistics across finger groups for the typing curriculum.
+  - Implemented the `FingerGroupManager` class in `client/src/managers/fingerGroupManager.ts`.
+  - Tracks player progress, key usage, accuracy, and speed for each finger group.
+  - Provides methods to record key presses, retrieve stats, and determine mastery.
+  - Uses curriculum-defined finger/key mappings for robust tracking.
 
 ## Curriculum Design
 
@@ -80,7 +84,5 @@ Each world contains multiple levels that introduce letters progressively, with b
 4. Open your browser to the local server URL (usually `http://localhost:5173`).
 
 The main game scene is set up in `client/src/scenes/GameScene.ts` and is ready for core mechanic development.
-
----
 
 Contains AI-generated edits.

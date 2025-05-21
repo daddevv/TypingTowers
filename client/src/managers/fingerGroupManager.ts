@@ -7,11 +7,7 @@
  * - Expose methods to reset, update, and retrieve stats
  * - (Future) Integrate with UI for feedback and achievements
  */
-import {
-    FINGER_GROUP_KEYS,
-    FingerType,
-    getKeyInfo
-} from '../curriculum/fingerGroups';
+import { FINGER_GROUP_KEYS, FingerType, getKeyInfo } from '../curriculum/fingerGroups';
 
 interface FingerStats {
     totalKeyPresses: number;
@@ -23,17 +19,16 @@ interface FingerStats {
 
 export default class FingerGroupManager {
     private fingerStats: Map<FingerType, FingerStats> = new Map();
-    private keyPressHistory: Map<string, number[]> = new Map(); // Key -> array of press times
-
+    private keyPressHistory: Map<string, number[]> = new Map();
+    private lastKeyTimestamps: Map<FingerType, number> = new Map();
     constructor() {
-        // Initialize stats for all finger types
         Object.values(FingerType).forEach(finger => {
             this.fingerStats.set(finger, {
                 totalKeyPresses: 0,
                 correctFingerUses: 0,
                 mistypedKeys: 0,
-                accuracy: 0,
-                averageSpeed: 0
+                accuracy: 1,
+                averageSpeed: 0,
             });
         });
     }
@@ -47,64 +42,41 @@ export default class FingerGroupManager {
     recordKeyPress(key: string, usedCorrectFinger: boolean = true, timestamp: number = Date.now()): void {
         const keyInfo = getKeyInfo(key);
         if (!keyInfo) return;
-
-        // Record timestamp for this key
-        if (!this.keyPressHistory.has(key)) {
-            this.keyPressHistory.set(key, []);
+        const finger = keyInfo.finger;
+        const stats = this.fingerStats.get(finger)!;
+        stats.totalKeyPresses++;
+        if (usedCorrectFinger) {
+            stats.correctFingerUses++;
+        } else {
+            stats.mistypedKeys++;
         }
-        this.keyPressHistory.get(key)?.push(timestamp);
-
-        // Keep only the last 20 presses for performance
-        const history = this.keyPressHistory.get(key);
-        if (history && history.length > 20) {
-            this.keyPressHistory.set(key, history.slice(history.length - 20));
+        stats.accuracy = stats.correctFingerUses / stats.totalKeyPresses;
+        // Speed calculation
+        const last = this.lastKeyTimestamps.get(finger);
+        if (last) {
+            const interval = timestamp - last;
+            if (!this.keyPressHistory.has(key)) this.keyPressHistory.set(key, []);
+            this.keyPressHistory.get(key)!.push(interval);
+            this.updateAverageSpeed(finger);
         }
-
-        // Update finger stats
-        const stats = this.fingerStats.get(keyInfo.finger);
-        if (stats) {
-            stats.totalKeyPresses++;
-            if (usedCorrectFinger) {
-                stats.correctFingerUses++;
-            } else {
-                stats.mistypedKeys++;
-            }
-            stats.accuracy = stats.correctFingerUses / stats.totalKeyPresses;
-
-            // Update average speed if we have enough history
-            this.updateAverageSpeed(keyInfo.finger);
-        }
+        this.lastKeyTimestamps.set(finger, timestamp);
     }
 
     /**
      * Updates the average typing speed for a finger
      */
     private updateAverageSpeed(finger: FingerType): void {
-        const fingerKeys = this.getKeysForFinger(finger);
-        let totalIntervals = 0;
-        let intervalCount = 0;
-
-        fingerKeys.forEach(key => {
-            const history = this.keyPressHistory.get(key);
-            if (history && history.length > 1) {
-                for (let i = 1; i < history.length; i++) {
-                    const interval = history[i] - history[i - 1];
-                    // Only count reasonable intervals (< 2 seconds)
-                    if (interval > 0 && interval < 2000) {
-                        totalIntervals += interval;
-                        intervalCount++;
-                    }
-                }
+        let total = 0;
+        let count = 0;
+        for (const [key, intervals] of this.keyPressHistory.entries()) {
+            const keyInfo = getKeyInfo(key);
+            if (keyInfo && keyInfo.finger === finger) {
+                total += intervals.reduce((a, b) => a + b, 0);
+                count += intervals.length;
             }
-        });
-
-        const stats = this.fingerStats.get(finger);
-        if (stats && intervalCount > 0) {
-            // Average time between keypresses in milliseconds
-            const avgInterval = totalIntervals / intervalCount;
-            // Convert to keys per minute
-            stats.averageSpeed = 60000 / avgInterval;
         }
+        const stats = this.fingerStats.get(finger)!;
+        stats.averageSpeed = count > 0 ? total / count : 0;
     }
 
     /**
@@ -112,15 +84,13 @@ export default class FingerGroupManager {
      */
     getKeysForFinger(finger: FingerType): string[] {
         const keys: string[] = [];
-
-        Object.values(FINGER_GROUP_KEYS).forEach(group => {
-            group.forEach(keyMapping => {
-                if (keyMapping.finger === finger) {
-                    keys.push(keyMapping.key);
+        for (const group of Object.values(FINGER_GROUP_KEYS)) {
+            for (const mapping of group) {
+                if (mapping.finger === finger) {
+                    keys.push(mapping.key);
                 }
-            });
-        });
-
+            }
+        }
         return keys;
     }
 
@@ -136,7 +106,7 @@ export default class FingerGroupManager {
      */
     getFingerForKey(key: string): FingerType | undefined {
         const keyInfo = getKeyInfo(key);
-        return keyInfo?.finger;
+        return keyInfo ? keyInfo.finger : undefined;
     }
 
     /**
@@ -145,56 +115,36 @@ export default class FingerGroupManager {
     isKeyMastered(key: string): boolean {
         const keyInfo = getKeyInfo(key);
         if (!keyInfo) return false;
-
         const stats = this.fingerStats.get(keyInfo.finger);
         if (!stats) return false;
-
-        // Consider a key mastered if accuracy > 95% and we have enough sample data
-        return stats.accuracy > 0.95 && stats.totalKeyPresses > 20;
+        return stats.accuracy > 0.95 && stats.averageSpeed < 350; // Example mastery criteria
     }
 
     /**
      * Gets overall typing proficiency as a percentage
      */
     getOverallProficiency(): number {
-        let totalAccuracy = 0;
-        let fingerCount = 0;
-
-        this.fingerStats.forEach(stats => {
-            if (stats.totalKeyPresses > 0) {
-                totalAccuracy += stats.accuracy;
-                fingerCount++;
+        let total = 0;
+        let mastered = 0;
+        for (const finger of Object.values(FingerType)) {
+            const stats = this.fingerStats.get(finger);
+            if (stats) {
+                total++;
+                if (stats.accuracy > 0.95 && stats.averageSpeed < 350) mastered++;
             }
-        });
-
-        return fingerCount > 0 ? (totalAccuracy / fingerCount) * 100 : 0;
+        }
+        return total > 0 ? (mastered / total) * 100 : 0;
     }
 
     /**
      * Saves stats to localStorage
      */
     saveStats(): void {
-        const statsData = Array.from(this.fingerStats.entries());
-        localStorage.setItem('typeDefense_fingerStats', JSON.stringify(statsData));
-    }
-
-    /**
-     * Loads stats from localStorage
-     */
-    loadStats(): boolean {
-        const statsData = localStorage.getItem('typeDefense_fingerStats');
-
-        if (statsData) {
-            try {
-                const parsedData = JSON.parse(statsData) as [FingerType, FingerStats][];
-                this.fingerStats = new Map(parsedData);
-                return true;
-            } catch (e) {
-                console.error('Failed to load finger stats data', e);
-            }
+        const obj: Record<string, FingerStats> = {};
+        for (const [finger, stats] of this.fingerStats.entries()) {
+            obj[finger] = stats;
         }
-
-        return false;
+        localStorage.setItem('fingerStats', JSON.stringify(obj));
     }
 }
 

@@ -32,7 +32,7 @@
 ### Core Systems
 
 - [x] Design the FingerGroupManager class interface and responsibilities
-- [ ] Implement the FingerGroupManager class in `client/src/managers/fingerGroupManager.ts`
+- [x] Implement the FingerGroupManager class in `client/src/managers/fingerGroupManager.ts`
 - [ ] Integrate FingerGroupManager with the game loop to record finger usage and progress
 - [ ] Add methods to retrieve progress and statistics for each finger group
 - [ ] Write tests or usage examples for FingerGroupManager
