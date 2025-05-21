@@ -1,6 +1,11 @@
 /**
  * Manages tracking of player progress across finger groups.
- * Provides feedback on which finger should be used for each key.
+ * Responsibilities:
+ * - Record key presses and associate them with finger groups
+ * - Track stats: total presses, correct/incorrect usage, accuracy, speed per finger group
+ * - Provide progress data for curriculum advancement
+ * - Expose methods to reset, update, and retrieve stats
+ * - (Future) Integrate with UI for feedback and achievements
  */
 import {
     FINGER_GROUP_KEYS,
@@ -193,4 +198,4 @@ export default class FingerGroupManager {
     }
 }
 
-//Contains AI - generated edits.
+// Contains AI-generated edits.

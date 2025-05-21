@@ -18,6 +18,7 @@ TypeDefense is a web-based typing game designed to help players improve their ty
   - `MobSpawner` handles spawning and management of enemy mobs (see `client/src/entities/MobSpawner.ts`).
   - `Mob` represents individual enemy entities (see `client/src/entities/Mob.ts`).
   - Both are now fully integrated and updated within the main game loop in `GameScene`.
+- Added initial design and documentation for the `FingerGroupManager` class, which will track player progress and statistics across finger groups for the typing curriculum.
 
 ## Curriculum Design
 

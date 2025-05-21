@@ -31,7 +31,11 @@
 
 ### Core Systems
 
-- [ ] Create a FingerGroupManager class to track player progress across finger groups
+- [x] Design the FingerGroupManager class interface and responsibilities
+- [ ] Implement the FingerGroupManager class in `client/src/managers/fingerGroupManager.ts`
+- [ ] Integrate FingerGroupManager with the game loop to record finger usage and progress
+- [ ] Add methods to retrieve progress and statistics for each finger group
+- [ ] Write tests or usage examples for FingerGroupManager
 - [ ] Implement a LevelManager to handle level transitions and progress tracking
 - [ ] Design a WordGenerator class that creates appropriate words based on available letters
 - [ ] Implement a difficulty scaling system that adjusts spawn rates and word complexity
@@ -39,6 +43,10 @@
 ### World 1: Index Fingers (F, G, R, T, V, B, J, H, Y, U, N, M)
 
 - [ ] Create Level 1-1: Basic F/J training with simple letter targets
+- [ ] Implement wave logic for Level 1-1 (spawn and manage basic mobs)
+- [ ] Integrate Level 1-1 wave logic into the main game loop
+- [ ] Provide basic score and combo feedback during Level 1-1
+- [ ] Test the Level 1-1 loop for functionality and balance
 - [ ] Create Level 1-2: Add G/H home row keys with simple combinations
 - [ ] Create Level 1-3: Add R/U (top row) with more letter combinations
 - [ ] Create Level 1-4: Add T/Y (completing top row) with more complex patterns
