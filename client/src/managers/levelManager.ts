@@ -1,3 +1,5 @@
+import { WORLDS } from '../curriculum/worldConfig';
+
 /**
  * Manages level progression and tracking player progress through worlds.
  */
@@ -58,8 +60,12 @@ export default class LevelManager {
             const prevLevelId = `${world}-${level - 1}`;
             return this.progress.get(prevLevelId)?.completed ?? false;
         } else if (world > 1) {
-            const prevWorldLastLevel = `${world - 1}-3`;
-            return this.progress.get(prevWorldLastLevel)?.completed ?? false;
+            // Unlock first level of a world if last level of previous world is completed
+            const prevWorld = WORLDS.find(w => w.id === world - 1);
+            if (prevWorld) {
+                const lastLevel = prevWorld.levels[prevWorld.levels.length - 1];
+                return this.progress.get(lastLevel.id)?.completed ?? false;
+            }
         }
         return false;
     }

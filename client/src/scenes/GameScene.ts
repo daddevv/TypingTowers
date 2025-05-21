@@ -5,7 +5,7 @@ import InputHandler from '../entities/InputHandler';
 import MobSpawner from '../entities/MobSpawner';
 import Player from '../entities/Player';
 import FingerGroupManager from '../managers/fingerGroupManager';
-import LevelManager from '../managers/levelManager';
+import LevelManager, { levelManager } from '../managers/levelManager';
 import { loadWordList } from '../utils/loadWordList';
 import WordGenerator from '../utils/wordGenerator';
 
@@ -17,6 +17,11 @@ export default class GameScene extends Phaser.Scene {
     private targetedMob: any = null; // Track the currently targeted mob
     private elapsedTime: number = 0;
     private scalingDuration: number = 120000; // 2 minutes to max difficulty
+    private minWordLength: number = 2;
+    private maxWordLength: number = 5;
+    private minSpawnInterval: number = 600;
+    private maxMobSpeed: number = 250;
+    private scalingProgression: number = 0;
     private defeatedCount: number = 0; // Track number of defeated enemies
     private winThreshold: number = 50; // Number of enemies to defeat to win
     private levelCompleteText?: Phaser.GameObjects.Text;
@@ -29,6 +34,7 @@ export default class GameScene extends Phaser.Scene {
     protected enemiesRemainingText!: Phaser.GameObjects.Text; // Enemies remaining UI element
     private waveText?: Phaser.GameObjects.Text;
     private waveTween?: Phaser.Tweens.Tween;
+    private lastScore: number = 0; // Store last score for pulsing logic
 
     private levelManager!: LevelManager;
     private currentWorldIdx: number = 0;
@@ -64,22 +70,26 @@ export default class GameScene extends Phaser.Scene {
             this.currentWorldIdx = 0;
             this.currentLevelIdx = 0;
         }
-        // Use LevelManager from data or create new
-        if (data && data.levelManager) {
-            this.levelManager = data.levelManager;
-        } else {
-            this.levelManager = new LevelManager();
-            this.levelManager.loadProgress();
-        }
+        // Use singleton levelManager for progress tracking
+        this.levelManager = levelManager;
+        this.levelManager.loadProgress();
         const world = WORLDS[this.currentWorldIdx];
         const level = world.levels[this.currentLevelIdx];
         const words = await loadWordList(level.id);
         // Create WordGenerator using allowed keys for this level
         const wordGenerator = new WordGenerator(level.availableKeys, true);
-        // Pass WordGenerator to MobSpawner
-        this.mobSpawner = new MobSpawner(this, wordGenerator, level.enemySpawnRate, 2);
+        // Pass word list to MobSpawner; MobSpawner will use these words if available
+        this.mobSpawner = new MobSpawner(this, wordGenerator, level.enemySpawnRate, 2, 90, words);
         // --- Wave system integration ---
-        this.mobSpawner.onWaveStart((wave) => this.showWaveNotification(wave));
+        this.mobSpawner.onWaveStart((wave) => {
+            // Increase word length as waves increase
+            const minLen = 2 + Math.floor(wave / 2); // e.g. every 2 waves, min increases
+            const maxLen = 5 + Math.floor(wave / 2);
+            if (this.mobSpawner['wordGenerator'] && typeof this.mobSpawner['wordGenerator'].setWordLengthScaling === 'function') {
+                this.mobSpawner['wordGenerator'].setWordLengthScaling(minLen, maxLen);
+            }
+            this.showWaveNotification(wave);
+        });
         this.mobSpawner.onWaveEnd(() => {
             // Start next wave after delay
             this.time.delayedCall(1500, () => this.mobSpawner.startNextWave());
@@ -134,7 +144,7 @@ export default class GameScene extends Phaser.Scene {
             scale: 1.1,
             duration: 400,
             yoyo: true,
-            hold: 700,
+            hold: 1600, // Increased hold duration for longer display
             onComplete: () => {
                 if (this.waveText) this.waveText.destroy();
             }
@@ -156,6 +166,18 @@ export default class GameScene extends Phaser.Scene {
     update(time: number, delta: number) {
         // Guard: wait for mobSpawner to be initialized
         if (!this.mobSpawner) return;
+        // --- Difficulty scaling system ---
+        this.elapsedTime += delta;
+        // Progression: 0 (start) to 1 (max difficulty)
+        this.scalingProgression = Phaser.Math.Clamp(this.elapsedTime / this.scalingDuration, 0, 1);
+        // Adjust MobSpawner spawn rate and speed
+        this.mobSpawner.setProgression(this.scalingProgression);
+        // Adjust word complexity (length) as difficulty increases
+        this.minWordLength = 2 + Math.floor(2 * this.scalingProgression); // 2 to 4
+        this.maxWordLength = 5 + Math.floor(2 * this.scalingProgression); // 5 to 7
+        if (this.mobSpawner['wordGenerator'] && typeof this.mobSpawner['wordGenerator'].setWordLengthScaling === 'function') {
+            this.mobSpawner['wordGenerator'].setWordLengthScaling(this.minWordLength, this.maxWordLength);
+        }
         // Core game loop logic
         if (this.player) {
             this.player.update(time, delta);
@@ -293,15 +315,9 @@ export default class GameScene extends Phaser.Scene {
             }
             this.inputHandler.clearInput();
         }
-        this.elapsedTime += delta;
-        // Progression: 0 at start, 1 at scalingDuration (capped)
-        const progression = Phaser.Math.Clamp(this.elapsedTime / this.scalingDuration, 0, 1);
-        if (this.mobSpawner && typeof this.mobSpawner.setProgression === 'function') {
-            this.mobSpawner.setProgression(progression);
-        }
         // Animate score pop-up when score changes
         if (this.scoreText && this.scoreText.visible) {
-            if (!this.scoreText.getData('tweened')) {
+            if (this.score > this.lastScore && !this.scoreText.getData('tweened')) {
                 this.scoreText.setData('tweened', true);
                 this.tweens.add({
                     targets: this.scoreText,
@@ -311,6 +327,7 @@ export default class GameScene extends Phaser.Scene {
                     onComplete: () => this.scoreText.setData('tweened', false)
                 });
             }
+            this.lastScore = this.score;
         }
     }
 

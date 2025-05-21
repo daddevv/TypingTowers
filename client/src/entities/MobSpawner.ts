@@ -25,8 +25,10 @@ export default class MobSpawner {
     private mobsSpawnedThisWave: number = 0;
     private onWaveStartCallback?: (wave: number) => void;
     private onWaveEndCallback?: (wave: number) => void;
+    private wordList?: string[];
+    private wordListIndex: number = 0;
 
-    constructor(scene: Phaser.Scene, wordGenerator: WordGenerator, spawnInterval: number = 2000, mobsPerInterval: number = 1, mobBaseSpeed: number = 90) {
+    constructor(scene: Phaser.Scene, wordGenerator: WordGenerator, spawnInterval: number = 2000, mobsPerInterval: number = 1, mobBaseSpeed: number = 90, wordList?: string[]) {
         this.scene = scene;
         this.wordGenerator = wordGenerator;
         this.spawnInterval = spawnInterval;
@@ -34,6 +36,8 @@ export default class MobSpawner {
         this.mobBaseSpeed = mobBaseSpeed;
         this.initialSpawnInterval = spawnInterval;
         this.initialMobBaseSpeed = mobBaseSpeed;
+        this.wordList = wordList && wordList.length > 0 ? wordList : undefined;
+        this.wordListIndex = 0;
     }
 
     /**
@@ -89,8 +93,14 @@ export default class MobSpawner {
         // Spawn mobs for this wave
         if (this.mobsSpawnedThisWave < this.mobsPerWave && this.spawnTimer >= this.spawnInterval) {
             for (let i = 0; i < this.mobsPerInterval && this.mobsSpawnedThisWave < this.mobsPerWave; i++) {
-                // Use WordGenerator to generate a word for the mob
-                const word = this.wordGenerator.getWord(Phaser.Math.Between(2, 5));
+                // Use wordList if available, else WordGenerator
+                let word: string;
+                if (this.wordList && this.wordList.length > 0) {
+                    word = this.wordList[this.wordListIndex % this.wordList.length];
+                    this.wordListIndex++;
+                } else {
+                    word = this.wordGenerator.getWord(Phaser.Math.Between(2, 5));
+                }
                 const minY = 100;
                 const maxY = this.scene.scale.height - 100;
                 const y = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
@@ -132,8 +142,14 @@ export default class MobSpawner {
     }
 
     spawnMob() {
-        // Use WordGenerator for single mob spawn as well
-        const word = this.wordGenerator.getWord(Phaser.Math.Between(2, 5));
+        // Use wordList if available, else WordGenerator
+        let word: string;
+        if (this.wordList && this.wordList.length > 0) {
+            word = this.wordList[this.wordListIndex % this.wordList.length];
+            this.wordListIndex++;
+        } else {
+            word = this.wordGenerator.getWord(Phaser.Math.Between(2, 5));
+        }
         const gameWidth = this.scene.scale.width;
         const tempMob = new Mob(this.scene, 0, 0, word, this.mobBaseSpeed);
         const mobWidth = tempMob.displayWidth || 64;
@@ -144,3 +160,4 @@ export default class MobSpawner {
         this.mobs.push(mob);
     }
 }
+// Contains AI-generated edits.

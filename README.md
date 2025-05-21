@@ -44,6 +44,7 @@ TypeDefense is a web-based typing game designed to help players improve their ty
 - Added collision detection and overlap prevention to mobs. Mobs now repel each other if they get too close, ensuring they do not overlap as they move toward the player. This improves gameplay clarity and visual polish.
 - **Dynamic difficulty:** As the game progresses, the spawn rate of enemies increases and their movement speed scales up, providing a smooth and challenging difficulty curve.
 - **Scaling system tested and tuned:** The MobSpawner's scaling logic for spawn interval and mob speed has been verified with unit tests for smooth progression. Parameters can be adjusted in `MobSpawner.ts` for further tuning.
+- **Word complexity scaling:** The WordGenerator dynamically increases word length and complexity as the game progresses, based on difficulty scaling parameters. This ensures that challenges become more demanding over time.
 
 ## Curriculum Design
 

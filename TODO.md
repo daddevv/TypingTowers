@@ -20,8 +20,13 @@
 
 - [x] Write unit tests for the `WordGenerator` class covering all methods and edge cases.
 - [x] Integrate the `WordGenerator` into the game logic where word generation is required.
-- [ ] Update documentation (`README.md` and project layout) to describe the new class and its usage.
-- [ ] Implement a difficulty scaling system that adjusts spawn rates and word complexity.
+- [x] Update documentation (`README.md` and project layout) to describe the new class and its usage.
+- [x] Implement a difficulty scaling system that adjusts spawn rates and word complexity.
+  - [x] Add scaling logic to MobSpawner to adjust spawn rates based on progression (e.g., wave number or score).
+  - [x] Add scaling logic to WordGenerator to increase word length/complexity as difficulty increases.
+  - [x] Integrate scaling parameters into level/world config for per-level tuning.
+  - [x] Update or add tests to cover scaling behavior in MobSpawner and WordGenerator.
+  - [x] Update documentation (README.md and project layout) to describe the new scaling system.
 
 ## Level & World Progression
 
@@ -32,6 +37,10 @@
 - [ ] Update README.md to mention new levels and keys.
 - [ ] Update project layout documentation if new files/structure are added.
 - [ ] Ensure all new code is well-commented and tested.
+- [ ] Fix level progression so that completing a level unlocks and advances to the next.
+- [ ] Ensure that level 1-2 uses the correct word list and includes "g" and "h" in generated words.
+- [ ] Test and verify that after completing level 1-2, level 1-3 is unlocked and accessible.
+- [ ] Update documentation to reflect the fixes.
 
 ## Visual & Audio Feedback
 
