@@ -13,6 +13,11 @@ export default class GameScene extends Phaser.Scene {
     private mobSpawner!: MobSpawner;
     private fingerGroupManager!: FingerGroupManager;
     private targetedMob: any = null; // Track the currently targeted mob
+    private elapsedTime: number = 0;
+    private scalingDuration: number = 120000; // 2 minutes to max difficulty
+    private defeatedCount: number = 0; // Track number of defeated enemies
+    private winThreshold: number = 50; // Number of enemies to defeat to win
+    private levelCompleteText?: Phaser.GameObjects.Text;
 
     constructor() {
         super('GameScene');
@@ -108,10 +113,15 @@ export default class GameScene extends Phaser.Scene {
                     if (this.targetedMob.getNextLetter().toLowerCase() === char.toLowerCase()) {
                         this.targetedMob.advanceLetter();
                         handled = true;
-                        // If mob is defeated, clear target
+                        // If mob is defeated, clear target and increment defeated count
                         if (this.targetedMob.isDefeated) {
                             this.targetedMob.setTargeted(false);
                             this.targetedMob = null;
+                            this.defeatedCount++;
+                            // Check win condition
+                            if (this.defeatedCount >= this.winThreshold && !this.levelCompleteText) {
+                                this.handleLevelComplete();
+                            }
                         }
                     } else {
                         // 3. If not, check if key matches any other mob's next letter
@@ -163,6 +173,27 @@ export default class GameScene extends Phaser.Scene {
             }
             this.inputHandler.clearInput();
         }
+        this.elapsedTime += delta;
+        // Progression: 0 at start, 1 at scalingDuration (capped)
+        const progression = Phaser.Math.Clamp(this.elapsedTime / this.scalingDuration, 0, 1);
+        if (this.mobSpawner && typeof this.mobSpawner.setProgression === 'function') {
+            this.mobSpawner.setProgression(progression);
+        }
+    }
+
+    /**
+     * Handles level completion logic: show message and pause game
+     */
+    private handleLevelComplete() {
+        this.levelCompleteText = this.add.text(400, 300, 'Level Complete!', {
+            fontSize: '48px',
+            color: '#44ff44',
+            fontStyle: 'bold',
+            backgroundColor: '#222',
+            padding: { left: 24, right: 24, top: 12, bottom: 12 },
+        }).setOrigin(0.5);
+        this.scene.pause();
+    // TODO: Integrate with LevelManager to unlock and move to level 1-2
     }
 }
 // Contains AI-generated edits.

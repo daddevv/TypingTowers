@@ -11,6 +11,11 @@ export default class MobSpawner {
     private words: string[];
     private mobsPerInterval: number = 1;
     private mobBaseSpeed: number = 90; // Increased default base speed for more challenge
+    private progression: number = 0; // 0 to 1, represents game progress
+    private minSpawnInterval: number = 600; // ms
+    private maxMobSpeed: number = 250;
+    private initialSpawnInterval: number;
+    private initialMobBaseSpeed: number;
 
     constructor(scene: Phaser.Scene, words: string[], spawnInterval: number = 2000, mobsPerInterval: number = 1, mobBaseSpeed: number = 90) {
         this.scene = scene;
@@ -18,6 +23,18 @@ export default class MobSpawner {
         this.spawnInterval = spawnInterval;
         this.mobsPerInterval = mobsPerInterval;
         this.mobBaseSpeed = mobBaseSpeed;
+        this.initialSpawnInterval = spawnInterval;
+        this.initialMobBaseSpeed = mobBaseSpeed;
+    }
+
+    /**
+     * Call this method to update scaling based on progression (0-1)
+     */
+    public setProgression(progression: number) {
+        this.progression = Phaser.Math.Clamp(progression, 0, 1);
+        // Linearly interpolate spawn interval and mob speed
+        this.spawnInterval = Phaser.Math.Linear(this.initialSpawnInterval, this.minSpawnInterval, this.progression);
+        this.mobBaseSpeed = Phaser.Math.Linear(this.initialMobBaseSpeed, this.maxMobSpeed, this.progression);
     }
 
     update(time: number, delta: number) {

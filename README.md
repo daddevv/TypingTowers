@@ -38,6 +38,7 @@ TypeDefense is a web-based typing game designed to help players improve their ty
 - **Player health system:** The player has a visible health value above their sprite. When a mob reaches the player, the player loses health and the mob is removed. The game ends with a "Game Over" message if health reaches zero.
 - **Improved mob input targeting and combo logic:** When multiple mobs are on screen, the game now targets the closest mob that matches the player's keypress. If the keypress doesn't match any mob, all mobs' progress is reset, fixing the combo bug with multiple mobs.
 - Added collision detection and overlap prevention to mobs. Mobs now repel each other if they get too close, ensuring they do not overlap as they move toward the player. This improves gameplay clarity and visual polish.
+- **Dynamic difficulty:** As the game progresses, the spawn rate of enemies increases and their movement speed scales up, providing a smooth and challenging difficulty curve.
 
 ## Curriculum Design
 
