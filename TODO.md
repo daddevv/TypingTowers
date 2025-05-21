@@ -19,5 +19,9 @@
 - [ ] Store wave configurations and word packs in JSON for data-driven design
 - [ ] Implement escalating difficulty and unlockable word packs
 - [ ] Add leaderboard and achievements integration
+- [x] Implement Mob and MobSpawner classes for enemy logic
+  - [x] Create Mob class in `client/src/entities/Mob.ts`
+  - [ ] Create MobSpawner class in `client/src/entities/MobSpawner.ts`
+  - [ ] Integrate Mob and MobSpawner into GameScene
 
 Contains AI-generated edits.
