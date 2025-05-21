@@ -85,6 +85,8 @@ Each world contains multiple levels that introduce letters progressively, with b
   - Selecting an unlocked level starts the game at that level.
 - **Level 1-3 ("Reaching Up"):** Adds R and U (top row) to the available keys, with a new word pack (`fjghruWords.json`) and more letter combinations. The curriculum and word loader have been updated to support this level.
 - Add a "Continue" button and Enter key handler to the level complete screen. When a level is completed, players can click the button or press Enter to advance to the next level (if available) or return to the level select menu.
+- Implemented a main menu scene (`MainMenuScene.ts`) with a "Play" button that navigates to the world chooser (MenuScene).
+- Registered the new scene in the Phaser game config and set it as the starting scene.
 
 ### WordGenerator Utility
 
@@ -156,3 +158,7 @@ npm run test -- src/utils/__tests__/wordGenerator.test.ts
   - Determining if a key is mastered (accuracy and speed criteria)
 - Unit tests for `LevelManager` are located in `client/src/managers/__tests__/levelManager.test.ts` and cover initialization, progress tracking, unlocking levels, and persistence via localStorage.
 - Added unit and integration tests for the combo multiplier and score system. See `client/src/entities/__tests__/ComboSystem.unit.test.ts` and `client/src/scenes/__tests__/GameScene.combo.integration.test.ts`.
+
+## Changelog
+
+- Added `MainMenuScene.ts` as the new main menu scene. The game now starts at the main menu, which features a "Play" button that takes the player to the world chooser (MenuScene).

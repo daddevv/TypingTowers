@@ -1,22 +1,3 @@
-# Changelog (Completed Tasks)
-
-- Set up Vite + TypeScript project structure and entry points.
-- Implemented core game loop, Player, and InputHandler.
-- Refactored MobSpawner for off-screen spawning and multiple mobs per interval.
-- Added base speed property to Mob and increased default speed.
-- Added y-position variation and dynamic scaling to MobSpawner.
-- Integrated scaling logic into GameScene.
-- Added logic for matching player input to mob words and instant visual feedback on defeat.
-- Instantiated and integrated FingerGroupManager.
-- Created and playtested Level 1-1 and Level 1-2, including word lists and curriculum updates.
-- Added collision detection to mobs and win condition (defeat 50 enemies).
-- Designed and implemented World/Level selection menu with lock/unlock logic and local storage.
-- Set up Vitest, added unit/integration tests for core entities and utilities.
-- Added "Continue" button and Enter key handler to level complete screen.
-- Added or updated tests to verify score/combo UI and particle burst behavior.
-  - Unit test: Combo/score logic updates UI as expected.
-  - Integration test: Particle burst triggers on correct keystroke.
-
 # TODO
 
 - [x] Implement a real-time score system that updates on each correct keystroke.
@@ -100,4 +81,20 @@
 - [ ] Update project layout documentation if new directories are added.
 - [ ] Ensure all new code is well-commented and tested.
 
-Contains AI-generated edits.
+## Menu, World, and Level Selection
+
+- [x] Implement a main menu scene with a "Play" button that navigates to the world chooser.
+- [ ] Create a world chooser scene that displays all worlds, showing locked/unlocked/completed status.
+- [ ] When a player selects an unlocked world, show a level selector for that world, displaying all levels with their status.
+- [ ] Allow the player to select an unlocked level to start the game.
+- [ ] Integrate the new scenes into the game flow and update navigation logic.
+- [ ] Update documentation and mark tasks as complete.
+- [ ] Refactor MenuScene to display only worlds (no levels).
+- [ ] Implement LevelMenuScene to display levels for the selected world.
+- [ ] Make levels clickable in LevelMenuScene to start the game at the selected level.
+- [x] Add a constant particle effect in the top-left corner of GameScene. (REMOVED: Feature reverted per user request; only burst effect remains)
+- [ ] Update README.md to document the new menu flow and particle effect.
+- [ ] Update project layout documentation if needed.
+- [ ] Ensure all new code is well-commented and tested.
+
+<!-- Contains AI-generated edits. -->

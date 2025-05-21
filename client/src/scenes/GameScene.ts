@@ -88,13 +88,15 @@ export default class GameScene extends Phaser.Scene {
             g.generateTexture('white', 16, 16);
             g.destroy();
         }
+        // Only create the emitter for bursts, not a persistent emitter at (0,0)
         this.particleManager = this.add.particles(0, 0, 'white', {
             speed: { min: 80, max: 180 },
             angle: { min: 0, max: 360 },
             lifespan: 350,
             quantity: 12,
             scale: { start: 0.5, end: 0 },
-            alpha: { start: 1, end: 0 }
+            alpha: { start: 1, end: 0 },
+            emitting: false // Do not emit constantly
         });
     }
 
@@ -280,8 +282,8 @@ export default class GameScene extends Phaser.Scene {
         const world = WORLDS[this.currentWorldIdx];
         const level = world.levels[this.currentLevelIdx];
         if (this.levelManager) {
-            this.levelManager.updateLevelProgress(level.id, true, this.score, 0, 1);
-            this.levelManager.saveProgress();
+            // Use completeLevel to mark as completed and save progress
+            this.levelManager.completeLevel(level.id, { score: this.score, wpm: 0, accuracy: 1 });
         }
     }
 

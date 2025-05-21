@@ -111,3 +111,5 @@ export default class LevelManager {
         return this.progress;
     }
 }
+
+export const levelManager = new LevelManager();
