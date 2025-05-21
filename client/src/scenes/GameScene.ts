@@ -7,6 +7,7 @@ import Player from '../entities/Player';
 import FingerGroupManager from '../managers/fingerGroupManager';
 import LevelManager from '../managers/levelManager';
 import { loadWordList } from '../utils/loadWordList';
+import WordGenerator from '../utils/wordGenerator';
 
 export default class GameScene extends Phaser.Scene {
     private player!: Player;
@@ -73,8 +74,10 @@ export default class GameScene extends Phaser.Scene {
         const world = WORLDS[this.currentWorldIdx];
         const level = world.levels[this.currentLevelIdx];
         const words = await loadWordList(level.id);
-        // Spawn 2 mobs per interval for demonstration (can be made configurable)
-        this.mobSpawner = new MobSpawner(this, words, level.enemySpawnRate, 2);
+        // Create WordGenerator using allowed keys for this level
+        const wordGenerator = new WordGenerator(level.availableKeys, true);
+        // Pass WordGenerator to MobSpawner
+        this.mobSpawner = new MobSpawner(this, wordGenerator, level.enemySpawnRate, 2);
         // --- Wave system integration ---
         this.mobSpawner.onWaveStart((wave) => this.showWaveNotification(wave));
         this.mobSpawner.onWaveEnd(() => {

@@ -18,8 +18,8 @@
 
 ## Architecture & Curriculum
 
-- [ ] Write unit tests for the `WordGenerator` class covering all methods and edge cases.
-- [ ] Integrate the `WordGenerator` into the game logic where word generation is required.
+- [x] Write unit tests for the `WordGenerator` class covering all methods and edge cases.
+- [x] Integrate the `WordGenerator` into the game logic where word generation is required.
 - [ ] Update documentation (`README.md` and project layout) to describe the new class and its usage.
 - [ ] Implement a difficulty scaling system that adjusts spawn rates and word complexity.
 

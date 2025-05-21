@@ -99,11 +99,13 @@ A new `WordGenerator` class is available in `client/src/utils/wordGenerator.ts`.
 - Supports random letter words, filtering valid words, and generating pronounceable pseudo-words (CVC pattern).
 - Methods:
   - `generateWord(length)`: Generates a random word using available letters.
+  - `generateWordSet(count, minLength, maxLength)`: Generates a set of words for a level challenge.
+  - `canCreateWord(word)`: Checks if a word can be created from available letters.
   - `filterValidWords(words)`: Filters a list of words to only those that can be made from available letters.
   - `generatePseudoWord(length)`: Generates a pronounceable pseudo-word (CVC pattern) using available letters.
   - `getWord(length)`: Returns a pseudo-word if enabled, otherwise a random word.
 - Used for creating level-appropriate word challenges and drills.
-- See `client/src/utils/__tests__/wordGenerator.test.ts` for usage examples and tests.
+- See `client/src/utils/__tests__/wordGenerator.test.ts` for usage examples and tests. All methods and edge cases are now covered by unit tests.
 
 **Usage Example:**
 
