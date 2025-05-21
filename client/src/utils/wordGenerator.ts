@@ -19,6 +19,9 @@ export default class WordGenerator {
      * @returns A string of the requested length
      */
     generateWord(length: number = 3): string {
+        if (this.availableLetters.length === 0) {
+            throw new Error("Cannot generate a word: availableLetters is empty.");
+        }
         let word = '';
         for (let i = 0; i < length; i++) {
             const randomIndex = Math.floor(Math.random() * this.availableLetters.length);
