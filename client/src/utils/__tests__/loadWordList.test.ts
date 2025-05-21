@@ -23,6 +23,17 @@ describe('loadWordList', () => {
         expect(words).not.toContain('f'); // 'f' is not present in fjghWords.json
     });
 
+    it('loads fjghWords for 1-2 and all words use only f, j, g, h', async () => {
+        const allowed = ['f', 'j', 'g', 'h'];
+        const words = await loadWordList('1-2');
+        expect(Array.isArray(words)).toBe(true);
+        for (const word of words) {
+            for (const letter of word) {
+                expect(allowed).toContain(letter);
+            }
+        }
+    });
+
     it('loads fjghruWords for 1-3', async () => {
         const words = await loadWordList('1-3');
         expect(Array.isArray(words)).toBe(true);

@@ -25,6 +25,7 @@ export default class GameScene extends Phaser.Scene {
     protected particleManager!: Phaser.GameObjects.Particles.ParticleEmitter;
     protected scoreText!: Phaser.GameObjects.Text;
     protected comboText!: Phaser.GameObjects.Text;
+    protected enemiesRemainingText!: Phaser.GameObjects.Text; // Enemies remaining UI element
 
     private levelManager!: LevelManager;
     private currentWorldIdx: number = 0;
@@ -80,6 +81,16 @@ export default class GameScene extends Phaser.Scene {
         this.comboText = this.add.text(16, 52, '', { fontSize: '22px', color: '#ff0', stroke: '#000', strokeThickness: 3 });
         this.comboText.setVisible(false);
 
+        // Enemies remaining UI
+        this.enemiesRemainingText = this.add.text(20, 80, '', {
+            fontSize: '20px',
+            color: '#fff',
+            fontStyle: 'bold',
+            stroke: '#000',
+            strokeThickness: 3,
+        }).setScrollFactor(0).setDepth(100);
+        this.updateEnemiesRemainingUI();
+
         // Particle manager for bursts (white circle texture)
         if (!this.textures.exists('white')) {
             const g = this.add.graphics();
@@ -100,6 +111,18 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
+    updateEnemiesRemainingUI() {
+        if (this.mobSpawner) {
+            const remaining = this.mobSpawner.getMobs().length;
+            if (remaining > 0) {
+                this.enemiesRemainingText.setText(`Enemies Remaining: ${remaining}`);
+                this.enemiesRemainingText.setVisible(true);
+            } else {
+                this.enemiesRemainingText.setVisible(false);
+            }
+        }
+    }
+
     update(time: number, delta: number) {
         // Guard: wait for mobSpawner to be initialized
         if (!this.mobSpawner) return;
@@ -109,6 +132,8 @@ export default class GameScene extends Phaser.Scene {
         }
         // Update MobSpawner and its mobs
         this.mobSpawner.update(time, delta);
+        // Update enemies remaining UI dynamically
+        this.updateEnemiesRemainingUI();
         // Check for mobs reaching the player (collision/proximity)
         const mobs = this.mobSpawner.getMobs();
         for (const mob of mobs) {
@@ -258,23 +283,34 @@ export default class GameScene extends Phaser.Scene {
             padding: { left: 24, right: 24, top: 12, bottom: 12 },
         }).setOrigin(0.5);
         // Add Continue button
-        const continueButton = this.add.text(400, 380, 'Continue', {
+        const continueButton = this.add.text(400, 380, 'Continue (Enter)', {
             fontSize: '32px',
             color: '#fff',
             backgroundColor: '#007bff',
             padding: { left: 24, right: 24, top: 8, bottom: 8 },
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
         continueButton.on('pointerdown', () => this.handleContinue());
-        // Add Enter key handler
-        const enterHandler = (event: KeyboardEvent) => {
+        // Add Back button
+        const backButton = this.add.text(400, 440, 'Back to Level Select (Esc)', {
+            fontSize: '28px',
+            color: '#fff',
+            backgroundColor: '#444',
+            padding: { left: 24, right: 24, top: 8, bottom: 8 },
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        backButton.on('pointerdown', () => this.handleBackToLevelSelect());
+
+        // Keyboard navigation: Enter for continue, Esc for back
+        const keyHandler = (event: KeyboardEvent) => {
             if (event.key === 'Enter') {
                 this.handleContinue();
+            } else if (event.key === 'Escape') {
+                this.handleBackToLevelSelect();
             }
         };
-        this.input.keyboard?.on('keydown', enterHandler);
+        this.input.keyboard?.on('keydown', keyHandler);
         // Clean up listeners when scene shuts down
         this.events.once('shutdown', () => {
-            this.input.keyboard?.off('keydown', enterHandler);
+            this.input.keyboard?.off('keydown', keyHandler);
         });
         this.scene.pause();
 
@@ -304,6 +340,14 @@ export default class GameScene extends Phaser.Scene {
             // No more levels, go back to menu
             this.scene.start('MenuScene', { worlds: WORLDS, levelManager: this.levelManager });
         }
+    }
+
+    /**
+     * Handles returning to the level selection screen for the current world
+     */
+    private handleBackToLevelSelect() {
+        const world = WORLDS[this.currentWorldIdx];
+        this.scene.start('LevelMenuScene', { worldId: world.id });
     }
 
     /**

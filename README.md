@@ -112,6 +112,14 @@ const pseudo = gen.generatePseudoWord(5); // e.g., 'gafih', 'hajig', etc.
 const valid = gen.filterValidWords(['fish', 'jag', 'hug']); // Only words using available letters
 ```
 
+## Navigation and Keyboard Shortcuts
+
+- The level completion screen now features both a Continue button (Enter) and a Back button (Esc).
+- Continue advances to the next level, next world, or returns to the main menu if all levels are complete.
+- Back returns to the level selection screen for the current world.
+- Both buttons are clickable and accessible via keyboard shortcuts (Enter/Esc).
+- This ensures smooth navigation through the entire game using either mouse or keyboard.
+
 ## Testing
 
 To run unit tests (using Vitest):

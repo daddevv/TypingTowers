@@ -1,23 +1,5 @@
 # TODO
 
-- [x] Implement a real-time score system that updates on each correct keystroke.
-- [x] Add a combo multiplier that increases with consecutive correct keystrokes and resets on mistakes.
-  - [x] Implement a combo multiplier variable in the game state.
-  - [x] Increment the combo multiplier on each correct keystroke.
-  - [x] Reset the combo multiplier on any incorrect keystroke.
-  - [x] Ensure the score calculation uses the combo multiplier.
-  - [x] Add comments and update documentation as needed.
-  - [x] Add or update tests to cover combo logic.
-- [x] Display the current score and combo multiplier in the game UI.
-  - [x] Add score and combo text objects to the GameScene UI layer.
-  - [x] Update these UI elements in real-time as the player types.
-- [x] Trigger a particle burst effect at the mob or letter location on every correct keystroke.
-  - [x] Integrate or enhance the particle system to emit at the correct position on every correct keystroke (mob or letter location).
-  - [x] Ensure the effect is visually clear and does not impact performance (optimize emitter settings, limit particles, pool if needed).
-- [x] Add or update tests to verify score/combo UI and particle burst behavior.
-  - [x] Unit test: Combo/score logic updates UI as expected.
-  - [x] Integration test: Particle burst triggers on correct keystroke.
-
 ## Mob & Spawning System
 
 - [ ] Test and tune scaling parameters for smooth difficulty increase.
@@ -27,10 +9,9 @@
 
 ## Gameplay Loop & Feedback
 
-- [ ] Implement action-challenge-reward loop with instant visual/audio feedback on word defeat:
+- [ ] Implement action-challenge-reward loop with instant visual/audio feedback on word defeat.
   - [ ] Play an audio cue when a mob is defeated.
   - [ ] Integrate the loop into the main game update cycle.
-- [ ] Display real-time scores, combo multipliers, and particle bursts on each keystroke.
 - [ ] Add tweened UI transitions for score pop-ups and wave notifications.
 - [ ] Add camera shake and screen flash effects for wave completion and boss defeat.
 - [ ] Integrate layered audio cues for typing, combos, and wave clearances.
@@ -38,8 +19,6 @@
 
 ## Architecture & Curriculum
 
-- [x] Design and implement a `WordGenerator` class that creates appropriate words based on available letters.
-- [x] Add methods to generate random words, filter valid words, and optionally generate pronounceable pseudo-words.
 - [ ] Write unit tests for the `WordGenerator` class covering all methods and edge cases.
 - [ ] Integrate the `WordGenerator` into the game logic where word generation is required.
 - [ ] Update documentation (`README.md` and project layout) to describe the new class and its usage.
@@ -83,7 +62,6 @@
 
 ## Menu, World, and Level Selection
 
-- [x] Implement a main menu scene with a "Play" button that navigates to the world chooser.
 - [ ] Create a world chooser scene that displays all worlds, showing locked/unlocked/completed status.
 - [ ] When a player selects an unlocked world, show a level selector for that world, displaying all levels with their status.
 - [ ] Allow the player to select an unlocked level to start the game.
@@ -92,9 +70,15 @@
 - [ ] Refactor MenuScene to display only worlds (no levels).
 - [ ] Implement LevelMenuScene to display levels for the selected world.
 - [ ] Make levels clickable in LevelMenuScene to start the game at the selected level.
-- [x] Add a constant particle effect in the top-left corner of GameScene. (REMOVED: Feature reverted per user request; only burst effect remains)
 - [ ] Update README.md to document the new menu flow and particle effect.
 - [ ] Update project layout documentation if needed.
+- [ ] Add a Back button to the level complete UI in GameScene that returns to level selection.
+- [ ] Ensure the Continue button in GameScene advances to the next level, world, or menu as appropriate.
+- [ ] Add keyboard shortcuts: Enter for continue, Escape for back, in the level complete UI.
+- [ ] Ensure all navigation buttons and keyboard shortcuts work for progressing through the whole game.
+- [ ] Update README.md to document the new navigation and keyboard shortcuts.
+- [ ] Update project layout documentation if any new files or structure are added.
 - [ ] Ensure all new code is well-commented and tested.
 
-<!-- Contains AI-generated edits. -->
+---
+Contains AI-generated edits.
