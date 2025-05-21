@@ -8,6 +8,9 @@ export default class WordGenerator {
     private availableLetters: string[];
     private usePseudoWords: boolean;
 
+    private minWordLength: number = 2;
+    private maxWordLength: number = 5;
+
     constructor(availableLetters: string[], usePseudoWords: boolean = true) {
         this.availableLetters = availableLetters.map(letter => letter.toLowerCase());
         this.usePseudoWords = usePseudoWords;
@@ -15,19 +18,27 @@ export default class WordGenerator {
 
     /**
      * Generates a word of the specified length using only available letters.
-     * @param length Desired word length
-     * @returns A string of the requested length
+     * If no length is provided, uses the current min/maxWordLength for scaling.
      */
-    generateWord(length: number = 3): string {
+    generateWord(length?: number): string {
         if (this.availableLetters.length === 0) {
             throw new Error("Cannot generate a word: availableLetters is empty.");
         }
         let word = '';
-        for (let i = 0; i < length; i++) {
-            const randomIndex = Math.floor(Math.random() * this.availableLetters.length);
-            word += this.availableLetters[randomIndex];
+        const len = typeof length === 'number' ? length : (this.minWordLength + Math.floor(Math.random() * (this.maxWordLength - this.minWordLength + 1)));
+        for (let i = 0; i < len; i++) {
+            const idx = Math.floor(Math.random() * this.availableLetters.length);
+            word += this.availableLetters[idx];
         }
         return word;
+    }
+
+    /**
+     * Set word length scaling for dynamic difficulty.
+     */
+    setWordLengthScaling(min: number, max: number) {
+        this.minWordLength = min;
+        this.maxWordLength = max;
     }
 
     /**
@@ -40,8 +51,8 @@ export default class WordGenerator {
     generateWordSet(count: number, minLength: number = 2, maxLength: number = 5): string[] {
         const wordSet: string[] = [];
         for (let i = 0; i < count; i++) {
-            const length = Math.floor(Math.random() * (maxLength - minLength + 1)) + minLength;
-            wordSet.push(this.generateWord(length));
+            const len = Math.floor(Math.random() * (maxLength - minLength + 1)) + minLength;
+            wordSet.push(this.getWord(len));
         }
         return wordSet;
     }
@@ -62,8 +73,7 @@ export default class WordGenerator {
     }
 
     /**
-     * Filters a list of words to only include those that can be created
-     * with the available letters.
+     * Filters a list of words, returning only those that can be created with available letters.
      * @param words Array of words to filter
      * @returns Array of valid words
      */
@@ -72,60 +82,44 @@ export default class WordGenerator {
     }
 
     /**
-     * Creates pronounceable pseudo-words that follow basic phonetic rules.
-     * Useful when real words can't be formed from limited letter sets.
+     * Generates a pronounceable pseudo-word using available letters (simple CVC pattern).
      * @param length Desired word length
-     * @returns A pronounceable pseudo-word
+     * @returns A pseudo-word string
      */
-    generatePseudoWord(length: number = 3): string {
-        if (length < 2) return this.generateWord(length);
-
-        // Separate letters into vowels and consonants
-        const vowels = this.availableLetters.filter(l => ['a', 'e', 'i', 'o', 'u'].includes(l));
-        const consonants = this.availableLetters.filter(l => !['a', 'e', 'i', 'o', 'u'].includes(l));
-
-        // If we don't have both vowels and consonants, fall back to random generation
-        if (vowels.length === 0 || consonants.length === 0) {
-            return this.generateWord(length);
+    generatePseudoWord(length: number = 4): string {
+        // Simple implementation: alternate consonant/vowel if possible
+        const vowels = ['a', 'e', 'i', 'o', 'u'].filter(v => this.availableLetters.includes(v));
+        const consonants = this.availableLetters.filter(l => !vowels.includes(l));
+        if (this.availableLetters.length === 0) {
+            throw new Error("Cannot generate a pseudo-word: availableLetters is empty.");
         }
-
         let word = '';
-        let useVowel = Math.random() > 0.5; // Randomly start with vowel or consonant
-
+        let useVowel = Math.random() > 0.5;
         for (let i = 0; i < length; i++) {
-            if (useVowel) {
-                // Add a vowel
-                const randomVowelIndex = Math.floor(Math.random() * vowels.length);
-                word += vowels[randomVowelIndex];
+            if (useVowel && vowels.length > 0) {
+                word += vowels[Math.floor(Math.random() * vowels.length)];
+            } else if (consonants.length > 0) {
+                word += consonants[Math.floor(Math.random() * consonants.length)];
             } else {
-                // Add a consonant
-                const randomConsonantIndex = Math.floor(Math.random() * consonants.length);
-                word += consonants[randomConsonantIndex];
+                // fallback if only vowels or only consonants
+                word += this.availableLetters[Math.floor(Math.random() * this.availableLetters.length)];
             }
-
-            // Alternate between vowels and consonants for better pronounceability
-            // But occasionally allow double consonants or vowels
-            if (Math.random() > 0.2) {
-                useVowel = !useVowel;
-            }
+            useVowel = !useVowel;
         }
-
         return word;
     }
 
     /**
-     * Gets a word appropriate for the current level.
-     * Uses pseudo-words if real words aren't possible.
-     * @param preferredLength Preferred word length
-     * @returns A word using only available letters
+     * Returns a word, using pseudo-words if enabled, otherwise random letters.
+     * @param length Desired word length
+     * @returns A word string
      */
-    getWord(preferredLength: number = 3): string {
+    getWord(length: number = 3): string {
         if (this.usePseudoWords) {
-            return this.generatePseudoWord(preferredLength);
-        } else {
-            return this.generateWord(preferredLength);
+            return this.generatePseudoWord(length);
         }
+        return this.generateWord(length);
     }
 }
 
-//Contains AI - generated edits.
+// Contains AI-generated edits.
