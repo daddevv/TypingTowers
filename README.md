@@ -19,7 +19,35 @@ TypeDefense is a web-based typing game designed to help players improve their ty
   - `Mob` represents individual enemy entities (see `client/src/entities/Mob.ts`).
   - Both are now fully integrated and updated within the main game loop in `GameScene`.
 
-Contains AI-generated edits.
+## Curriculum Design
+
+TypeDefense features a unique learning approach based on finger groups rather than random letters. The game is structured into four worlds, each focusing on a specific set of fingers:
+
+### World 1: Index Fingers
+
+- Left Hand: F, G, R, T, V, B
+- Right Hand: J, H, Y, U, N, M
+- Progressive levels introduce these keys gradually, starting with home row (F/J)
+
+### World 2: Middle Fingers
+
+- Left Hand: D, E, C
+- Right Hand: K, I, comma
+- Builds on index finger skills while introducing middle finger positions
+
+### World 3: Ring Fingers
+
+- Left Hand: S, W, X
+- Right Hand: L, O, period
+- Focuses on training the typically weaker ring fingers
+
+### World 4: Pinky Fingers
+
+- Left Hand: A, Q, Z
+- Right Hand: semicolon, P, slash
+- Completes the alphabet and introduces Shift key for capitals
+
+Each world contains multiple levels that introduce letters progressively, with boss battles that test mastery before advancing. This finger-group approach builds proper muscle memory and typing technique.
 
 ## Getting Started
 
@@ -53,3 +81,5 @@ Contains AI-generated edits.
 The main game scene is set up in `client/src/scenes/GameScene.ts` and is ready for core mechanic development.
 
 ---
+
+Contains AI-generated edits.

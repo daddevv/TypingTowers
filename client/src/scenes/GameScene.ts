@@ -43,8 +43,19 @@ export default class GameScene extends Phaser.Scene {
         if (this.mobSpawner) {
             this.mobSpawner.update(time, delta);
         }
-        // InputHandler could process input here if needed
-        // Placeholder: enemy spawning and word challenge logic will go here
+        // Check player input against mobs
+        const input = this.inputHandler.getInput();
+        if (input.length > 0) {
+            const mobs = this.mobSpawner.getMobs();
+            for (const mob of mobs) {
+                if (!mob.isDefeated && input.trim().toLowerCase() === mob.word.toLowerCase()) {
+                    mob.defeat();
+                    this.inputHandler.clearInput();
+                    // TODO: Add visual/audio feedback here
+                    break;
+                }
+            }
+        }
     }
 }
 // Contains AI-generated edits.
