@@ -39,7 +39,8 @@ export default class GameScene extends Phaser.Scene {
         const world = WORLDS[0];
         const level = world.levels[0]; // Level 1-1
         const words = await loadWordList(level.id);
-        this.mobSpawner = new MobSpawner(this, words, level.enemySpawnRate);
+        // Spawn 2 mobs per interval for demonstration (can be made configurable)
+        this.mobSpawner = new MobSpawner(this, words, level.enemySpawnRate, 2);
     }
 
     update(time: number, delta: number) {

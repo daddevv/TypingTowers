@@ -11,6 +11,7 @@ TypeDefense is a web-based typing game designed to help players improve their ty
 - **When a mob is defeated, an instant visual feedback effect (flash and particle burst) is triggered.**
 - **Mobs now always spawn fully off-screen on the right for a more polished experience.**
 - **Planned: Multiple mobs can spawn at once, and their base speed will increase for greater challenge.**
+- **Multiple mobs can now spawn at each interval:** The MobSpawner supports spawning more than one mob at a time for increased challenge. This is configurable per level or via code.
 - Designed to improve typing speed and accuracy
 - Built with TypeScript and Vite for a modern web experience
 - Addictive action-challenge-reward loop with instant visual and audio feedback

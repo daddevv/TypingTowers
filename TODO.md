@@ -13,7 +13,12 @@
 ## Mob & Spawning System Improvements
 
 - [x] Refactor MobSpawner to always spawn mobs fully off-screen (right side)
-- [ ] Increase the number of mobs spawned per interval (support multiple spawns at once)
+- [x] Increase the number of mobs spawned per interval (support multiple spawns at once)
+  - [x] Add a property to MobSpawner for mobs per interval
+  - [x] Update MobSpawner's spawn logic to spawn multiple mobs per interval
+  - [x] Update GameScene or config if needed to set mobs per interval
+  - [x] Test that multiple mobs spawn at each interval
+  - [x] Mark this task as complete
 - [ ] Add a base speed property to Mob and allow it to be set per spawn
 - [ ] Increase the default/base speed of mobs to make gameplay more challenging
 - [ ] Add support for scaling spawn rate and mob speed as the game progresses

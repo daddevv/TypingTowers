@@ -9,17 +9,21 @@ export default class MobSpawner {
     private spawnTimer: number = 0;
     private spawnInterval: number;
     private words: string[];
+    private mobsPerInterval: number = 1;
 
-    constructor(scene: Phaser.Scene, words: string[], spawnInterval: number = 2000) {
+    constructor(scene: Phaser.Scene, words: string[], spawnInterval: number = 2000, mobsPerInterval: number = 1) {
         this.scene = scene;
         this.words = words;
         this.spawnInterval = spawnInterval;
+        this.mobsPerInterval = mobsPerInterval;
     }
 
     update(time: number, delta: number) {
         this.spawnTimer += delta;
         if (this.spawnTimer >= this.spawnInterval) {
-            this.spawnMob();
+            for (let i = 0; i < this.mobsPerInterval; i++) {
+                this.spawnMob();
+            }
             this.spawnTimer = 0;
         }
         this.mobs.forEach(mob => mob.update(time, delta));
@@ -38,6 +42,13 @@ export default class MobSpawner {
      */
     removeMob(mob: Mob) {
         this.mobs = this.mobs.filter(m => m !== mob);
+    }
+
+    /**
+     * Optionally allow changing mobsPerInterval at runtime
+     */
+    setMobsPerInterval(count: number) {
+        this.mobsPerInterval = count;
     }
 
     spawnMob() {
