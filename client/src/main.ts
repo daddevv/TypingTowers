@@ -9,11 +9,15 @@ levelManager.loadProgress();
 
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
-    width: 800,
-    height: 600,
+    width: window.innerWidth,
+    height: window.innerHeight,
     backgroundColor: '#222',
     scene: [MainMenuScene, MenuScene, LevelMenuScene, GameScene],
     parent: 'game-container',
+    scale: {
+        mode: Phaser.Scale.RESIZE,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+    },
 };
 
 window.addEventListener('DOMContentLoaded', () => {

@@ -1,6 +1,23 @@
 # TODO
 
+## Completed Tasks
+
+- [x] Fixed the E2E test for pause menu functionality by properly navigating through the game UI
+  - [x] Updated test to click the Play button in MainMenuScene
+  - [x] Added explicit button clicks to navigate through world and level selection
+
 ## Code Tasks
+
+- [ ] Fix unpause functionality so that pressing Escape resumes the game
+  - [ ] Investigate why pressing Escape does not unpause the game (pause menu remains visible).
+  - [ ] Update the Escape key handler in GameScene.ts to toggle pause/unpause:
+    - If the game is not paused, show the pause menu.
+    - If the game is paused, hide the pause menu and resume the game.
+  - [ ] Ensure the pause menu UI is properly hidden and the game state resumes when unpausing.
+  - [ ] Test the fix manually and with the E2E test to confirm Escape toggles pause/resume.
+  - [ ] Mark the task as complete in TODO.md.
+  - [ ] Update README.md to mention the improved pause/resume functionality.
+  - [ ] Update .github/instructions/project_layout.instructions.md if any new files or structure changes are made.
 
 ### Mob & Spawning System
 
@@ -22,9 +39,6 @@
   - [x] Create a word list JSON file for Level 1-4 using only index finger letters plus T and Y, emphasizing T/Y usage.
   - [ ] Update the level selection menu to include Level 1-4 and ensure it unlocks after 1-3.
   - [ ] Add tests to verify Level 1-4 unlocks correctly and uses the correct word list.
-  - [ ] Playtest Level 1-4 to ensure word patterns emphasize T/Y and gameplay is challenging but fair.
-  - [ ] Update README.md to document the new level and its focus.
-  - [ ] Update project layout documentation if new files are added.
   - [ ] Mark this task as complete when all subtasks are finished.
 - [ ] Create Level 1-5: Add V/M (bottom row) with drills for downward reaches.
   - [x] Define Level 1-5 in the curriculum and world configuration files.
