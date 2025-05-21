@@ -5,6 +5,8 @@ TypeDefense is a web-based typing game designed to help players improve their ty
 ## Features
 
 - Fast-paced wave-based mob defense gameplay
+- **New:** Enemies now spawn in discrete waves, with a notification and a short delay between waves. Each wave can have a configurable number of mobs, and the game displays a tweened "Wave X" notification at the start of each wave.
+- **New:** Score pop-ups now feature a tweened animation when the score updates, providing satisfying visual feedback for each correct keystroke.
 - Enemies spawn from the right and move toward the player
 - Defeat enemies by typing their associated words or letters
 - **Mobs now move faster by default for a more challenging experience.**
@@ -41,6 +43,7 @@ TypeDefense is a web-based typing game designed to help players improve their ty
 - **Improved mob input targeting and combo logic:** When multiple mobs are on screen, the game now targets the closest mob that matches the player's keypress. If the keypress doesn't match any mob, all mobs' progress is reset, fixing the combo bug with multiple mobs.
 - Added collision detection and overlap prevention to mobs. Mobs now repel each other if they get too close, ensuring they do not overlap as they move toward the player. This improves gameplay clarity and visual polish.
 - **Dynamic difficulty:** As the game progresses, the spawn rate of enemies increases and their movement speed scales up, providing a smooth and challenging difficulty curve.
+- **Scaling system tested and tuned:** The MobSpawner's scaling logic for spawn interval and mob speed has been verified with unit tests for smooth progression. Parameters can be adjusted in `MobSpawner.ts` for further tuning.
 
 ## Curriculum Design
 

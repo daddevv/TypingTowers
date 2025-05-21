@@ -16,6 +16,14 @@ export default class MobSpawner {
     private maxMobSpeed: number = 250;
     private initialSpawnInterval: number;
     private initialMobBaseSpeed: number;
+    private currentWave: number = 0;
+    private waveInProgress: boolean = false;
+    private waveDelay: number = 2000; // ms between waves
+    private waveTimer: number = 0;
+    private mobsPerWave: number = 5;
+    private mobsSpawnedThisWave: number = 0;
+    private onWaveStartCallback?: (wave: number) => void;
+    private onWaveEndCallback?: (wave: number) => void;
 
     constructor(scene: Phaser.Scene, words: string[], spawnInterval: number = 2000, mobsPerInterval: number = 1, mobBaseSpeed: number = 90) {
         this.scene = scene;
@@ -37,24 +45,67 @@ export default class MobSpawner {
         this.mobBaseSpeed = Phaser.Math.Linear(this.initialMobBaseSpeed, this.maxMobSpeed, this.progression);
     }
 
+    /**
+     * Start the next wave. Call from GameScene to trigger a new wave.
+     */
+    public startNextWave() {
+        this.currentWave++;
+        this.waveInProgress = true;
+        this.waveTimer = 0;
+        this.mobsSpawnedThisWave = 0;
+        if (this.onWaveStartCallback) this.onWaveStartCallback(this.currentWave);
+    }
+
+    /**
+     * Register a callback for when a wave starts.
+     */
+    public onWaveStart(cb: (wave: number) => void) {
+        this.onWaveStartCallback = cb;
+    }
+    /**
+     * Register a callback for when a wave ends.
+     */
+    public onWaveEnd(cb: (wave: number) => void) {
+        this.onWaveEndCallback = cb;
+    }
+
+    /**
+     * Returns whether a wave is in progress.
+     */
+    public isWaveInProgress() {
+        return this.waveInProgress;
+    }
+    /**
+     * Returns the current wave number.
+     */
+    public getCurrentWave() {
+        return this.currentWave;
+    }
+
     update(time: number, delta: number) {
+        if (!this.waveInProgress) return;
         this.spawnTimer += delta;
-        if (this.spawnTimer >= this.spawnInterval) {
-            for (let i = 0; i < this.mobsPerInterval; i++) {
-                // Choose a random word for the mob
+        // Spawn mobs for this wave
+        if (this.mobsSpawnedThisWave < this.mobsPerWave && this.spawnTimer >= this.spawnInterval) {
+            for (let i = 0; i < this.mobsPerInterval && this.mobsSpawnedThisWave < this.mobsPerWave; i++) {
                 const word = this.words[Math.floor(Math.random() * this.words.length)];
-                // Add y-position variation: spawn mobs at random vertical positions
                 const minY = 100;
                 const maxY = this.scene.scale.height - 100;
                 const y = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
                 const mob = new Mob(this.scene, this.scene.scale.width + 50, y, word, this.mobBaseSpeed);
                 this.mobs.push(mob);
+                this.mobsSpawnedThisWave++;
             }
             this.spawnTimer = 0;
         }
         // Update mobs and let each mob handle its own avoidance
         this.mobs.forEach(mob => mob.update(time, delta, this.mobs));
         this.mobs = this.mobs.filter(mob => !mob.isDefeated);
+        // If all mobs for this wave are defeated and all have spawned, end wave
+        if (this.mobsSpawnedThisWave >= this.mobsPerWave && this.mobs.length === 0) {
+            this.waveInProgress = false;
+            if (this.onWaveEndCallback) this.onWaveEndCallback(this.currentWave);
+        }
     }
 
     /**

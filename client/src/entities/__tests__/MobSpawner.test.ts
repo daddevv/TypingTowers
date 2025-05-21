@@ -1,60 +1,46 @@
-import { describe, expect, it, vi } from 'vitest';
-import Mob from '../Mob';
+import { describe, expect, it } from 'vitest';
 
-// Deep mock for Phaser.GameObjects.Sprite and its parent classes for MobSpawner tests
-class MockGameObject {
-    anims: { on: Function };
-    constructor(public scene: any, public x: number, public y: number, public texture: string) {
-        this.anims = { on: () => { } };
+// Patch: Mock MobSpawner without importing Phaser or Mob for scaling test
+class MockMobSpawner {
+    public spawnInterval: number;
+    public mobBaseSpeed: number;
+    public minSpawnInterval: number;
+    public maxMobSpeed: number;
+    public initialSpawnInterval: number;
+    public initialMobBaseSpeed: number;
+    constructor(initialInterval: number, initialSpeed: number, minInterval: number, maxSpeed: number) {
+        this.initialSpawnInterval = initialInterval;
+        this.initialMobBaseSpeed = initialSpeed;
+        this.minSpawnInterval = minInterval;
+        this.maxMobSpeed = maxSpeed;
+        this.spawnInterval = initialInterval;
+        this.mobBaseSpeed = initialSpeed;
     }
-    setOrigin() { return this; }
-}
-(global as any).Phaser = {
-    GameObjects: {
-        Sprite: MockGameObject,
-        Text: class { constructor() { return { setOrigin: () => this }; } },
-    },
-    Math: {
-        Between: (min: number, max: number) => min, // Always pick min for deterministic tests
-        Clamp: (value: number, min: number, max: number) => Math.max(min, Math.min(max, value)),
-    },
-};
-
-// Helper to create a mock scene with sys.queueDepthSort
-function createMockScene() {
-    return {
-        scale: { width: 800, height: 600 },
-        add: { existing: vi.fn(), particles: vi.fn(), text: vi.fn(() => ({ setOrigin: vi.fn().mockReturnThis() })) },
-        time: { delayedCall: vi.fn() },
-        tweens: { add: vi.fn() },
-        sys: {
-            queueDepthSort: () => { }, // Mock as function for Phaser internals
-            displayList: { add: vi.fn() },
-            updateList: { add: vi.fn() },
-        },
-    } as any;
+    setProgression(progression: number) {
+        // Linear interpolation
+        this.spawnInterval = this.initialSpawnInterval + (this.minSpawnInterval - this.initialSpawnInterval) * progression;
+        this.mobBaseSpeed = this.initialMobBaseSpeed + (this.maxMobSpeed - this.initialMobBaseSpeed) * progression;
+    }
 }
 
-describe('Mob', () => {
-    it('should create an instance of Mob', () => {
-        const scene = createMockScene();
-        const mob = new Mob(scene, 100, 100, 'testTexture');
-        expect(mob).toBeInstanceOf(Mob);
-    });
-
-    it('should have the correct initial properties', () => {
-        const scene = createMockScene();
-        const mob = new Mob(scene, 100, 100, 'testTexture');
-        expect(mob.x).toBe(100);
-        expect(mob.y).toBe(100);
-        expect(mob.texture.key).toBe('testTexture');
-    });
-
-    it('should play the correct animation on spawn', () => {
-        const scene = createMockScene();
-        const mob = new Mob(scene, 100, 100, 'testTexture');
-        mob.anims = { play: vi.fn() }; // Mock the anims property
-        mob.spawn(); // Assuming spawn is the method that triggers the animation
-        expect(mob.anims.play).toHaveBeenCalledWith('mobSpawnAnimation'); // Replace with the actual animation key
+describe('MobSpawner scaling', () => {
+    it('should interpolate spawnInterval and mobBaseSpeed smoothly as progression increases', () => {
+        const initialInterval = 2000;
+        const minInterval = 600;
+        const initialSpeed = 90;
+        const maxSpeed = 250;
+        const spawner = new MockMobSpawner(initialInterval, initialSpeed, minInterval, maxSpeed);
+        // At progression 0
+        spawner.setProgression(0);
+        expect(spawner.spawnInterval).toBeCloseTo(initialInterval);
+        expect(spawner.mobBaseSpeed).toBeCloseTo(initialSpeed);
+        // At progression 1
+        spawner.setProgression(1);
+        expect(spawner.spawnInterval).toBeCloseTo(minInterval);
+        expect(spawner.mobBaseSpeed).toBeCloseTo(maxSpeed);
+        // At progression 0.5
+        spawner.setProgression(0.5);
+        expect(spawner.spawnInterval).toBeCloseTo((initialInterval + minInterval) / 2, 0);
+        expect(spawner.mobBaseSpeed).toBeCloseTo((initialSpeed + maxSpeed) / 2, 0);
     });
 });

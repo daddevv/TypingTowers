@@ -26,6 +26,8 @@ export default class GameScene extends Phaser.Scene {
     protected scoreText!: Phaser.GameObjects.Text;
     protected comboText!: Phaser.GameObjects.Text;
     protected enemiesRemainingText!: Phaser.GameObjects.Text; // Enemies remaining UI element
+    private waveText?: Phaser.GameObjects.Text;
+    private waveTween?: Phaser.Tweens.Tween;
 
     private levelManager!: LevelManager;
     private currentWorldIdx: number = 0;
@@ -73,6 +75,13 @@ export default class GameScene extends Phaser.Scene {
         const words = await loadWordList(level.id);
         // Spawn 2 mobs per interval for demonstration (can be made configurable)
         this.mobSpawner = new MobSpawner(this, words, level.enemySpawnRate, 2);
+        // --- Wave system integration ---
+        this.mobSpawner.onWaveStart((wave) => this.showWaveNotification(wave));
+        this.mobSpawner.onWaveEnd(() => {
+            // Start next wave after delay
+            this.time.delayedCall(1500, () => this.mobSpawner.startNextWave());
+        });
+        this.mobSpawner.startNextWave();
 
         // Score and combo UI
         this.score = 0;
@@ -108,6 +117,24 @@ export default class GameScene extends Phaser.Scene {
             scale: { start: 0.5, end: 0 },
             alpha: { start: 1, end: 0 },
             emitting: false // Do not emit constantly
+        });
+    }
+
+    private showWaveNotification(wave: number) {
+        if (this.waveText) this.waveText.destroy();
+        this.waveText = this.add.text(400, 200, `Wave ${wave}`, {
+            fontSize: '48px', color: '#fff', stroke: '#000', strokeThickness: 6, fontStyle: 'bold',
+        }).setOrigin(0.5).setAlpha(0).setScale(0.7);
+        this.waveTween = this.tweens.add({
+            targets: this.waveText,
+            alpha: 1,
+            scale: 1.1,
+            duration: 400,
+            yoyo: true,
+            hold: 700,
+            onComplete: () => {
+                if (this.waveText) this.waveText.destroy();
+            }
         });
     }
 
@@ -268,6 +295,19 @@ export default class GameScene extends Phaser.Scene {
         const progression = Phaser.Math.Clamp(this.elapsedTime / this.scalingDuration, 0, 1);
         if (this.mobSpawner && typeof this.mobSpawner.setProgression === 'function') {
             this.mobSpawner.setProgression(progression);
+        }
+        // Animate score pop-up when score changes
+        if (this.scoreText && this.scoreText.visible) {
+            if (!this.scoreText.getData('tweened')) {
+                this.scoreText.setData('tweened', true);
+                this.tweens.add({
+                    targets: this.scoreText,
+                    scale: 1.2,
+                    duration: 120,
+                    yoyo: true,
+                    onComplete: () => this.scoreText.setData('tweened', false)
+                });
+            }
         }
     }
 

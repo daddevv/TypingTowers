@@ -2,17 +2,16 @@
 
 ## Mob & Spawning System
 
-- [ ] Test and tune scaling parameters for smooth difficulty increase.
-- [ ] Update documentation and mark scaling tasks as complete.
-- [ ] Ensure all mobs move smoothly toward the player after spawning.
+- [x] Test and tune scaling parameters for smooth difficulty increase.
+- [x] Add waves to the mob spawner (discrete waves, notification, and delay between waves).
 - [ ] Playtest and balance spawn rate and speed for fun/challenge.
 
 ## Gameplay Loop & Feedback
 
+- [x] Add tweened UI transitions for score pop-ups and wave notifications.
 - [ ] Implement action-challenge-reward loop with instant visual/audio feedback on word defeat.
   - [ ] Play an audio cue when a mob is defeated.
   - [ ] Integrate the loop into the main game update cycle.
-- [ ] Add tweened UI transitions for score pop-ups and wave notifications.
 - [ ] Add camera shake and screen flash effects for wave completion and boss defeat.
 - [ ] Integrate layered audio cues for typing, combos, and wave clearances.
 - [ ] Modularize game states into separate Phaser Scenes (preload, menu, waves, game over).
