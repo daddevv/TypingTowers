@@ -42,7 +42,14 @@ export default class MobSpawner {
 
     spawnMob() {
         const letter = this.getRandomLetter();
-        const x = Phaser.Math.Between(600, 800); // Spawn off to the right
+        // Get game width from scene's scale manager
+        const gameWidth = this.scene.scale.width;
+        // Create a temporary mob to get its width
+        const tempMob = new Mob(this.scene, 0, 0, letter);
+        const mobWidth = tempMob.displayWidth || 64; // fallback if not loaded
+        tempMob.destroy();
+        // Spawn X is fully off the right edge
+        const x = gameWidth + mobWidth / 2;
         const y = Phaser.Math.Between(100, 500);
         const mob = new Mob(this.scene, x, y, letter);
         this.mobs.push(mob);

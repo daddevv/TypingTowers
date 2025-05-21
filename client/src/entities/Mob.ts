@@ -42,8 +42,40 @@ export default class Mob extends Phaser.GameObjects.Sprite {
 
     defeat() {
         this.isDefeated = true;
-        this.setVisible(false);
-        this.letterText.setVisible(false);
-        // TODO: Add defeat animation, sound, and effects
+        // Play a quick flash effect before hiding
+        this.scene.tweens.add({
+            targets: [this, this.letterText],
+            alpha: 0,
+            scale: 2,
+            duration: 180,
+            ease: 'Cubic.easeOut',
+            onComplete: () => {
+                this.setVisible(false);
+                this.letterText.setVisible(false);
+                this.setAlpha(1);
+                this.setScale(1);
+                this.letterText.setAlpha(1);
+                this.letterText.setScale(1);
+            }
+        });
+        // Particle burst: short, fades out, and destroys itself
+        if (this.scene.add.particles) {
+            const particles = this.scene.add.particles(0, 0, 'white', {
+                x: this.x,
+                y: this.y,
+                speed: { min: 60, max: 180 },
+                angle: { min: 0, max: 360 },
+                lifespan: 300,
+                quantity: 12,
+                scale: { start: 0.5, end: 0 },
+                alpha: { start: 1, end: 0 }
+            });
+            particles.emitParticleAt(this.x, this.y, 12);
+            // Destroy the particle emitter after the burst
+            this.scene.time.delayedCall(350, () => {
+                particles.destroy();
+            });
+        }
     }
 }
+// Contains AI-generated edits.
