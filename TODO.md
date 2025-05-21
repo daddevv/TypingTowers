@@ -128,9 +128,9 @@ Contains AI-generated edits.
 - [ ] Update `README.md` with testing instructions
 - [ ] Update project layout documentation if new directories are added
 - [x] Add unit tests for FingerGroupManager (client/src/managers/fingerGroupManager.ts)
-- [ ] Add unit tests for WordGenerator (client/src/utils/wordGenerator.ts)
-- [ ] Add unit tests for InputHandler (client/src/entities/InputHandler.ts)
-- [ ] Add unit tests for LevelManager (client/src/managers/levelManager.ts)
-- [ ] Add unit tests for loadWordList utility (client/src/utils/loadWordList.ts)
-- [ ] Add integration test for MobSpawner and mob spawning logic
+- [x] Add unit tests for WordGenerator (client/src/utils/wordGenerator.ts)
+- [x] Add unit tests for InputHandler (client/src/entities/InputHandler.ts)
+- [x] Add unit tests for LevelManager (client/src/managers/levelManager.ts)
+- [x] Add unit tests for loadWordList utility (client/src/utils/loadWordList.ts)
+- [x] Add integration test for MobSpawner and mob spawning logic
 - [ ] Ensure all new code is well-commented and tested

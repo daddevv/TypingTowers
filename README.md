@@ -83,7 +83,20 @@ Each world contains multiple levels that introduce letters progressively, with b
   - Selecting an unlocked level starts the game at that level.
 - **Level 1-3 ("Reaching Up"):** Adds R and U (top row) to the available keys, with a new word pack (`fjghruWords.json`) and more letter combinations. The curriculum and word loader have been updated to support this level.
 
-## Testing & Validation
+## Testing
+
+To run unit tests (using Vitest):
+
+```bash
+cd client
+npm run test
+```
+
+To run only the WordGenerator tests:
+
+```bash
+npm run test -- src/utils/__tests__/wordGenerator.test.ts
+```
 
 - The project uses [Vitest](https://vitest.dev/) for unit and integration testing.
 - Test files are located in `client/src/**/__tests__/` and follow the `.test.ts` naming convention.
@@ -103,13 +116,14 @@ Each world contains multiple levels that introduce letters progressively, with b
 
 - Sample unit tests are provided for core modules:
   - `Mob`, `MobSpawner`, `InputHandler`, `FingerGroupManager`, `WordGenerator`, `LevelManager`, and `loadWordList` utility.
-- All new code should include appropriate tests and be placed in the corresponding `__tests__` directory.
-
+  - **New:** Integration tests for `MobSpawner` and mob spawning logic are included in `client/src/entities/__tests__/MobSpawner.test.ts` and cover multi-interval spawning, overlap prevention, scaling, and mob removal.
+  - **New:** Comprehensive unit tests for `InputHandler` are located in `client/src/entities/__tests__/InputHandler.test.ts` and cover input accumulation, clearing, event registration, and cleanup.
 - Unit tests for `FingerGroupManager` are located in `client/src/managers/__tests__/fingerGroupManager.test.ts` and cover:
   - Initialization of stats for all finger types
   - Recording key presses and updating stats
   - Calculating average speed for a finger
   - Retrieving correct keys for a finger
   - Determining if a key is mastered (accuracy and speed criteria)
+- Unit tests for `LevelManager` are located in `client/src/managers/__tests__/levelManager.test.ts` and cover initialization, progress tracking, unlocking levels, and persistence via localStorage.
 
 Contains AI-generated edits.

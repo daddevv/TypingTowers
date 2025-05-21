@@ -10,6 +10,27 @@ describe('loadWordList', () => {
         expect(words).toContain('j');
     });
 
+    it('loads fjghWords for 1-2', async () => {
+        const words = await loadWordList('1-2');
+        expect(Array.isArray(words)).toBe(true);
+        expect(words.length).toBeGreaterThan(0);
+        expect(words).toContain('g');
+        expect(words).toContain('h');
+        expect(words).toContain('gh');
+        expect(words).toContain('fg');
+        expect(words).toContain('fh');
+        expect(words).toContain('hj');
+        expect(words).not.toContain('f'); // 'f' is not present in fjghWords.json
+    });
+
+    it('loads fjghruWords for 1-3', async () => {
+        const words = await loadWordList('1-3');
+        expect(Array.isArray(words)).toBe(true);
+        expect(words.length).toBeGreaterThan(0);
+        expect(words).toContain('r');
+        expect(words).toContain('u');
+    });
+
     it('returns empty array for unknown level', async () => {
         const words = await loadWordList('unknown');
         expect(words).toEqual([]);
