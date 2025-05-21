@@ -71,7 +71,7 @@ export default class GameScene extends Phaser.Scene {
                 }
             }
         }
-        // Check player input against mobs
+        // Improved mob input handling for combos and multiple mobs
         const input = this.inputHandler.getInput();
         if (input.length > 0) {
             // Record each key press in FingerGroupManager
@@ -81,13 +81,46 @@ export default class GameScene extends Phaser.Scene {
                     this.fingerGroupManager.recordKeyPress(char, true, time); // 'true' for correct finger (future: detect real finger)
                 }
             }
+            // Find the closest mob whose word starts with the input
+            let closestMob: any = null;
+            let minDist = Infinity;
             for (const mob of mobs) {
-                if (!mob.isDefeated && input.trim().toLowerCase()[0] === mob.word.toLowerCase()) {
-                    mob.defeat();
-                    this.inputHandler.clearInput();
-                    // TODO: Add visual/audio feedback here
-                    break;
+                if (!mob.isDefeated) {
+                    // Only consider mobs whose word starts with the input
+                    if (mob.word.toLowerCase().startsWith(input.trim().toLowerCase())) {
+                        const dx = mob.x - this.player.x;
+                        const dy = mob.y - this.player.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            closestMob = mob;
+                        }
+                    }
                 }
+            }
+            let mobDefeated = false;
+            if (closestMob) {
+                // If input matches the full word, defeat the mob
+                if (input.trim().toLowerCase() === closestMob.word.toLowerCase()) {
+                    closestMob.defeat();
+                    this.inputHandler.clearInput();
+                    mobDefeated = true;
+                }
+            } else {
+                // If no closest mob, check if input matches any mob's word (fallback)
+                for (const mob of mobs) {
+                    if (!mob.isDefeated && input.trim().toLowerCase() === mob.word.toLowerCase()) {
+                        mob.defeat();
+                        this.inputHandler.clearInput();
+                        mobDefeated = true;
+                        break;
+                    }
+                }
+            }
+            // If no mob was defeated, reset all mobs (drop combo/progress)
+            if (!mobDefeated) {
+                this.inputHandler.clearInput();
+            // Optionally: add a method to Mob to reset progress if you track per-mob progress
             }
         }
     }

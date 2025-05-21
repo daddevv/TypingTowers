@@ -8,6 +8,7 @@ TypeDefense is a web-based typing game designed to help players improve their ty
 - Enemies spawn from the right and move toward the player
 - Defeat enemies by typing their associated words or letters
 - **Each mob now displays a single letter. When the correct letter is typed, the mob disappears.**
+- **Mobs now respond instantly to correct key presses (bug fix):** Mobs are defeated when the player types the correct letter or word, and input is cleared after a mob is defeated.
 - **When a mob is defeated, an instant visual feedback effect (flash and particle burst) is triggered.**
 - **Mobs now always spawn fully off-screen on the right for a more polished experience.**
 - **Planned: Multiple mobs can spawn at once, and their base speed will increase for greater challenge.**
@@ -33,6 +34,7 @@ TypeDefense is a web-based typing game designed to help players improve their ty
 - This enables tracking of finger usage and progress for each finger group in real time.
 - **Mobs now walk toward the player:** Each mob moves toward the player character's position (left side of the screen) after spawning.
 - **Player health system:** The player has a visible health value above their sprite. When a mob reaches the player, the player loses health and the mob is removed. The game ends with a "Game Over" message if health reaches zero.
+- **Improved mob input targeting and combo logic:** When multiple mobs are on screen, the game now targets the closest mob that matches the player's keypress. If the keypress doesn't match any mob, all mobs' progress is reset, fixing the combo bug with multiple mobs.
 
 ## Curriculum Design
 
@@ -63,6 +65,11 @@ TypeDefense features a unique learning approach based on finger groups rather th
 - Completes the alphabet and introduces Shift key for capitals
 
 Each world contains multiple levels that introduce letters progressively, with boss battles that test mastery before advancing. This finger-group approach builds proper muscle memory and typing technique.
+
+## Recent Changes
+
+- Added a `baseSpeed` property to `Mob` and updated the spawning system to allow setting mob speed per spawn. This enables more flexible and challenging gameplay tuning.
+- Improved mob input handling: The game now targets the closest matching mob for each keypress, checks others if not matched, and resets all mobs if no match. This fixes the combo bug with multiple mobs on screen.
 
 ## Getting Started
 

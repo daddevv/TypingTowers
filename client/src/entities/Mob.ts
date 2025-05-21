@@ -6,10 +6,12 @@ export default class Mob extends Phaser.GameObjects.Sprite {
     public word: string;
     public isDefeated: boolean = false;
     private letterText: Phaser.GameObjects.Text;
+    public baseSpeed: number;
 
-    constructor(scene: Phaser.Scene, x: number, y: number, word: string) {
+    constructor(scene: Phaser.Scene, x: number, y: number, word: string, baseSpeed: number = 60) {
         super(scene, x, y, 'mob');
         this.word = word;
+        this.baseSpeed = baseSpeed;
         scene.add.existing(this);
         this.setOrigin(0.5, 0.5);
         // Display the letter on the mob
@@ -31,7 +33,7 @@ export default class Mob extends Phaser.GameObjects.Sprite {
             const dy = targetY - this.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
             if (dist > 1) {
-                const speed = 60; // pixels per second
+                const speed = this.baseSpeed; // Use baseSpeed property
                 this.x += (dx / dist) * speed * (delta / 1000);
                 this.y += (dy / dist) * speed * (delta / 1000);
             }

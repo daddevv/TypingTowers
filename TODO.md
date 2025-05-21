@@ -19,7 +19,7 @@
   - [x] Update GameScene or config if needed to set mobs per interval
   - [x] Test that multiple mobs spawn at each interval
   - [x] Mark this task as complete
-- [ ] Add a base speed property to Mob and allow it to be set per spawn
+- [x] Add a base speed property to Mob and allow it to be set per spawn
 - [ ] Increase the default/base speed of mobs to make gameplay more challenging
 - [ ] Add support for scaling spawn rate and mob speed as the game progresses
 - [ ] Ensure all mobs move smoothly toward the player after spawning
@@ -85,3 +85,5 @@
 - [ ] Design advanced challenges combining all character types
 
 Contains AI-generated edits.
+
+- [x] Refactor mob input handling to target the closest matching mob for each keypress, check others if not matched, and reset all mobs if no match (fix combo bug with multiple mobs)
