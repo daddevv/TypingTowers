@@ -10,9 +10,9 @@ export default class MobSpawner {
     private spawnInterval: number;
     private words: string[];
     private mobsPerInterval: number = 1;
-    private mobBaseSpeed: number = 60; // Default base speed, can be set per spawner
+    private mobBaseSpeed: number = 90; // Increased default base speed for more challenge
 
-    constructor(scene: Phaser.Scene, words: string[], spawnInterval: number = 2000, mobsPerInterval: number = 1, mobBaseSpeed: number = 60) {
+    constructor(scene: Phaser.Scene, words: string[], spawnInterval: number = 2000, mobsPerInterval: number = 1, mobBaseSpeed: number = 90) {
         this.scene = scene;
         this.words = words;
         this.spawnInterval = spawnInterval;
@@ -26,8 +26,11 @@ export default class MobSpawner {
             for (let i = 0; i < this.mobsPerInterval; i++) {
                 // Choose a random word for the mob
                 const word = this.words[Math.floor(Math.random() * this.words.length)];
-                // Optionally, you could randomize speed per mob here
-                const mob = new Mob(this.scene, this.scene.scale.width + 50, 300, word, this.mobBaseSpeed);
+                // Add y-position variation: spawn mobs at random vertical positions
+                const minY = 100;
+                const maxY = this.scene.scale.height - 100;
+                const y = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
+                const mob = new Mob(this.scene, this.scene.scale.width + 50, y, word, this.mobBaseSpeed);
                 this.mobs.push(mob);
             }
             this.spawnTimer = 0;

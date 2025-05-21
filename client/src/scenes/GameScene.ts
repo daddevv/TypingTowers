@@ -129,6 +129,10 @@ export default class GameScene extends Phaser.Scene {
                                     closest = mob;
                                 }
                             }
+                            // Reset the previous target's progress if switching
+                            if (this.targetedMob && this.targetedMob.resetProgress) {
+                                this.targetedMob.resetProgress();
+                            }
                             if (this.targetedMob) this.targetedMob.setTargeted(false);
                             this.targetedMob = closest;
                             if (this.targetedMob) {
@@ -142,6 +146,9 @@ export default class GameScene extends Phaser.Scene {
                             }
                         } else {
                             // No match, clear target
+                            if (this.targetedMob && this.targetedMob.resetProgress) {
+                                this.targetedMob.resetProgress();
+                            }
                             if (this.targetedMob) this.targetedMob.setTargeted(false);
                             this.targetedMob = null;
                         }

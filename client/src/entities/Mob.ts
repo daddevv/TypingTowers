@@ -127,6 +127,19 @@ export default class Mob extends Phaser.GameObjects.Sprite {
         }
     }
 
+    /**
+     * Resets the mob's progress so all letters are active again.
+     */
+    resetProgress() {
+        this.currentLetterIndex = 0;
+        for (let i = 0; i < this.letterChars.length; i++) {
+            this.letterChars[i].setColor('#fff');
+            this.letterChars[i].setStyle({ fontStyle: 'bold', backgroundColor: undefined });
+            this.letterChars[i].setAlpha(1);
+            this.letterChars[i].setScale(1);
+        }
+    }
+
     defeat() {
         this.isDefeated = true;
         for (const txt of this.letterChars) {
@@ -154,7 +167,18 @@ export default class Mob extends Phaser.GameObjects.Sprite {
             particles.emitParticleAt(this.x, this.y, 12);
             this.scene.time.delayedCall(350, () => {
                 particles.destroy();
+                // Start fade-out of mob body after particles
+                this.scene.tweens.add({
+                    targets: this,
+                    alpha: 0,
+                    duration: 600, // Fade out over 600ms
+                    onComplete: () => {
+                        this.destroy();
+                    }
+                });
             });
         }
     }
 }
+
+//Contains AI - generated edits.

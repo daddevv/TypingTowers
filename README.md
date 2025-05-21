@@ -7,6 +7,8 @@ TypeDefense is a web-based typing game designed to help players improve their ty
 - Fast-paced wave-based mob defense gameplay
 - Enemies spawn from the right and move toward the player
 - Defeat enemies by typing their associated words or letters
+- **Mobs now move faster by default for a more challenging experience.**
+- **Mobs spawn at random vertical positions, adding variety to each wave.**
 - **Each mob now displays a single letter. When the correct letter is typed, the mob disappears.**
 - **Mobs now respond instantly to correct key presses (bug fix):** Mobs are defeated when the player types the correct letter or word, and input is cleared after a mob is defeated.
 - **When a mob is defeated, an instant visual feedback effect (flash and particle burst) is triggered.**

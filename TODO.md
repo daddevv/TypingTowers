@@ -20,7 +20,8 @@
   - [x] Test that multiple mobs spawn at each interval
   - [x] Mark this task as complete
 - [x] Add a base speed property to Mob and allow it to be set per spawn
-- [ ] Increase the default/base speed of mobs to make gameplay more challenging
+- [x] Increase the default/base speed of mobs to make gameplay more challenging
+- [x] Add y-position variation to mob spawner so mobs spawn at different vertical positions
 - [ ] Add support for scaling spawn rate and mob speed as the game progresses
 - [ ] Ensure all mobs move smoothly toward the player after spawning
 - [ ] Playtest and balance spawn rate and speed for fun/challenge
