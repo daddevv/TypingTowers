@@ -87,3 +87,8 @@
 Contains AI-generated edits.
 
 - [x] Refactor mob input handling to target the closest matching mob for each keypress, check others if not matched, and reset all mobs if no match (fix combo bug with multiple mobs)
+- [x] Fix mob targeting system:
+  - [x] If no mobs are targeted, keypresses identify a target (closest mob if multiple match)
+  - [x] If a mob is targeted, next keypress is aimed at them; if correct, stay on target and advance letter; if miss, check other mobs
+  - [x] Targeted mob is visually highlighted
+  - [x] Matched letters are animated to inactive so player knows which letter is next

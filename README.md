@@ -70,6 +70,7 @@ Each world contains multiple levels that introduce letters progressively, with b
 
 - Added a `baseSpeed` property to `Mob` and updated the spawning system to allow setting mob speed per spawn. This enables more flexible and challenging gameplay tuning.
 - Improved mob input handling: The game now targets the closest matching mob for each keypress, checks others if not matched, and resets all mobs if no match. This fixes the combo bug with multiple mobs on screen.
+- **New mob targeting system:** If no mob is targeted, keypresses identify the closest matching mob. If a mob is targeted, the next keypress is aimed at them; if correct, the target advances, otherwise the system checks for other matches. The targeted mob is visually highlighted, and matched letters are animated to inactive so the player knows which letter is next.
 
 ## Getting Started
 

@@ -12,6 +12,7 @@ export default class GameScene extends Phaser.Scene {
     private inputHandler!: InputHandler;
     private mobSpawner!: MobSpawner;
     private fingerGroupManager!: FingerGroupManager;
+    private targetedMob: any = null; // Track the currently targeted mob
 
     constructor() {
         super('GameScene');
@@ -74,54 +75,86 @@ export default class GameScene extends Phaser.Scene {
         // Improved mob input handling for combos and multiple mobs
         const input = this.inputHandler.getInput();
         if (input.length > 0) {
-            // Record each key press in FingerGroupManager
             for (const char of input) {
                 const keyInfo = getKeyInfo(char);
                 if (keyInfo) {
-                    this.fingerGroupManager.recordKeyPress(char, true, time); // 'true' for correct finger (future: detect real finger)
+                    this.fingerGroupManager.recordKeyPress(char, true, time);
                 }
-            }
-            // Find the closest mob whose word starts with the input
-            let closestMob: any = null;
-            let minDist = Infinity;
-            for (const mob of mobs) {
-                if (!mob.isDefeated) {
-                    // Only consider mobs whose word starts with the input
-                    if (mob.word.toLowerCase().startsWith(input.trim().toLowerCase())) {
-                        const dx = mob.x - this.player.x;
-                        const dy = mob.y - this.player.y;
-                        const dist = Math.sqrt(dx * dx + dy * dy);
-                        if (dist < minDist) {
-                            minDist = dist;
-                            closestMob = mob;
+                let handled = false;
+                // 1. If no mob is targeted, find all mobs whose next letter matches the key
+                if (!this.targetedMob) {
+                    const candidates = mobs.filter(mob => !mob.isDefeated && mob.getNextLetter && mob.getNextLetter().toLowerCase() === char.toLowerCase());
+                    if (candidates.length > 0) {
+                        // Pick the closest mob
+                        let minDist = Infinity;
+                        let closest = null;
+                        for (const mob of candidates) {
+                            const dx = mob.x - this.player.x;
+                            const dy = mob.y - this.player.y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            if (dist < minDist) {
+                                minDist = dist;
+                                closest = mob;
+                            }
+                        }
+                        this.targetedMob = closest;
+                        if (this.targetedMob) {
+                            this.targetedMob.setTargeted(true);
                         }
                     }
                 }
-            }
-            let mobDefeated = false;
-            if (closestMob) {
-                // If input matches the full word, defeat the mob
-                if (input.trim().toLowerCase() === closestMob.word.toLowerCase()) {
-                    closestMob.defeat();
-                    this.inputHandler.clearInput();
-                    mobDefeated = true;
+                // 2. If a mob is targeted, check if key matches its next letter
+                if (this.targetedMob && this.targetedMob.getNextLetter && !this.targetedMob.isDefeated) {
+                    if (this.targetedMob.getNextLetter().toLowerCase() === char.toLowerCase()) {
+                        this.targetedMob.advanceLetter();
+                        handled = true;
+                        // If mob is defeated, clear target
+                        if (this.targetedMob.isDefeated) {
+                            this.targetedMob.setTargeted(false);
+                            this.targetedMob = null;
+                        }
+                    } else {
+                        // 3. If not, check if key matches any other mob's next letter
+                        const otherCandidates = mobs.filter(mob => mob !== this.targetedMob && !mob.isDefeated && mob.getNextLetter && mob.getNextLetter().toLowerCase() === char.toLowerCase());
+                        if (otherCandidates.length > 0) {
+                            // Retarget to the closest matching mob
+                            let minDist = Infinity;
+                            let closest = null;
+                            for (const mob of otherCandidates) {
+                                const dx = mob.x - this.player.x;
+                                const dy = mob.y - this.player.y;
+                                const dist = Math.sqrt(dx * dx + dy * dy);
+                                if (dist < minDist) {
+                                    minDist = dist;
+                                    closest = mob;
+                                }
+                            }
+                            if (this.targetedMob) this.targetedMob.setTargeted(false);
+                            this.targetedMob = closest;
+                            if (this.targetedMob) {
+                                this.targetedMob.setTargeted(true);
+                                this.targetedMob.advanceLetter();
+                                handled = true;
+                                if (this.targetedMob.isDefeated) {
+                                    this.targetedMob.setTargeted(false);
+                                    this.targetedMob = null;
+                                }
+                            }
+                        } else {
+                            // No match, clear target
+                            if (this.targetedMob) this.targetedMob.setTargeted(false);
+                            this.targetedMob = null;
+                        }
+                    }
                 }
-            } else {
-                // If no closest mob, check if input matches any mob's word (fallback)
+                // Ensure only one mob is targeted at a time
                 for (const mob of mobs) {
-                    if (!mob.isDefeated && input.trim().toLowerCase() === mob.word.toLowerCase()) {
-                        mob.defeat();
-                        this.inputHandler.clearInput();
-                        mobDefeated = true;
-                        break;
+                    if (mob !== this.targetedMob && mob.setTargeted) {
+                        mob.setTargeted(false);
                     }
                 }
             }
-            // If no mob was defeated, reset all mobs (drop combo/progress)
-            if (!mobDefeated) {
-                this.inputHandler.clearInput();
-            // Optionally: add a method to Mob to reset progress if you track per-mob progress
-            }
+            this.inputHandler.clearInput();
         }
     }
 }
