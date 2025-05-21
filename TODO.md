@@ -40,6 +40,14 @@
 - [ ] Design a WordGenerator class that creates appropriate words based on available letters
 - [ ] Implement a difficulty scaling system that adjusts spawn rates and word complexity
 
+### FingerGroupManager Integration
+
+- [x] Instantiate FingerGroupManager in GameScene
+- [x] On each key press, determine which finger group the key belongs to
+- [x] Record the key press in FingerGroupManager with timing and correctness
+- [x] Update the game loop in GameScene to call FingerGroupManager when player input occurs
+- [ ] (Optional) Expose progress/stats for UI or debugging
+
 ### World 1: Index Fingers (F, G, R, T, V, B, J, H, Y, U, N, M)
 
 - [ ] Create Level 1-1: Basic F/J training with simple letter targets

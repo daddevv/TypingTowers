@@ -23,6 +23,9 @@ TypeDefense is a web-based typing game designed to help players improve their ty
   - Tracks player progress, key usage, accuracy, and speed for each finger group.
   - Provides methods to record key presses, retrieve stats, and determine mastery.
   - Uses curriculum-defined finger/key mappings for robust tracking.
+- Integrated FingerGroupManager with the main game loop in `GameScene.ts`.
+- Each key press is now recorded and mapped to its finger group using the curriculum mapping (`getKeyInfo`).
+- This enables tracking of finger usage and progress for each finger group in real time.
 
 ## Curriculum Design
 

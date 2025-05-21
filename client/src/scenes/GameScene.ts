@@ -1,12 +1,15 @@
 import Phaser from 'phaser';
+import { getKeyInfo } from '../curriculum/fingerGroups';
 import InputHandler from '../entities/InputHandler';
 import MobSpawner from '../entities/MobSpawner';
 import Player from '../entities/Player';
+import FingerGroupManager from '../managers/fingerGroupManager';
 
 export default class GameScene extends Phaser.Scene {
     private player!: Player;
     private inputHandler!: InputHandler;
     private mobSpawner!: MobSpawner;
+    private fingerGroupManager!: FingerGroupManager;
 
     constructor() {
         super('GameScene');
@@ -28,6 +31,7 @@ export default class GameScene extends Phaser.Scene {
         // Initialize Player and InputHandler
         this.player = new Player(this, 100, 300);
         this.inputHandler = new InputHandler(this);
+        this.fingerGroupManager = new FingerGroupManager();
 
         // Initialize MobSpawner with a sample word list
         const words = ['type', 'defense', 'phaser', 'enemy', 'challenge'];
@@ -46,6 +50,13 @@ export default class GameScene extends Phaser.Scene {
         // Check player input against mobs
         const input = this.inputHandler.getInput();
         if (input.length > 0) {
+            // Record each key press in FingerGroupManager
+            for (const char of input) {
+                const keyInfo = getKeyInfo(char);
+                if (keyInfo) {
+                    this.fingerGroupManager.recordKeyPress(char, true, time); // 'true' for correct finger (future: detect real finger)
+                }
+            }
             const mobs = this.mobSpawner.getMobs();
             for (const mob of mobs) {
                 if (!mob.isDefeated && input.trim().toLowerCase() === mob.word.toLowerCase()) {
