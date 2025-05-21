@@ -7,8 +7,8 @@
 - [x] Set up the main game scene in `GameScene`
 - [x] Set up the core game loop in `GameScene`
   - [x] Initialize and update the Player and InputHandler in GameScene
-  - [ ] Add placeholders for enemy spawning and word challenge logic in the update loop
-  - [ ] Ensure the update method calls the necessary update functions each frame
+  - [x] Add placeholders for enemy spawning and word challenge logic in the update loop
+  - [x] Ensure the update method calls the necessary update functions each frame
 - [x] Implement Player and InputHandler classes
 - [ ] Implement action-challenge-reward loop with instant visual/audio feedback on word defeat
 - [ ] Display real-time scores, combo multipliers, and particle bursts on each keystroke

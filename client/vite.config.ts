@@ -13,3 +13,5 @@ export default defineConfig({
         },
     },
 });
+
+// Contains AI-generated edits.
