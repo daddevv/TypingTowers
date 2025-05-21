@@ -14,6 +14,10 @@ TypeDefense is a web-based typing game designed to help players improve their ty
 - Tweened UI transitions and dramatic camera effects for key events
 - Layered audio cues for typing, combos, and wave clearances
 - Core game loop set up in `GameScene` with Player and InputHandler initialized and updated each frame
+- **Mob and MobSpawner integrated into GameScene:**
+  - `MobSpawner` handles spawning and management of enemy mobs (see `client/src/entities/MobSpawner.ts`).
+  - `Mob` represents individual enemy entities (see `client/src/entities/Mob.ts`).
+  - Both are now fully integrated and updated within the main game loop in `GameScene`.
 
 Contains AI-generated edits.
 

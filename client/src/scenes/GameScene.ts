@@ -1,10 +1,12 @@
 import Phaser from 'phaser';
 import InputHandler from '../entities/InputHandler';
+import MobSpawner from '../entities/MobSpawner';
 import Player from '../entities/Player';
 
 export default class GameScene extends Phaser.Scene {
     private player!: Player;
     private inputHandler!: InputHandler;
+    private mobSpawner!: MobSpawner;
 
     constructor() {
         super('GameScene');
@@ -13,6 +15,7 @@ export default class GameScene extends Phaser.Scene {
     preload() {
         // Load assets here
         // Example: this.load.image('player', 'assets/images/player.png');
+        // Example: this.load.image('mob', 'assets/images/mob.png');
     }
 
     create() {
@@ -25,12 +28,20 @@ export default class GameScene extends Phaser.Scene {
         // Initialize Player and InputHandler
         this.player = new Player(this, 100, 300);
         this.inputHandler = new InputHandler(this);
+
+        // Initialize MobSpawner with a sample word list
+        const words = ['type', 'defense', 'phaser', 'enemy', 'challenge'];
+        this.mobSpawner = new MobSpawner(this, words, 2000);
     }
 
     update(time: number, delta: number) {
         // Core game loop logic
         if (this.player) {
             this.player.update(time, delta);
+        }
+        // Update MobSpawner and its mobs
+        if (this.mobSpawner) {
+            this.mobSpawner.update(time, delta);
         }
         // InputHandler could process input here if needed
         // Placeholder: enemy spawning and word challenge logic will go here

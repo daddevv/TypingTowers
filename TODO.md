@@ -21,7 +21,7 @@
 - [ ] Add leaderboard and achievements integration
 - [x] Implement Mob and MobSpawner classes for enemy logic
   - [x] Create Mob class in `client/src/entities/Mob.ts`
-  - [ ] Create MobSpawner class in `client/src/entities/MobSpawner.ts`
-  - [ ] Integrate Mob and MobSpawner into GameScene
+  - [x] Create MobSpawner class in `client/src/entities/MobSpawner.ts`
+  - [x] Integrate Mob and MobSpawner into GameScene
 
 Contains AI-generated edits.
