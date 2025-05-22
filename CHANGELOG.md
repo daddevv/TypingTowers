@@ -1,38 +1,44 @@
 # Changelog
 
-- Set up Vite + TypeScript project structure and entry points.
-- Implemented core game loop, Player, and InputHandler.
-- Refactored MobSpawner for off-screen spawning and multiple mobs per interval.
-- Added base speed property to Mob and increased default speed.
-- Added y-position variation and dynamic scaling to MobSpawner.
-- Integrated scaling logic into GameScene.
-- Added logic for matching player input to mob words and instant visual feedback on defeat.
-- Instantiated and integrated FingerGroupManager.
-- Created and playtested Level 1-1 and Level 1-2, including word lists and curriculum updates.
-- Added collision detection to mobs and win condition (defeat 50 enemies).
-- Designed and implemented World/Level selection menu with lock/unlock logic and local storage.
-- Set up Vitest, added unit/integration tests for core entities and utilities.
-- Added "Continue" button and Enter key handler to level complete screen.
-- Implemented a real-time score system that updates on each correct keystroke.
-- Added a combo multiplier that increases with consecutive correct keystrokes and resets on mistakes.
-  - Combo multiplier variable added to game state.
-  - Incremented combo multiplier on each correct keystroke.
-  - Reset combo multiplier on incorrect keystroke.
-  - Score calculation now uses combo multiplier.
-  - Comments and documentation updated as needed.
-  - Tests added/updated to cover combo logic.
-- Displayed current score and combo multiplier in the game UI.
-  - Score and combo text objects added to GameScene UI layer.
-  - UI elements update in real-time as player types.
-- Triggered a particle burst effect at the mob or letter location on every correct keystroke.
-  - Enhanced particle system to emit at correct position on every correct keystroke.
-  - Optimized effect for clarity and performance.
-- Added/updated tests to verify score/combo UI and particle burst behavior.
-  - Unit test: Combo/score logic updates UI as expected.
-  - Integration test: Particle burst triggers on correct keystroke.
-- Designed and implemented a `WordGenerator` class for generating words based on available letters.
-  - Methods for random word generation, filtering valid words, and generating pseudo-words.
-- Implemented a main menu scene with a "Play" button that navigates to the world chooser.
-- Added a constant particle effect in the top-left corner of GameScene. (REMOVED: Feature reverted per user request; only burst effect remains)
+All notable changes to this project will be documented in this file.
 
-Contains AI-generated edits.
+## [Unreleased]
+
+- Ongoing refactoring for v2 architecture: centralized game state, improved maintainability, and debugging.
+- Scene management refactor: scenes now read from and update `gameState` via `StateManager`.
+- Input handling centralized in new `InputSystem`.
+- Entities (`Player`, `Mob`, `MobSpawner`) now operate on state from `gameState`.
+- Level and finger group progression managed via state and dedicated managers.
+
+## [v0.1.0] - 2025-05-21
+
+- Added wave-based enemy spawning with notifications and delays between waves.
+- Score pop-ups now feature tweened animations for visual feedback.
+- Mobs move faster by default and spawn at random vertical positions.
+- Each mob displays a single letter; correct input removes the mob instantly.
+- Particle burst effect triggered at mob/letter location on every correct keystroke.
+- Mobs spawn fully off-screen for polish.
+- Multiple mobs can spawn at each interval (configurable).
+- Real-time score and combo multiplier UI in the top-left corner.
+- Combo multiplier increases with consecutive correct keystrokes, resets on mistakes.
+- Tweened UI transitions and camera effects for key events.
+- Layered audio cues for typing, combos, and wave clearances.
+- Mob and MobSpawner integrated into GameScene and main game loop.
+- FingerGroupManager tracks player progress and statistics across finger groups.
+- Player health system: visible health, game over on zero health.
+- Collision detection and overlap prevention for mobs.
+- Dynamic difficulty: spawn rate and speed scale up as game progresses.
+- Word complexity scaling: word length/complexity increases with difficulty.
+- Level/world progression system: unlocks, saves progress, and updates menu UI.
+- All tests colocated in `__tests__` folders; uses Vitest for testing.
+
+## [v0.0.1] - 2025-05-20
+
+- Initial release: core gameplay, basic mob spawning, typing input, and scoring.
+- Basic menu and level selection.
+- Initial curriculum and word packs.
+- Project structure established with Vite, TypeScript, and Go backend.
+
+---
+
+For a full project structure and documentation, see `.github/instructions/project_layout.instructions.md`.

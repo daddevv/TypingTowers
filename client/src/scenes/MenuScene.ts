@@ -3,12 +3,14 @@
 import Phaser from 'phaser';
 import { WorldConfig } from '../curriculum/worldConfig';
 import { levelManager } from '../managers/levelManager';
+import stateManager from '../state/stateManager';
 
 export default class MenuScene extends Phaser.Scene {
     private worlds: WorldConfig[] = [];
     private levelManager = levelManager;
     private menuItems: Phaser.GameObjects.Text[] = [];
     private selectedWorld: number = 0;
+    private onGameStatusChanged?: (status: string) => void;
 
     constructor() {
         super({ key: 'MenuScene' });
@@ -25,6 +27,18 @@ export default class MenuScene extends Phaser.Scene {
         this.add.text(400, 40, 'TypeDefense', { fontSize: '40px', color: '#fff' }).setOrigin(0.5);
         this.renderMenu();
         this.input.keyboard?.on('keydown', this.handleInput, this);
+        // Listen for gameStatus changes and transition if needed
+        this.onGameStatusChanged = (status: string) => {
+            if (status !== 'worldSelect') {
+                this.scene.stop();
+            }
+        };
+        stateManager.on('gameStatusChanged', this.onGameStatusChanged);
+        this.events.once('shutdown', () => {
+            if (this.onGameStatusChanged) {
+                stateManager.off('gameStatusChanged', this.onGameStatusChanged);
+            }
+        });
     }
 
     renderMenu() {
@@ -75,6 +89,9 @@ export default class MenuScene extends Phaser.Scene {
     // When starting LevelMenuScene, always pass the singleton levelManager
     selectWorld(idx: number) {
         const world = this.worlds[idx];
-        this.scene.start('LevelMenuScene', { worldId: world.id, levelManager: this.levelManager });
+        // Instead of scene.start, update state
+        // Optionally, store selected world in stateManager if needed
+        stateManager.setGameStatus('levelSelect');
+        // ...could also update current world in stateManager here...
     }
 }

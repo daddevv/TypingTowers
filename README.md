@@ -1,307 +1,113 @@
 # TypeDefense
 
-TypeDefense is a web-based typing game designed to help players improve their typing skills through engaging gameplay. Players control a static character on the left side of the screen, defending against waves of enemies that spawn from the right. To defeat enemies, players must quickly and accurately type the words or phrases displayed above each enemy before they reach the player.
+TypeDefense is a web-based typing game designed to help players improve their typing skills through engaging gameplay. Players defend against waves of enemies by typing words or letters displayed above each enemy before they reach the player.
+
+## Table of Contents
+
+- [Features](#features)
+- [Screenshots](#screenshots)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Project Structure](#project-structure)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [License](#license)
+- [Changelog](#changelog)
 
 ## Features
 
-- Fast-paced wave-based mob defense gameplay
-- **New:** Enemies now spawn in discrete waves, with a notification and a short delay between waves. Each wave can have a configurable number of mobs, and the game displays a tweened "Wave X" notification at the start of each wave.
-- **New:** Score pop-ups now feature a tweened animation when the score updates, providing satisfying visual feedback for each correct keystroke.
-- Enemies spawn from the right and move toward the player
+- Fast-paced, wave-based typing defense gameplay
+- Enemies spawn in waves and move toward the player
 - Defeat enemies by typing their associated words or letters
-- **Mobs now move faster by default for a more challenging experience.**
-- **Mobs spawn at random vertical positions, adding variety to each wave.**
-- **Each mob now displays a single letter. When the correct letter is typed, the mob disappears.**
-- **Mobs now respond instantly to correct key presses (bug fix):** Mobs are defeated when the player types the correct letter or word, and input is cleared after a mob is defeated.
-- **When a mob is defeated, an instant visual feedback effect (flash and particle burst) is triggered.**
-- **A particle burst effect is now triggered at the mob or letter location on every correct keystroke, providing instant visual feedback.**
-- **Mobs now always spawn fully off-screen on the right for a more polished experience.**
-- **Planned: Multiple mobs can spawn at once, and their base speed will increase for greater challenge.**
-- **Multiple mobs can now spawn at each interval:** The MobSpawner supports spawning more than one mob at a time for increased challenge. This is configurable per level or via code.
-- Designed to improve typing speed and accuracy
-- Built with TypeScript and Vite for a modern web experience
-- Addictive action-challenge-reward loop with instant visual and audio feedback
-- Real-time scores and combo multipliers are now displayed in the top-left corner of the game UI. The score updates on every correct keystroke, and the combo multiplier appears when greater than 1, rewarding consecutive correct inputs.
-- Particle effects are now displayed and updated on each keystroke. The score and combo UI appear in the top-left, and a particle burst is triggered at the mob location for every correct letter typed. The combo multiplier increases with consecutive correct keystrokes and resets on mistakes, rewarding accuracy and speed.
-- Tweened UI transitions and dramatic camera effects for key events
-- Layered audio cues for typing, combos, and wave clearances
-- Core game loop set up in `GameScene` with Player and InputHandler initialized and updated each frame
-- **Mob and MobSpawner integrated into GameScene:**
-  - `MobSpawner` handles spawning and management of enemy mobs (see `client/src/entities/MobSpawner.ts`).
-  - `Mob` represents individual enemy entities (see `client/src/entities/Mob.ts`).
-  - Both are now fully integrated and updated within the main game loop in `GameScene`.
-- Added initial design and documentation for the `FingerGroupManager` class, which will track player progress and statistics across finger groups for the typing curriculum.
-  - Implemented the `FingerGroupManager` class in `client/src/managers/fingerGroupManager.ts`.
-  - Tracks player progress, key usage, accuracy, and speed for each finger group.
-  - Provides methods to record key presses, retrieve stats, and determine mastery.
-  - Uses curriculum-defined finger/key mappings for robust tracking.
-  - **Now includes methods to retrieve progress and statistics for each finger group:**
-    - `getAllFingerGroupProgress()` returns accuracy and speed for all finger groups.
-    - `getAllFingerGroupStats()` returns full statistics for all finger groups.
-    - `getFingerGroupSummary()` provides a summary (mastery count, average accuracy, average speed).
-- Integrated FingerGroupManager with the main game loop in `GameScene.ts`.
-- Each key press is now recorded and mapped to its finger group using the curriculum mapping (`getKeyInfo`).
-- This enables tracking of finger usage and progress for each finger group in real time.
-- **Mobs now walk toward the player:** Each mob moves toward the player character's position (left side of the screen) after spawning.
-- **Player health system:** The player has a visible health value above their sprite. When a mob reaches the player, the player loses health and the mob is removed. The game ends with a "Game Over" message if health reaches zero.
-- **Improved mob input targeting and combo logic:** When multiple mobs are on screen, the game now targets the closest mob that matches the player's keypress. If the keypress doesn't match any mob, all mobs' progress is reset, fixing the combo bug with multiple mobs.
-- Added collision detection and overlap prevention to mobs. Mobs now repel each other if they get too close, ensuring they do not overlap as they move toward the player. This improves gameplay clarity and visual polish.
-- **Dynamic difficulty:** As the game progresses, the spawn rate of enemies increases and their movement speed scales up, providing a smooth and challenging difficulty curve.
-- **Scaling system tested and tuned:** The MobSpawner's scaling logic for spawn interval and mob speed has been verified with unit tests for smooth progression. Parameters can be adjusted in `MobSpawner.ts` for further tuning.
-- **Word complexity scaling:** The WordGenerator dynamically increases word length and complexity as the game progresses, based on difficulty scaling parameters. This ensures that challenges become more demanding over time.
+- Real-time score and combo multiplier display
+- Particle effects and visual feedback for correct keystrokes
+- Dynamic difficulty scaling (spawn rate, speed, word complexity)
+- Level and world progression system with unlockable content
+- Player health system and game over state
+- Curriculum-based finger group tracking for typing improvement
+- Built with TypeScript, Vite, and Phaser
+- Centralized game state managed by StateManager
+- Scenes are now managed via `gameState.gameStatus` and all transitions are triggered by updating state via StateManager, not by direct scene switching.
+- MainMenu, Menu (WorldSelect), and LevelMenu scenes now render UI and handle navigation based on state, and listen for state changes to update or stop themselves.
+- All scene transitions and UI updates are reactive to changes in `gameState.gameStatus`.
 
-## v2 Architecture: Centralized Game State & StateManager
+## Screenshots
 
-TypeDefense v2 introduces a single, centralized global game state for all gameplay, UI, and progression data. This state is defined in `client/src/state/gameState.ts` and includes player, level, mobs, spawner, UI, settings, progression, curriculum, and timing information. All systems and scenes read from and update this state, making debugging and testing much easier.
+<!-- Add screenshots or animated GIFs here to showcase gameplay -->
 
-### StateManager
+## Installation
 
-- The `StateManager` (`client/src/state/stateManager.ts`) is the only way to read or update the game state.
-- Provides:
-  - Immutable getter for the current state
-  - Update functions for all major state parts (e.g., `updatePlayerHealth`, `addMob`, `setGameStatus`)
-  - Event emitter for subscribing to state changes (e.g., `stateManager.on('gameStatusChanged', handler)`)
-  - Automatic save/load to `localStorage` for persistent progression
-  - Exposes `window.gameState` for easy console debugging
+### Prerequisites
 
-All game logic, UI, and systems should use `StateManager` to interact with the state.
+- Node.js (v16+ recommended)
+- npm (v8+ recommended)
+- Go (for backend server, optional for frontend development)
 
-See `TODO.md` for migration and refactor steps.
+### Setup
 
-## Curriculum Design
+1. Clone the repository:
 
-TypeDefense features a unique learning approach based on finger groups rather than random letters. The game is structured into four worlds, each focusing on a specific set of fingers:
+   ```bash
+   git clone https://github.com/yourusername/type-defense.git
+   cd type-defense
+   ```
 
-### World 1: Index Fingers
+2. Install frontend dependencies:
 
-- Left Hand: F, G, R, T, V, B
-- Right Hand: J, H, Y, U, N, M
-- Progressive levels introduce these keys gradually, starting with home row (F/J)
-  - **1-1 Home Base:** F, J (home row)
-  - **1-2 Extending Reach:** Adds G, H
-  - **1-3 Reaching Up:** Adds R, U
-  - **1-4 Top Row Mastery:** Adds T, Y
-  - **1-5 Bottom Row Drills:** Adds V, M (bottom row)
-  - **1-6 Complete Control:** Adds B, N (all index finger letters)
-  - **1-7 Index Overlord:** Boss level using all index finger letters in combination
+   ```bash
+   cd client
+   npm install
+   ```
 
-#### Level 1-1: Home Base
+3. (Optional) Build the frontend:
 
-- Focus: Home row keys F and J
-- Word list: `fjWords.json`
-- Unlocks immediately
+   ```bash
+   npm run build
+   ```
 
-#### Level 1-2: Extending Reach
+4. (Optional) Run the Go backend server:
 
-- Focus: Adds G and H to home row keys
-- Word list: `fjghWords.json`
-- Unlocks after completing 1-1
+   ```bash
+   cd ../server
+   go run main.go
+   ```
 
-#### Level 1-3: Reaching Up
+## Usage
 
-- Focus: Adds R and U (top row) to the available keys, with a new word pack (`fjghruWords.json`) and more letter combinations.
-- Unlocks after completing 1-2
+- To start the development server for the frontend:
 
-#### Level 1-4: Top Row Mastery
+  ```bash
+  cd client
+  npm run dev
+  ```
 
-- Focus: Adds T and Y (top row) to all previous index finger letters (F, J, G, H, R, U, T, Y)
-- Word list: `fjghrutyvmWords.json`
-- Unlocks after completing 1-3
+- Open your browser to the provided local address (usually <http://localhost:5173>).
+- For production, build the frontend and serve the `dist/` directory using the Go backend or any static file server.
 
-#### Level 1-5: Bottom Row Drills
+## Project Structure
 
-- Focus: Adds V and M (bottom row) to all previous index finger letters (F, J, G, H, R, U, T, Y, V, M)
-- Word list: `fjghrutyvmWords.json`
-- Unlocks after completing 1-4
-
-#### Level 1-6: Complete Control
-
-- Focus: All index finger letters (F, J, G, H, R, U, T, Y, V, M, B, N)
-- Word list: `fjghrutyvmbnWords.json`
-- Unlocks after completing 1-5
-
-#### Level 1-7: Index Overlord (Boss)
-
-- Focus: All index finger letters, challenging boss patterns
-- Word list: `fjghrutyvmbn_bossWords.json`
-- Unlocks after completing 1-6
-
-Levels are unlocked sequentially. Completing 1-7 unlocks World 2.
-
-### World 2: Middle Fingers
-
-- Left Hand: D, E, C
-- Right Hand: K, I, comma
-- Builds on index finger skills while introducing middle finger positions
-
-### World 3: Ring Fingers
-
-- Left Hand: S, W, X
-- Right Hand: L, O, period
-- Focuses on training the typically weaker ring fingers
-
-### World 4: Pinky Fingers
-
-- Left Hand: A, Q, Z
-- Right Hand: semicolon, P, slash
-- Completes the alphabet and introduces Shift key for capitals
-
-Each world contains multiple levels that introduce letters progressively, with boss battles that test mastery before advancing. This finger-group approach builds proper muscle memory and typing technique.
-
-## Recent Changes
-
-- Added a `baseSpeed` property to `Mob` and updated the spawning system to allow setting mob speed per spawn. This enables more flexible and challenging gameplay tuning.
-- Improved mob input handling: The game now targets the closest matching mob for each keypress, checks others if not matched, and resets all mobs if no match. This fixes the combo bug with multiple mobs on screen.
-- **New mob targeting system:** If no mob is targeted, keypresses identify the closest matching mob. If a mob is targeted, the next keypress is aimed at them; if correct, the target advances, otherwise the system checks for other matches. The targeted mob is visually highlighted, and matched letters are animated to inactive so the player knows which letter is next.
-- **World & Level Selection Menu:**
-  - Added a new menu scene (`MenuScene.ts`) that allows players to select worlds and levels.
-  - Levels are locked/unlocked based on completion status, which is tracked and persisted in local storage.
-  - The menu UI displays locked, unlocked, and completed levels with appropriate visual cues.
-  - Progression is saved and loaded automatically, so players can continue where they left off.
-  - Selecting an unlocked level starts the game at that level.
-- **Level 1-3 ("Reaching Up"):** Adds R and U (top row) to the available keys, with a new word pack (`fjghruWords.json`) and more letter combinations. The curriculum and word loader have been updated to support this level.
-- Add a "Continue" button and Enter key handler to the level complete screen. When a level is completed, players can click the button or press Enter to advance to the next level (if available) or return to the level select menu.
-- Implemented a main menu scene (`MainMenuScene.ts`) with a "Play" button that navigates to the world chooser (MenuScene).
-- Registered the new scene in the Phaser game config and set it as the starting scene.
-- Implemented an ESC pause menu in GameScene. Pressing ESC toggles a pause overlay with Resume and Quit to Menu options. The menu is not shown if the level complete UI is active.
-- Updated world selection in MenuScene: Worlds 2, 3, and 4 are now locked until the previous world is completed (must beat 1-7 to unlock world 2, etc.). Locked worlds are grayed out and not selectable.
-- The Continue button after beating a level is now always clickable and visually responsive.
-
-### WordGenerator Utility
-
-A new `WordGenerator` class is available in `client/src/utils/wordGenerator.ts`.
-
-- Generates words using only the available letters (for curriculum-based levels).
-- Supports random letter words, filtering valid words, and generating pronounceable pseudo-words (CVC pattern).
-- Methods:
-  - `generateWord(length)`: Generates a random word using available letters.
-  - `generateWordSet(count, minLength, maxLength)`: Generates a set of words for a level challenge.
-  - `canCreateWord(word)`: Checks if a word can be created from available letters.
-  - `filterValidWords(words)`: Filters a list of words to only those that can be made from available letters.
-  - `generatePseudoWord(length)`: Generates a pronounceable pseudo-word (CVC pattern) using available letters.
-  - `getWord(length)`: Returns a pseudo-word if enabled, otherwise a random word.
-- Used for creating level-appropriate word challenges and drills.
-- See `client/src/utils/__tests__/wordGenerator.test.ts` for usage examples and tests. All methods and edge cases are now covered by unit tests.
-
-**Usage Example:**
-
-```ts
-import WordGenerator from './utils/wordGenerator';
-const gen = new WordGenerator(['f', 'j', 'g', 'h']);
-const word = gen.getWord(4); // e.g., 'fjgh', 'ghjf', etc.
-const pseudo = gen.generatePseudoWord(5); // e.g., 'gafih', 'hajig', etc.
-const valid = gen.filterValidWords(['fish', 'jag', 'hug']); // Only words using available letters
-```
-
-## Navigation and Keyboard Shortcuts
-
-- The level completion screen now features both a Continue button (Enter) and a Back button (Esc).
-- Continue advances to the next level, next world, or returns to the main menu if all levels are complete.
-- Back returns to the level selection screen for the current world.
-- Both buttons are clickable and accessible via keyboard shortcuts (Enter/Esc).
-- This ensures smooth navigation through the entire game using either mouse or keyboard.
-
-## Level & World Progression System
-
-TypeDefense now features an improved level progression system:
-
-- Completing a level automatically marks it as completed and unlocks the next level.
-- The game flow advances the player to the next unlocked level, or returns to the menu if the last level is completed.
-- The level selection menu (`LevelMenuScene`) immediately reflects unlocked/completed status after finishing a level, with UI updates in real time.
-- Level progression and unlock logic is managed by the `LevelManager` class (`client/src/managers/levelManager.ts`).
-- Tests in `levelManager.test.ts` verify that completing a level unlocks the next.
-- Progress is saved so players can continue from their last unlocked level.
+See `.github/instructions/project_layout.instructions.md` for a detailed breakdown of the project structure and file organization.
 
 ## Testing
 
-To run unit tests (using Vitest):
-
-```bash
-cd client
-npm run test
-```
-
-To run only the WordGenerator tests:
-
-```bash
-npm run test -- src/utils/__tests__/wordGenerator.test.ts
-```
-
-- The project uses [Vitest](https://vitest.dev/) for unit and integration testing.
-- Test files are located in `client/src/**/__tests__/` and follow the `.test.ts` naming convention.
-- To run all tests:
+- All tests are located in `__tests__` subdirectories next to the code under test.
+- The project uses [Vitest](https://vitest.dev/) for running tests:
 
   ```bash
   cd client
   npm run test
   ```
 
-- To run tests in watch/UI mode:
+- Add new tests in the appropriate `__tests__` folder for each module.
 
-  ```bash
-  cd client
-  npm run test:ui
-  ```
+## Contributing
 
-- Sample unit tests are provided for core modules:
-  - `Mob`, `MobSpawner`, `InputHandler`, `FingerGroupManager`, `WordGenerator`, `LevelManager`, and `loadWordList` utility.
-  - **New:** Integration tests for `MobSpawner` and mob spawning logic are included in `client/src/entities/__tests__/MobSpawner.test.ts` and cover multi-interval spawning, overlap prevention, scaling, and mob removal.
-  - **New:** Comprehensive unit tests for `InputHandler` are located in `client/src/entities/__tests__/InputHandler.test.ts` and cover input accumulation, clearing, event registration, and cleanup.
-  - **New:** Unit and integration tests for the score/combo UI and particle burst effect are included:
-    - `client/src/entities/__tests__/ComboSystem.unit.test.ts` (combo/score logic and UI updates)
-    - `client/src/scenes/__tests__/GameScene.combo.integration.test.ts` (particle burst triggers on correct keystroke)
-- Unit tests for `FingerGroupManager` are located in `client/src/managers/__tests__/fingerGroupManager.test.ts` and cover:
-  - Initialization of stats for all finger types
-  - Recording key presses and updating stats
-  - Calculating average speed for a finger
-  - Retrieving correct keys for a finger
-  - Determining if a key is mastered (accuracy and speed criteria)
-- Unit tests for `LevelManager` are located in `client/src/managers/__tests__/levelManager.test.ts` and cover initialization, progress tracking, unlocking levels, and persistence via localStorage.
-- Added unit and integration tests for the combo multiplier and score system. See `client/src/entities/__tests__/ComboSystem.unit.test.ts` and `client/src/scenes/__tests__/GameScene.combo.integration.test.ts`.
+Contributions are welcome! Please open issues or pull requests for bug fixes, new features, or documentation improvements.
 
-### Level 1-2 Word List Verification
+## License
 
-- Level 1-2 uses the correct word list (`fjghWords.json`).
-- Tests confirm that generated words for this level include "g" and "h" and only use the allowed letters: "f", "j", "g", and "h".
-- See `client/src/utils/loadWordList.ts` and `client/src/utils/__tests__/loadWordList.test.ts` for implementation and verification.
+[MIT](LICENSE)
 
 ## Changelog
 
-- Added `MainMenuScene.ts` as the new main menu scene. The game now starts at the main menu, which features a "Play" button that takes the player to the world chooser (MenuScene).
-
-## v2 Architecture (In Progress)
-
-- The game is being refactored to use a single, centralized game state (`GameState`) defined in `client/src/state/gameState.ts`.
-- This new architecture will make debugging, pausing, and inspecting the game much easier (inspectable via `window.gameState`).
-- All core systems and scenes will interact with the game state through a `StateManager`.
-- The new `StateManager` is implemented in `client/src/state/stateManager.ts` and provides:
-  - Immutable access to the current game state
-  - Methods to update specific parts of the state (e.g., player health, mobs, game status)
-  - Event emitter for subscribing to state changes
-  - Save/load support via localStorage
-  - Exposes `gameState` to the browser console for debugging
-- Core game loop in `client/src/main.ts` now updates the centralized `gameState` each frame using `StateManager`.
-- System update calls are stubbed and ready for integration as new systems are implemented.
-- See `.github/instructions/project_layout.instructions.md` for the new project structure and architectural goals.
-
-## v2 Architecture Update (May 2025)
-
-- Scenes now read from the centralized `gameState.gameStatus` to determine what to render and how to behave. This enables consistent scene transitions and UI updates based on a single source of truth.
-- The new `BootScene` and `GameScene` (see `client/src/scenes/`) demonstrate this pattern. More scenes will follow this approach as refactoring continues.
-- Scene transitions and UI logic are now driven by updates to `gameState.gameStatus` via the `StateManager`.
-
-## v2 Scene Management
-
-- Scenes now listen for changes to `gameState.gameStatus` via the StateManager event emitter.
-- Scene transitions (e.g., from BootScene to MainMenuScene, or GameScene to PauseScene) are triggered by updating `gameState.gameStatus` using StateManager methods.
-- New scenes added: `MainMenuScene`, `PauseScene`, `GameOverScene` (minimal implementations for demonstration).
-- This enables a single source of truth for game flow and makes transitions testable and debuggable.
-
-- BootScene now fully initializes StateManager, loads essential assets, and transitions to mainMenu status based on the centralized game state (`gameState.gameStatus`).
-- Scene transitions are now driven by changes to `gameState.gameStatus` via StateManager, as demonstrated in BootScene and MainMenuScene.
-
-## v2 Game Loop Refactor
-
-- The main game loop in `GameScene.ts` now updates the global `gameState` with the current delta time and timestamp each frame using the new `stateManager.updateTimestampAndDelta()` method.
-- All core systems (Player, MobSpawner, UI) are updated each frame and can access the latest game state via the StateManager singleton.
-- This enables time-based logic, debugging, and future system refactors to rely on a single source of truth for timing and state.
+See [CHANGELOG.md](./CHANGELOG.md) for a detailed list of changes and feature history.

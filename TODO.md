@@ -39,11 +39,12 @@ This is the most critical phase and will touch most parts of the codebase.
 - [ ] **Refactor Main Game Loop (`client/src/main.ts` or `GameScene.ts` initially):**
   - [x] Game loop should fetch current delta time and update it in `gameState`.
   - [x] Game loop should call update functions of various systems, passing `gameState` or relying on them to access it via `StateManager`.
-- [ ] **Refactor Scene Management:**
-  - [ ] Scenes should read from `gameState.gameStatus` (and other relevant state parts) to determine what to render and how to behave.
-  - [ ] Scene transitions should be triggered by changing `gameState.gameStatus` (e.g., `stateManager.setGameStatus('mainMenu')`).
-  - [ ] `BootScene`: Initialize `StateManager` and load essential assets. Transition to `mainMenu` status.
-  - [ ] `MainMenuScene`, `WorldSelectScene`, `LevelSelectScene`: Render UI based on `gameState`. User interactions dispatch actions to `StateManager` to change `gameStatus` or other relevant state.
+- [x] **Refactor Scene Management:**
+  - [x] Update all scenes (`GameScene`, `MainMenuScene`, `MenuScene`, `LevelMenuScene`) to read from `gameState.gameStatus` and other relevant state for rendering and behavior.
+  - [x] Refactor scene transitions to be triggered by changing `gameState.gameStatus` via `stateManager.setGameStatus(...)`, not by direct scene switching.
+  - [x] Refactor `MainMenuScene`, `MenuScene` (WorldSelect), and `LevelMenuScene` to render UI based on `gameState`, and dispatch actions to `StateManager` for navigation.
+  - [x] Ensure all scene transitions and UI updates are reactive to changes in `gameState.gameStatus`.
+  - [x] Add or update tests to verify correct scene transitions and state-driven rendering.
 - [ ] **Refactor Input Handling (New `InputSystem` - `client/src/systems/InputSystem.ts`):**
   - [ ] Centralize all keyboard/mouse event listeners here.
   - [ ] On input, `InputSystem` updates `gameState` (e.g., `gameState.player.currentInput`, or triggers `stateManager.setGameStatus('paused')` on Escape key).

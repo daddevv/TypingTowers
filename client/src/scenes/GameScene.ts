@@ -46,6 +46,8 @@ export default class GameScene extends Phaser.Scene {
     private globalEscapeHandler?: (event: KeyboardEvent) => void;
     private isPaused: boolean = false;
 
+    private onGameStatusChanged?: (status: string) => void;
+
     constructor() {
         super('GameScene');
     }
@@ -56,7 +58,7 @@ export default class GameScene extends Phaser.Scene {
         // Example: this.load.image('mob', 'assets/images/mob.png');
     }
 
-    async create(data?: { world?: number; level?: number; levelManager?: LevelManager }) {
+    async create(data?: { world?: number; level?: number; levelManager?: any }) {
         // Set up the main game scene here
         // this.add.text(400, 300, 'Type Defense', {
         //     fontSize: '48px',
@@ -150,6 +152,18 @@ export default class GameScene extends Phaser.Scene {
             }
         };
         this.input.keyboard?.on('keydown', this.globalEscapeHandler);
+
+        this.onGameStatusChanged = (status: string) => {
+            if (status !== 'playing') {
+                this.scene.stop();
+            }
+        };
+        stateManager.on('gameStatusChanged', this.onGameStatusChanged);
+        this.events.once('shutdown', () => {
+            if (this.onGameStatusChanged) {
+                stateManager.off('gameStatusChanged', this.onGameStatusChanged);
+            }
+        });
     }
 
     private showWaveNotification(wave: number) {
@@ -417,15 +431,15 @@ export default class GameScene extends Phaser.Scene {
         if (world && nextLevelIdx < world.levels.length) {
             // Advance to next level in the same world
             this.levelManager.setCurrentLevel(world.id, world.levels[nextLevelIdx].id);
-            this.scene.restart({ world: this.currentWorldIdx, level: nextLevelIdx, levelManager: this.levelManager });
+            stateManager.setGameStatus('playing');
         } else if (this.currentWorldIdx < WORLDS.length - 1) {
             // Go to first level of next world
             const nextWorld = WORLDS[this.currentWorldIdx + 1];
             this.levelManager.setCurrentLevel(nextWorld.id, nextWorld.levels[0].id);
-            this.scene.restart({ world: this.currentWorldIdx + 1, level: 0, levelManager: this.levelManager });
+            stateManager.setGameStatus('worldSelect');
         } else {
             // No more levels, go back to menu
-            this.scene.start('MenuScene', { worlds: WORLDS, levelManager: this.levelManager });
+            stateManager.setGameStatus('worldSelect');
         }
     }
 
@@ -433,8 +447,7 @@ export default class GameScene extends Phaser.Scene {
      * Handles returning to the level selection screen for the current world
      */
     private handleBackToLevelSelect() {
-        const world = WORLDS[this.currentWorldIdx];
-        this.scene.start('LevelMenuScene', { worldId: world.id });
+        stateManager.setGameStatus('levelSelect');
     }
 
     /**

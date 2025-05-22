@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { levelManager } from './managers/levelManager';
+import BootScene from './scenes/BootScene';
 import GameScene from './scenes/GameScene';
 import LevelMenuScene from './scenes/LevelMenuScene';
 import MainMenuScene from './scenes/MainMenuScene';
@@ -12,7 +13,7 @@ const config: Phaser.Types.Core.GameConfig = {
     width: window.innerWidth,
     height: window.innerHeight,
     backgroundColor: '#222',
-    scene: [MainMenuScene, MenuScene, LevelMenuScene, GameScene],
+    scene: [BootScene, MainMenuScene, MenuScene, LevelMenuScene, GameScene],
     parent: 'game-container',
     scale: {
         mode: Phaser.Scale.RESIZE,
@@ -22,5 +23,5 @@ const config: Phaser.Types.Core.GameConfig = {
 
 window.addEventListener('DOMContentLoaded', () => {
     const game = new Phaser.Game(config);
-    game.scene.start('MainMenuScene');
+    game.scene.start('BootScene');
 });

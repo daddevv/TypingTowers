@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
-import { WORLDS } from '../curriculum/worldConfig';
-import { levelManager } from '../managers/levelManager';
+import stateManager from '../state/stateManager';
 
 export default class MainMenuScene extends Phaser.Scene {
+    private onGameStatusChanged?: (status: string) => void;
+
     constructor() {
         super('MainMenuScene');
     }
@@ -23,7 +24,19 @@ export default class MainMenuScene extends Phaser.Scene {
             padding: { left: 32, right: 32, top: 12, bottom: 12 },
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
         playButton.on('pointerdown', () => {
-            this.scene.start('MenuScene', { worlds: WORLDS, levelManager });
+            stateManager.setGameStatus('worldSelect');
+        });
+        // Listen for gameStatus changes and transition if needed
+        this.onGameStatusChanged = (status: string) => {
+            if (status !== 'mainMenu') {
+                this.scene.stop();
+            }
+        };
+        stateManager.on('gameStatusChanged', this.onGameStatusChanged);
+        this.events.once('shutdown', () => {
+            if (this.onGameStatusChanged) {
+                stateManager.off('gameStatusChanged', this.onGameStatusChanged);
+            }
         });
     }
 }

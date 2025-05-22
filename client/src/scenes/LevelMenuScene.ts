@@ -3,12 +3,14 @@
 import Phaser from 'phaser';
 import { WORLDS, WorldConfig } from '../curriculum/worldConfig';
 import { levelManager } from '../managers/levelManager';
+import stateManager from '../state/stateManager';
 
 export default class LevelMenuScene extends Phaser.Scene {
     private world!: WorldConfig;
     private menuItems: Phaser.GameObjects.Text[] = [];
     private selectedLevel: number = 0;
     private levelManager = levelManager;
+    private onGameStatusChanged?: (status: string) => void;
 
     constructor() {
         super({ key: 'LevelMenuScene' });
@@ -30,6 +32,18 @@ export default class LevelMenuScene extends Phaser.Scene {
         // Refresh menu when scene is woken (e.g., after returning from GameScene)
         this.events.on('wake', () => {
             this.renderMenu();
+        });
+        // Listen for gameStatus changes and transition if needed
+        this.onGameStatusChanged = (status: string) => {
+            if (status !== 'levelSelect') {
+                this.scene.stop();
+            }
+        };
+        stateManager.on('gameStatusChanged', this.onGameStatusChanged);
+        this.events.once('shutdown', () => {
+            if (this.onGameStatusChanged) {
+                stateManager.off('gameStatusChanged', this.onGameStatusChanged);
+            }
         });
     }
 
@@ -65,7 +79,7 @@ export default class LevelMenuScene extends Phaser.Scene {
         } else if (event.key === 'Enter') {
             this.selectLevel(this.selectedLevel);
         } else if (event.key === 'Escape') {
-            this.scene.start('MenuScene');
+            stateManager.setGameStatus('worldSelect');
         }
     }
 
@@ -73,6 +87,7 @@ export default class LevelMenuScene extends Phaser.Scene {
         const level = this.world.levels[idx];
         if (!this.levelManager.isLevelUnlocked(level.id)) return;
         this.levelManager.setCurrentLevel(this.world.id, level.id);
-        this.scene.start('GameScene', { world: this.world.id, level: idx, levelManager: this.levelManager });
+        stateManager.setGameStatus('playing');
+        // ...could also update current level in stateManager here...
     }
 }
