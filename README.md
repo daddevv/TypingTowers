@@ -50,6 +50,24 @@ TypeDefense is a web-based typing game designed to help players improve their ty
 - **Scaling system tested and tuned:** The MobSpawner's scaling logic for spawn interval and mob speed has been verified with unit tests for smooth progression. Parameters can be adjusted in `MobSpawner.ts` for further tuning.
 - **Word complexity scaling:** The WordGenerator dynamically increases word length and complexity as the game progresses, based on difficulty scaling parameters. This ensures that challenges become more demanding over time.
 
+## v2 Architecture: Centralized Game State & StateManager
+
+TypeDefense v2 introduces a single, centralized global game state for all gameplay, UI, and progression data. This state is defined in `client/src/state/gameState.ts` and includes player, level, mobs, spawner, UI, settings, progression, curriculum, and timing information. All systems and scenes read from and update this state, making debugging and testing much easier.
+
+### StateManager
+
+- The `StateManager` (`client/src/state/stateManager.ts`) is the only way to read or update the game state.
+- Provides:
+  - Immutable getter for the current state
+  - Update functions for all major state parts (e.g., `updatePlayerHealth`, `addMob`, `setGameStatus`)
+  - Event emitter for subscribing to state changes (e.g., `stateManager.on('gameStatusChanged', handler)`)
+  - Automatic save/load to `localStorage` for persistent progression
+  - Exposes `window.gameState` for easy console debugging
+
+All game logic, UI, and systems should use `StateManager` to interact with the state.
+
+See `TODO.md` for migration and refactor steps.
+
 ## Curriculum Design
 
 TypeDefense features a unique learning approach based on finger groups rather than random letters. The game is structured into four worlds, each focusing on a specific set of fingers:
@@ -281,3 +299,9 @@ npm run test -- src/utils/__tests__/wordGenerator.test.ts
 
 - BootScene now fully initializes StateManager, loads essential assets, and transitions to mainMenu status based on the centralized game state (`gameState.gameStatus`).
 - Scene transitions are now driven by changes to `gameState.gameStatus` via StateManager, as demonstrated in BootScene and MainMenuScene.
+
+## v2 Game Loop Refactor
+
+- The main game loop in `GameScene.ts` now updates the global `gameState` with the current delta time and timestamp each frame using the new `stateManager.updateTimestampAndDelta()` method.
+- All core systems (Player, MobSpawner, UI) are updated each frame and can access the latest game state via the StateManager singleton.
+- This enables time-based logic, debugging, and future system refactors to rely on a single source of truth for timing and state.

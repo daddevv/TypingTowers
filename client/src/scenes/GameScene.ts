@@ -6,6 +6,7 @@ import MobSpawner from '../entities/MobSpawner';
 import Player from '../entities/Player';
 import FingerGroupManager from '../managers/fingerGroupManager';
 import LevelManager, { levelManager } from '../managers/levelManager';
+import stateManager from '../state/stateManager';
 import { loadWordList } from '../utils/loadWordList';
 import WordGenerator from '../utils/wordGenerator';
 
@@ -196,6 +197,8 @@ export default class GameScene extends Phaser.Scene {
         if (this.mobSpawner['wordGenerator'] && typeof this.mobSpawner['wordGenerator'].setWordLengthScaling === 'function') {
             this.mobSpawner['wordGenerator'].setWordLengthScaling(this.minWordLength, this.maxWordLength);
         }
+        // --- Update global gameState with delta and timestamp ---
+        stateManager.updateTimestampAndDelta(time, delta);
         // Core game loop logic
         if (this.player) {
             this.player.update(time, delta);
@@ -488,43 +491,9 @@ export default class GameScene extends Phaser.Scene {
             this.scene.start('MenuScene', { worlds: WORLDS, levelManager: this.levelManager });
         });
         const children = [bg, resumeBtn, quitBtn];
-        if (title) children.unshift(title);
-        this.pauseMenuContainer = this.add.container(0, 0, children);
-
-        // --- DOM element for Playwright test ---
-        if (isPlaywright) {
-            let pauseHeader = document.getElementById('pause-header');
-            if (!pauseHeader) {
-                pauseHeader = document.createElement('div');
-                pauseHeader.id = 'pause-header';
-                pauseHeader.setAttribute('data-testid', 'pause-header');
-                pauseHeader.style.position = 'absolute';
-                pauseHeader.style.left = '50%';
-                pauseHeader.style.top = '180px';
-                pauseHeader.style.transform = 'translateX(-50%)';
-                pauseHeader.style.fontSize = '40px';
-                pauseHeader.style.color = '#fff';
-                pauseHeader.style.background = 'rgba(34,34,34,0.95)';
-                pauseHeader.style.padding = '16px 32px';
-                pauseHeader.style.borderRadius = '12px';
-                pauseHeader.style.zIndex = '1000';
-                pauseHeader.innerText = 'Paused';
-                document.body.appendChild(pauseHeader);
-            } else {
-                pauseHeader.style.display = 'block';
-            }
-        }
-        // ---
-
-        this.pauseMenuKeyHandler = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                this.hidePauseMenu();
-            } else if (event.key.toLowerCase() === 'q') {
-                this.scene.stop();
-                this.scene.start('MenuScene', { worlds: WORLDS, levelManager: this.levelManager });
-            }
-        };
-        this.input.keyboard?.on('keydown', this.pauseMenuKeyHandler);
+        if (title) children.push(title);
+        this.pauseMenuContainer = this.add.container(0, 0, children).setDepth(200);
+        // Pause game logic
         this.scene.pause();
     }
 
@@ -534,26 +503,23 @@ export default class GameScene extends Phaser.Scene {
     private hidePauseMenu() {
         if (!this.isPaused) return;
         this.isPaused = false;
-        // Remove pause menu container
         if (this.pauseMenuContainer) {
             this.pauseMenuContainer.destroy();
             this.pauseMenuContainer = undefined;
         }
-        // Remove pause menu key handler
-        if (this.pauseMenuKeyHandler) {
-            this.input.keyboard?.off('keydown', this.pauseMenuKeyHandler);
-            this.pauseMenuKeyHandler = undefined;
-        }
-        // Restore global Escape handler
-        if (this.globalEscapeHandler) {
-            this.input.keyboard?.on('keydown', this.globalEscapeHandler);
-        }
-        // Remove DOM pause header for Playwright
-        const pauseHeader = document.getElementById('pause-header');
-        if (pauseHeader) {
-            pauseHeader.style.display = 'none';
-        }
+        // Resume game logic
         this.scene.resume();
+        // Re-register global Escape handler
+        this.globalEscapeHandler = (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && !this.levelCompleteText) {
+                if (!this.isPaused) {
+                    this.showPauseMenu();
+                } else {
+                    // Always call hidePauseMenu to ensure pause header is removed and game resumes
+                    this.hidePauseMenu();
+                }
+            }
+        };
+        this.input.keyboard?.on('keydown', this.globalEscapeHandler);
     }
 }
-// Contains AI-generated edits.

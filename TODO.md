@@ -2,13 +2,13 @@
 
 ## Phase 0: Project Setup & Planning (v2 Kickoff)
 
-- [ ] **Initialize v2 Branch:** Create a new branch for v2 development (e.g., `feature/v2-architecture`).
-- [ ] **Review v2 Goals:** Confirm understanding of core v2 objectives:
+- [x] **Initialize v2 Branch:** Create a new branch for v2 development (e.g., `feature/v2-architecture`).
+- [x] **Review v2 Goals:** Confirm understanding of core v2 objectives:
   - Single, centralized game state.
   - Improved architecture for maintainability and scalability.
   - Simplified debugging (especially for pause/unpause).
   - Console inspectable game state.
-- [ ] **Adopt New Project Layout:** Start organizing files according to the new `project_layout.instructions.md` as you refactor/create.
+- [x] **Adopt New Project Layout:** Start organizing files according to the new `project_layout.instructions.md` as you refactor/create.
 
 ## Phase 1: Core Architecture Refactor - Single Game State
 
@@ -16,29 +16,29 @@ This is the most critical phase and will touch most parts of the codebase.
 
 ### 1.1. Design & Implement Global Game State
 
-- [ ] **Define `GameState` Interface/Type (`client/src/state/gameState.ts`):
-  - [ ] Player state (health, score, combo, current input).
-  - [ ] Level state (current world, current level ID, level status - not started, playing, complete, failed).
-  - [ ] Game status (e.g., `booting`, `mainMenu`, `worldSelect`, `levelSelect`, `playing`, `paused`, `levelComplete`, `gameOver`).
-  - [ ] Mob state (array of active mob objects: id, word, currentTypedIndex, position, speed, type).
-  - [ ] Mob Spawner state (next spawn time, current wave, mobs remaining in wave).
-  - [ ] UI state (active modals, notifications, visibility flags for UI elements).
-  - [ ] Settings (volume, difficulty (if applicable)).
-  - [ ] Curriculum/Progression state (unlocked levels/worlds, finger group stats from `FingerGroupManager`).
-  - [ ] Timestamp/Delta time for time-based logic.
-- [ ] **Implement `StateManager` (`client/src/state/stateManager.ts`):**
-  - [ ] Initialize default/empty game state.
-  - [ ] Provide function to get the current game state (immutable or copy preferred).
-  - [ ] Provide functions to update specific parts of the game state (e.g., `updatePlayerHealth(newHealth)`, `addMob(mobData)`, `setGameStatus('paused')`). These functions will be the primary way systems interact with the state.
-  - [ ] Implement mechanism to expose `gameState` to `window.gameState` for console debugging.
-  - [ ] (Optional but Recommended) Implement a simple event emitter within `StateManager` for systems to subscribe to specific state changes (e.g., `stateManager.on('gameStatusChanged', handler)`).
-  - [ ] Implement basic save/load functionality for `gameState` (using `localStorage`) for progression.
+- [x] **Define `GameState` Interface/Type (`client/src/state/gameState.ts`):
+  - [x] Player state (health, score, combo, current input).
+  - [x] Level state (current world, current level ID, level status - not started, playing, complete, failed).
+  - [x] Game status (e.g., `booting`, `mainMenu`, `worldSelect`, `levelSelect`, `playing`, `paused`, `levelComplete`, `gameOver`).
+  - [x] Mob state (array of active mob objects: id, word, currentTypedIndex, position, speed, type).
+  - [x] Mob Spawner state (next spawn time, current wave, mobs remaining in wave).
+  - [x] UI state (active modals, notifications, visibility flags for UI elements).
+  - [x] Settings (volume, difficulty (if applicable)).
+  - [x] Curriculum/Progression state (unlocked levels/worlds, finger group stats from `FingerGroupManager`).
+  - [x] Timestamp/Delta time for time-based logic.
+- [x] **Implement `StateManager` (`client/src/state/stateManager.ts`):**
+  - [x] Initialize default/empty game state.
+  - [x] Provide function to get the current game state (immutable or copy preferred).
+  - [x] Provide functions to update specific parts of the game state (e.g., `updatePlayerHealth(newHealth)`, `addMob(mobData)`, `setGameStatus('paused')`). These functions will be the primary way systems interact with the state.
+  - [x] Implement mechanism to expose `gameState` to `window.gameState` for console debugging.
+  - [x] (Optional but Recommended) Implement a simple event emitter within `StateManager` for systems to subscribe to specific state changes (e.g., `stateManager.on('gameStatusChanged', handler)`).
+  - [x] Implement basic save/load functionality for `gameState` (using `localStorage`) for progression.
 
 ### 1.2. Refactor Core Game Systems
 
 - [ ] **Refactor Main Game Loop (`client/src/main.ts` or `GameScene.ts` initially):**
-  - [ ] Game loop should fetch current delta time and update it in `gameState`.
-  - [ ] Game loop should call update functions of various systems, passing `gameState` or relying on them to access it via `StateManager`.
+  - [x] Game loop should fetch current delta time and update it in `gameState`.
+  - [x] Game loop should call update functions of various systems, passing `gameState` or relying on them to access it via `StateManager`.
 - [ ] **Refactor Scene Management:**
   - [ ] Scenes should read from `gameState.gameStatus` (and other relevant state parts) to determine what to render and how to behave.
   - [ ] Scene transitions should be triggered by changing `gameState.gameStatus` (e.g., `stateManager.setGameStatus('mainMenu')`).
