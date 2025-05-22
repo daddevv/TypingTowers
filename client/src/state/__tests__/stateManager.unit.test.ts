@@ -26,7 +26,15 @@ describe('StateManager', () => {
     });
 
     it('adds and removes mobs correctly', () => {
-        const mob = { id: 'mob1', word: 'test', x: 0, y: 0, matched: 0 };
+        const mob = {
+            id: 'mob1',
+            word: 'test',
+            currentTypedIndex: 0,
+            position: { x: 0, y: 0 },
+            speed: 100,
+            type: 'normal',
+            isDefeated: false
+        };
         stateManager.addMob(mob);
         expect(stateManager.getState().mobs).toContainEqual(mob);
         stateManager.removeMob('mob1');
