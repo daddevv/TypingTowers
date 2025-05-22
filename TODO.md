@@ -1,137 +1,169 @@
-# TODO
+# TypeDefense v2 - Detailed TODO List
 
-## Completed Tasks
+## Phase 0: Project Setup & Planning (v2 Kickoff)
 
-- [x] Fixed the E2E test for pause menu functionality by properly navigating through the game UI
-  - [x] Updated test to click the Play button in MainMenuScene
-  - [x] Added explicit button clicks to navigate through world and level selection
+- [ ] **Initialize v2 Branch:** Create a new branch for v2 development (e.g., `feature/v2-architecture`).
+- [ ] **Review v2 Goals:** Confirm understanding of core v2 objectives:
+  - Single, centralized game state.
+  - Improved architecture for maintainability and scalability.
+  - Simplified debugging (especially for pause/unpause).
+  - Console inspectable game state.
+- [ ] **Adopt New Project Layout:** Start organizing files according to the new `project_layout.instructions.md` as you refactor/create.
 
-## Code Tasks
+## Phase 1: Core Architecture Refactor - Single Game State
 
-- [ ] Fix unpause functionality so that pressing Escape resumes the game
-  - [ ] Investigate why pressing Escape does not unpause the game (pause menu remains visible).
-  - [ ] Update the Escape key handler in GameScene.ts to toggle pause/unpause:
-    - If the game is not paused, show the pause menu.
-    - If the game is paused, hide the pause menu and resume the game.
-  - [ ] Ensure the pause menu UI is properly hidden and the game state resumes when unpausing.
-  - [ ] Test the fix manually and with the E2E test to confirm Escape toggles pause/resume.
-  - [ ] Mark the task as complete in TODO.md.
-  - [ ] Update README.md to mention the improved pause/resume functionality.
-  - [ ] Update .github/instructions/project_layout.instructions.md if any new files or structure changes are made.
+This is the most critical phase and will touch most parts of the codebase.
 
-### Mob & Spawning System
+### 1.1. Design & Implement Global Game State
 
-- [ ] Playtest and balance spawn rate and speed for fun/challenge.
+- [ ] **Define `GameState` Interface/Type (`client/src/state/gameState.ts`):
+  - [ ] Player state (health, score, combo, current input).
+  - [ ] Level state (current world, current level ID, level status - not started, playing, complete, failed).
+  - [ ] Game status (e.g., `booting`, `mainMenu`, `worldSelect`, `levelSelect`, `playing`, `paused`, `levelComplete`, `gameOver`).
+  - [ ] Mob state (array of active mob objects: id, word, currentTypedIndex, position, speed, type).
+  - [ ] Mob Spawner state (next spawn time, current wave, mobs remaining in wave).
+  - [ ] UI state (active modals, notifications, visibility flags for UI elements).
+  - [ ] Settings (volume, difficulty (if applicable)).
+  - [ ] Curriculum/Progression state (unlocked levels/worlds, finger group stats from `FingerGroupManager`).
+  - [ ] Timestamp/Delta time for time-based logic.
+- [ ] **Implement `StateManager` (`client/src/state/stateManager.ts`):**
+  - [ ] Initialize default/empty game state.
+  - [ ] Provide function to get the current game state (immutable or copy preferred).
+  - [ ] Provide functions to update specific parts of the game state (e.g., `updatePlayerHealth(newHealth)`, `addMob(mobData)`, `setGameStatus('paused')`). These functions will be the primary way systems interact with the state.
+  - [ ] Implement mechanism to expose `gameState` to `window.gameState` for console debugging.
+  - [ ] (Optional but Recommended) Implement a simple event emitter within `StateManager` for systems to subscribe to specific state changes (e.g., `stateManager.on('gameStatusChanged', handler)`).
+  - [ ] Implement basic save/load functionality for `gameState` (using `localStorage`) for progression.
 
-### Gameplay Loop & Feedback
+### 1.2. Refactor Core Game Systems
 
-- [ ] Implement action-challenge-reward loop with instant visual/audio feedback on word defeat.
-  - [ ] Play an audio cue when a mob is defeated.
-  - [ ] Integrate the loop into the main game update cycle.
-- [ ] Add camera shake and screen flash effects for wave completion and boss defeat.
-- [ ] Integrate layered audio cues for typing, combos, and wave clearances.
-- [ ] Modularize game states into separate Phaser Scenes (preload, menu, waves, game over).
+- [ ] **Refactor Main Game Loop (`client/src/main.ts` or `GameScene.ts` initially):**
+  - [ ] Game loop should fetch current delta time and update it in `gameState`.
+  - [ ] Game loop should call update functions of various systems, passing `gameState` or relying on them to access it via `StateManager`.
+- [ ] **Refactor Scene Management:**
+  - [ ] Scenes should read from `gameState.gameStatus` (and other relevant state parts) to determine what to render and how to behave.
+  - [ ] Scene transitions should be triggered by changing `gameState.gameStatus` (e.g., `stateManager.setGameStatus('mainMenu')`).
+  - [ ] `BootScene`: Initialize `StateManager` and load essential assets. Transition to `mainMenu` status.
+  - [ ] `MainMenuScene`, `WorldSelectScene`, `LevelSelectScene`: Render UI based on `gameState`. User interactions dispatch actions to `StateManager` to change `gameStatus` or other relevant state.
+- [ ] **Refactor Input Handling (New `InputSystem` - `client/src/systems/InputSystem.ts`):**
+  - [ ] Centralize all keyboard/mouse event listeners here.
+  - [ ] On input, `InputSystem` updates `gameState` (e.g., `gameState.player.currentInput`, or triggers `stateManager.setGameStatus('paused')` on Escape key).
+  - [ ] Remove input handling logic scattered across different scenes/entities.
+- [ ] **Refactor Entities (`Player`, `Mob`, `MobSpawner`):**
+  - [ ] `Player`: Behavior (e.g., taking damage) driven by `gameState`.
+  - [ ] `Mob`:
+    - Data (word, position) stored in `gameState.mobs`.
+    - Movement and logic updates based on its state in `gameState.mobs` and global `gameState` (e.g., delta time).
+    - When a mob is hit/defeated, update its state in `gameState.mobs` or remove it via `StateManager`.
+  - [ ] `MobSpawner`:
+    - Logic driven by `gameState.mobSpawnerState` and `gameState.currentLevel.spawnRules`.
+    - When spawning a mob, adds it to `gameState.mobs` via `StateManager`.
+- [ ] **Refactor Managers (or integrate into Systems):**
+  - [ ] `LevelManager`: Functionality largely moves to `ProgressionSystem` and `StateManager`. Data like unlocked levels stored in `gameState.progression`.
+  - [ ] `FingerGroupManager`: Operates on typing data, potentially sourced from `gameState.player.currentInput` or events. Stores its stats within `gameState.curriculum.fingerGroupStats`.
+- [ ] **Implement Pause/Unpause Functionality:**
+  - [ ] Escape key (via `InputSystem`) toggles `gameState.gameStatus` between `playing` and `paused`.
+  - [ ] All time-based updates (mob movement, spawning, timers) must check `gameState.gameStatus` and halt if `paused`.
+  - [ ] Rendering of pause menu UI driven by `gameState.gameStatus === 'paused'`.
+  - [ ] Resume/Quit options in pause menu update `gameState.gameStatus` accordingly.
 
-### Level & World Progression
+### 1.3. Testing & Debugging for Core Architecture
 
-- [ ] Create Level 1-4: Add T/Y (top row) with more complex patterns.
-  - [x] Define Level 1-4 in the curriculum and world configuration files.
-  - [x] Create a word list JSON file for Level 1-4 using only index finger letters plus T and Y, emphasizing T/Y usage.
-  - [ ] Update the level selection menu to include Level 1-4 and ensure it unlocks after 1-3.
-  - [ ] Add tests to verify Level 1-4 unlocks correctly and uses the correct word list.
-  - [ ] Mark this task as complete when all subtasks are finished.
-- [ ] Create Level 1-5: Add V/M (bottom row) with drills for downward reaches.
-  - [x] Define Level 1-5 in the curriculum and world configuration files.
-  - [ ] Create a word list JSON file for Level 1-5 using only index finger letters plus V and M, emphasizing V/M usage.
-  - [ ] Update the level selection menu to include Level 1-5 and ensure it unlocks after 1-4.
-  - [ ] Add tests to verify Level 1-5 unlocks correctly and uses the correct word list.
-  - [ ] Playtest Level 1-5 to ensure word patterns emphasize V/M and gameplay is challenging but fair.
-  - [ ] Update README.md to document the new level and its focus.
-  - [ ] Update project layout documentation if new files are added.
-  - [ ] Mark this task as complete when all subtasks are finished.
-- [ ] Create Level 1-6: Add B/N (completing bottom row) with all index letters.
-  - [x] Define Level 1-6 in the curriculum and world configuration files.
-  - [ ] Create a word list JSON file for Level 1-6 using all index finger letters (F, J, G, H, R, U, T, Y, V, M, B, N).
-  - [ ] Update the level selection menu to include Level 1-6 and ensure it unlocks after 1-5.
-  - [ ] Add tests to verify Level 1-6 unlocks correctly and uses the correct word list.
-  - [ ] Playtest Level 1-6 to ensure word patterns emphasize B/N and gameplay is challenging but fair.
-  - [ ] Update README.md to document the new level and its focus.
-  - [ ] Update project layout documentation if new files are added.
-  - [ ] Mark this task as complete when all subtasks are finished.
-- [ ] Create Level 1-7: Boss level using all index finger letters in combination.
-  - [x] Define Level 1-7 in the curriculum and world configuration files.
-  - [ ] Create a word list JSON file for Level 1-7 using all index finger letters (F, J, G, H, R, U, T, Y, V, M, B, N).
-  - [ ] Update the level selection menu to include Level 1-7 and ensure it unlocks after 1-6.
-  - [ ] Add tests to verify Level 1-7 unlocks correctly and uses the correct word list.
-  - [ ] Playtest Level 1-7 to ensure word patterns are challenging and suitable for a boss level.
-  - [ ] Update README.md to document the new boss level and its focus.
-  - [ ] Update project layout documentation if new files are added.
-  - [ ] Mark this task as complete when all subtasks are finished.
-- [ ] Fix level progression so that completing a level unlocks and advances to the next.
-  - [x] Review and update the logic in `LevelManager` to ensure that completing a level marks it as completed and unlocks the next level.
-  - [x] Update the game flow in `GameScene` so that after a level is completed, the next level is automatically unlocked and the player is advanced to it (or returned to the menu if at the last level).
-  - [x] Ensure the level selection menu (`LevelMenuScene`) reflects the unlocked status of levels immediately after completion.
-    - [x] Update `LevelMenuScene` to refresh level lock/unlock status when returning from a completed level.
-    - [x] Ensure the UI updates immediately, not just on scene reload.
-    - [x] Test by completing a level and verifying the menu updates as expected.
-  - [x] Add or update tests in `levelManager.test.ts` to verify that completing a level unlocks the next.
-  - [x] Update `README.md` and `.github/instructions/project_layout.instructions.md` to document the improved progression system.
-- [x] Ensure that level 1-2 uses the correct word list and includes "g" and "h" in generated words.
-- [x] Verify that level 1-2 uses the correct word list (`fjghWords.json`) and that generated words include "g" and "h".
-- [ ] Add or update tests to ensure that level 1-2 only uses "f", "j", "g", and "h" in generated words.
-- [ ] Test and verify that after completing level 1-2, level 1-3 is unlocked and accessible in the level selection menu.
-- [x] Add or update tests in `levelManager.test.ts` to confirm that completing 1-2 unlocks 1-3.
-- [ ] Update `README.md` to document the correct word list usage and level unlocking behavior.
-- [ ] Update `.github/instructions/project_layout.instructions.md` if any project structure changes are made.
-- [ ] Implement logic in GameScene to detect when 50 enemies are defeated and trigger level completion.
-- [ ] Update LevelManager to unlock and move to level 1-2 upon winning.
-- [ ] Display a "Level Complete" message and transition to the next level.
-- [ ] Ensure all new code is well-commented and tested.
+- [ ] **Unit Tests for `StateManager`:** Test state initialization, updates, getters.
+- [ ] **Unit Tests for Systems:** Test system logic with mocked `gameState`.
+- [ ] **Console Debugging:** Continuously verify that `window.gameState` is accessible and reflects the current state accurately. Use it to debug issues during refactoring.
 
-### Menu, World, and Level Selection
+## Phase 2: Gameplay Enhancements & Content (Leveraging New Architecture)
 
-- [ ] Create a world chooser scene that displays all worlds, showing locked/unlocked/completed status.
-- [ ] When a player selects an unlocked world, show a level selector for that world, displaying all levels with their status.
-- [ ] Allow the player to select an unlocked level to start the game.
-- [ ] Integrate the new scenes into the game flow and update navigation logic.
-- [ ] Refactor MenuScene to display only worlds (no levels).
-- [ ] Implement LevelMenuScene to display levels for the selected world.
-- [ ] Make levels clickable in LevelMenuScene to start the game at the selected level.
-- [ ] Add a Back button to the level complete UI in GameScene that returns to level selection.
-- [ ] Ensure the Continue button in GameScene advances to the next level, world, or menu as appropriate.
-- [ ] Add keyboard shortcuts: Enter for continue, Escape for back, in the level complete UI.
-- [ ] Ensure all navigation buttons and keyboard shortcuts work for progressing through the whole game.
-- [x] Fix the "Continue" button in GameScene so it is always clickable after beating a level.
-- [x] Update MenuScene so that worlds 2, 3, and 4 cannot be selected unless world 1-7 is completed (lock worlds until previous world is finished).
-- [ ] Ensure all new code is well-commented and tested.
+This phase integrates remaining tasks from the old TODO and builds upon the new architecture.
 
-### Documentation & Testing
+### 2.1. Mob & Spawning System
 
-- [ ] Update README.md to mention new levels and keys.
-- [ ] Update README.md to document the new win/level progression feature.
-- [ ] Update README.md to document the new menu flow and particle effect.
-- [ ] Update README.md with testing instructions.
-- [ ] Update project layout documentation if new files/structure are added.
-- [ ] Update project layout documentation if new directories are added.
-- [ ] Update project layout documentation if any new files or structure are added.
-- [ ] Update documentation and mark tasks as complete.
+- [ ] **Balance & Playtest:**
+  - [ ] Playtest and balance mob spawn rates and speeds for all existing and new levels. Adjust configurations in level data files, read by `MobSpawner` via `gameState`.
 
-## Asset Tasks
+### 2.2. Gameplay Loop & Feedback
 
-### Visual & Audio Feedback
+- [ ] **Action-Challenge-Reward Loop:**
+  - [ ] Implement audio cue when a mob is defeated (triggered by state change in `gameState.mobs`).
+- [ ] **Visual Effects:**
+  - [ ] Add camera shake and screen flash effects for wave completion and boss defeat (triggered by relevant `gameState` changes).
+- [ ] **Audio:**
+  - [ ] Integrate layered audio cues for typing, combos, wave clearances (managed by an `AudioSystem` reacting to `gameState`).
+- [ ] **Scene Modularization (Phaser Scenes):**
+  - [ ] Ensure all game states (preload, menu, game, game over, etc.) are handled by distinct Phaser Scenes that are activated/deactivated based on `gameState.gameStatus`.
 
-- [ ] Create finger position guidance overlays for tutorials.
-- [ ] Implement letter highlighting system showing which finger should be used.
-- [ ] Design unique visual effects for each world/finger group.
-- [ ] Create thematic boss designs for each world.
-- [ ] Implement distinctive sound effects for different finger groups.
-- [ ] Create celebratory animations and sounds for level completion.
+### 2.3. Level & World Progression (World 1 Completion)
 
-## Expansion Content (Future)
+- [ ] **Create Level 1-4 (T/Y):**
+  - [ ] Update level selection UI (`LevelSelectScene` reading from `gameState`) to include Level 1-4 and handle its unlocking based on `gameState.progression`.
+  - [ ] Add tests: Level 1-4 unlocks correctly; uses correct word list (verify `WordGenerator` with level-specific letters from `gameState`).
+- [ ] **Create Level 1-5 (V/M):**
+  - [ ] Create word list JSON file (`fjghrutyvmWords.json` - already listed in `project_layout`).
+  - [ ] Update level selection UI.
+  - [ ] Add tests (unlocks, word list).
+  - [ ] Playtest Level 1-5.
+- [ ] **Create Level 1-6 (B/N):**
+  - [ ] Create word list JSON file (`fjghrutyvmbnWords.json` - already listed).
+  - [ ] Update level selection UI.
+  - [ ] Add tests (unlocks, word list).
+  - [ ] Playtest Level 1-6.
+- [ ] **Create Level 1-7 (Boss):**
+  - [ ] Create word list JSON file (`fjghrutyvmbn_bossWords.json` - already listed).
+  - [ ] Update level selection UI.
+  - [ ] Add tests (unlocks, word list).
+  - [ ] Playtest Level 1-7.
+- [ ] **General Level Progression & Win Conditions:**
+  - [ ] Add tests to ensure Level 1-2 word generation (via `WordGenerator` using letters from `gameState.currentLevel.allowedLetters`) only uses "f", "j", "g", "h".
+  - [ ] Test and verify Level 1-3 unlocks after 1-2 is marked complete in `gameState.progression`.
+  - [ ] Implement robust win condition logic (e.g., defeat X enemies, survive Y waves) within `GameScene` or a `GameLogicSystem`, updating `gameState.levelStatus` to `complete`.
+  - [ ] Ensure all new code is well-commented and tested, especially interactions with `gameState`.
 
-- [ ] Create Numbers & Symbols World with specialized levels.
-- [ ] Implement Programming/Coding Mode with syntax exercises.
-- [ ] Design advanced challenges combining all character types.
+### 2.4. Menu, World, and Level Selection UI & Logic
+
+- [ ] **Refine UI Scenes:**
+  - [ ] `WorldSelectScene`: Displays worlds based on `gameState.curriculum.worldConfig` and `gameState.progression.unlockedWorlds`.
+  - [ ] `LevelSelectScene`: Displays levels for the selected world based on `gameState` and `gameState.progression.unlockedLevels`.
+  - [ ] Ensure levels are clickable in `LevelSelectScene` to start the game (updates `gameState.gameStatus` to `playing` and loads `gameState.currentLevel`).
+- [ ] **Navigation:**
+  - [ ] Implement "Back" button in level complete UI (`LevelCompleteScene`) that returns to level selection (updates `gameState.gameStatus`).
+  - [ ] Ensure "Continue" button in `LevelCompleteScene` advances to the next level/world or menu as appropriate (updates `gameState`).
+  - [ ] Ensure keyboard shortcuts (Enter for continue, Esc for back) in `LevelCompleteScene` work via `InputSystem` updating `gameState`.
+  - [ ] Test all navigation flows thoroughly.
+
+## Phase 3: Polish & Expansion Prep
+
+### 3.1. Asset Tasks (Visual & Audio Feedback)
+
+- [ ] **Visual Enhancements:**
+  - [ ] Create finger position guidance overlays for tutorials.
+  - [ ] Implement letter highlighting system showing which finger should be used.
+  - [ ] Design unique visual effects for each world/finger group.
+  - [ ] Create thematic boss designs for each world.
+- [ ] **Audio Enhancements:**
+  - [ ] Implement distinctive sound effects for different finger groups.
+  - [ ] Create celebratory animations and sounds for level completion.
+
+### 3.2. Documentation & Testing
+
+- [ ] **README Updates:**
+  - [ ] Document new levels and keys as they are completed.
+  - [ ] Document the v2 architecture, focusing on the global game state and its benefits.
+  - [ ] Update testing instructions for v2.
+- [ ] **Project Layout Documentation:**
+  - [ ] Keep `.github/instructions/project_layout.instructions.md` updated as v2 evolves.
+- [ ] **Comprehensive Testing:**
+  - [ ] Aim for high test coverage for `StateManager`, `Systems`, and critical UI interactions.
+  - [ ] Write E2E tests for key user flows (starting game, completing level, pausing, etc.).
+
+## Phase 4: Future Expansion (Post v2 Core Stability)
+
+- [ ] **New Content Worlds:**
+  - [ ] Create Numbers & Symbols World with specialized levels.
+- [ ] **New Game Modes:**
+  - [ ] Implement Programming/Coding Mode with syntax exercises.
+- [ ] **Advanced Challenges:**
+  - [ ] Design advanced challenges combining all character types.
 
 ---
-Contains AI-generated edits.
+
+This detailed TODO should provide a solid roadmap for developing TypeDefense v2 with a more robust and manageable architecture. Remember to commit frequently and test thoroughly, especially during the core refactoring phase. Good luck!

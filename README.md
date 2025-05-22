@@ -250,3 +250,34 @@ npm run test -- src/utils/__tests__/wordGenerator.test.ts
 ## Changelog
 
 - Added `MainMenuScene.ts` as the new main menu scene. The game now starts at the main menu, which features a "Play" button that takes the player to the world chooser (MenuScene).
+
+## v2 Architecture (In Progress)
+
+- The game is being refactored to use a single, centralized game state (`GameState`) defined in `client/src/state/gameState.ts`.
+- This new architecture will make debugging, pausing, and inspecting the game much easier (inspectable via `window.gameState`).
+- All core systems and scenes will interact with the game state through a `StateManager`.
+- The new `StateManager` is implemented in `client/src/state/stateManager.ts` and provides:
+  - Immutable access to the current game state
+  - Methods to update specific parts of the state (e.g., player health, mobs, game status)
+  - Event emitter for subscribing to state changes
+  - Save/load support via localStorage
+  - Exposes `gameState` to the browser console for debugging
+- Core game loop in `client/src/main.ts` now updates the centralized `gameState` each frame using `StateManager`.
+- System update calls are stubbed and ready for integration as new systems are implemented.
+- See `.github/instructions/project_layout.instructions.md` for the new project structure and architectural goals.
+
+## v2 Architecture Update (May 2025)
+
+- Scenes now read from the centralized `gameState.gameStatus` to determine what to render and how to behave. This enables consistent scene transitions and UI updates based on a single source of truth.
+- The new `BootScene` and `GameScene` (see `client/src/scenes/`) demonstrate this pattern. More scenes will follow this approach as refactoring continues.
+- Scene transitions and UI logic are now driven by updates to `gameState.gameStatus` via the `StateManager`.
+
+## v2 Scene Management
+
+- Scenes now listen for changes to `gameState.gameStatus` via the StateManager event emitter.
+- Scene transitions (e.g., from BootScene to MainMenuScene, or GameScene to PauseScene) are triggered by updating `gameState.gameStatus` using StateManager methods.
+- New scenes added: `MainMenuScene`, `PauseScene`, `GameOverScene` (minimal implementations for demonstration).
+- This enables a single source of truth for game flow and makes transitions testable and debuggable.
+
+- BootScene now fully initializes StateManager, loads essential assets, and transitions to mainMenu status based on the centralized game state (`gameState.gameStatus`).
+- Scene transitions are now driven by changes to `gameState.gameStatus` via StateManager, as demonstrated in BootScene and MainMenuScene.
