@@ -82,6 +82,28 @@ class StateManager {
         this.emitAndSave('timestampDeltaChanged', { timestamp, delta });
     }
 
+    updateMobSpawnerState(newState: Partial<GameState['mobSpawner']>) {
+        this.state.mobSpawner = { ...this.state.mobSpawner, ...newState };
+        this.emitAndSave('mobSpawnerStateChanged', this.state.mobSpawner);
+    }
+
+    updateMobs(newMobs: GameState['mobs']) {
+        this.state.mobs = newMobs;
+        this.emitAndSave('mobsUpdated', newMobs);
+    }
+
+    // --- Level Progression ---
+    updateProgression(newProgression: Partial<GameState['progression']>) {
+        this.state.progression = { ...this.state.progression, ...newProgression };
+        this.emitAndSave('progressionChanged', this.state.progression);
+    }
+
+    // --- Curriculum/Finger Group Stats ---
+    updateCurriculum(newCurriculum: Partial<GameState['curriculum']>) {
+        this.state.curriculum = { ...this.state.curriculum, ...newCurriculum };
+        this.emitAndSave('curriculumChanged', this.state.curriculum);
+    }
+
     // Add more update methods as needed for other state parts...
 
     // --- Save/load ---

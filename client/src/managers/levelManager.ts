@@ -142,4 +142,8 @@ export default class LevelManager {
     }
 }
 
+// DEPRECATED: LevelManager logic is being migrated to StateManager and gameState.progression.levelProgress.
+// This file is retained for reference and backward compatibility during migration.
+// All new code should use StateManager and gameState for progression.
+
 export const levelManager = new LevelManager();

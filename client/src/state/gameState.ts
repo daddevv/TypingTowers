@@ -65,12 +65,21 @@ export interface SettingsState {
     // Add more as needed
 }
 
+export interface LevelProgress {
+    completed: boolean;
+    highScore: number;
+    bestWPM: number;
+    bestAccuracy: number;
+    attempts: number;
+}
+
 export interface ProgressionState {
     unlockedWorlds: string[];
     unlockedLevels: string[];
     completedLevels: string[];
-    fingerGroupStats: Record<string, FingerGroupStats>;
-    fingerGroupProgress: Record<string, FingerGroupProgress>;
+    fingerGroupStats: Record<string, FingerGroupStats>; // Deprecated: will move to curriculum
+    fingerGroupProgress: Record<string, FingerGroupProgress>; // Deprecated: will move to curriculum
+    levelProgress: Record<string, LevelProgress>; // New: stores progress for each level
 }
 
 export interface CurriculumState {
@@ -131,6 +140,7 @@ export const defaultGameState: GameState = {
         completedLevels: [],
         fingerGroupStats: {},
         fingerGroupProgress: {},
+        levelProgress: {},
     },
     curriculum: {
         worldConfig: {},

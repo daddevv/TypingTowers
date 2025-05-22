@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-import { getKeyInfo } from '../curriculum/fingerGroups';
 import { WORLDS } from '../curriculum/worldConfig';
+import { MobSystem } from '../entities/Mob';
 import MobSpawner from '../entities/MobSpawner';
 import Player from '../entities/Player';
 import FingerGroupManager from '../managers/fingerGroupManager';
@@ -185,11 +185,8 @@ export default class GameScene extends Phaser.Scene {
         if (!this.mobSpawner) return;
         // --- Difficulty scaling system ---
         this.elapsedTime += delta;
-        // Progression: 0 (start) to 1 (max difficulty)
         this.scalingProgression = Phaser.Math.Clamp(this.elapsedTime / this.scalingDuration, 0, 1);
-        // Adjust MobSpawner spawn rate and speed
         this.mobSpawner.setProgression(this.scalingProgression);
-        // Adjust word complexity (length) as difficulty increases
         this.minWordLength = 2 + Math.floor(2 * this.scalingProgression); // 2 to 4
         this.maxWordLength = 5 + Math.floor(2 * this.scalingProgression); // 5 to 7
         if (this.mobSpawner['wordGenerator'] && typeof this.mobSpawner['wordGenerator'].setWordLengthScaling === 'function') {
@@ -197,26 +194,27 @@ export default class GameScene extends Phaser.Scene {
         }
         // --- Update global gameState with delta and timestamp ---
         stateManager.updateTimestampAndDelta(time, delta);
-        // Core game loop logic
+        // Update player view
         if (this.player) {
             this.player.update(time, delta);
         }
-        // Update MobSpawner and its mobs
+        // Update mobs via MobSystem
+        MobSystem.updateAll(time, delta);
+        // Update MobSpawner (spawning logic)
         this.mobSpawner.update(time, delta);
-        // Update enemies remaining UI dynamically
         this.updateEnemiesRemainingUI();
-        // Check for mobs reaching the player (collision/proximity)
-        const mobs = this.mobSpawner.getMobs();
+        // Collision: check for mobs near player
+        const playerState = stateManager.getState().player;
+        const mobs = stateManager.getState().mobs;
         for (const mob of mobs) {
             if (!mob.isDefeated) {
-                const dx = mob.x - this.player.x;
-                const dy = mob.y - this.player.y;
+                const dx = mob.position.x - playerState.position.x;
+                const dy = mob.position.y - playerState.position.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 40) { // collision radius
-                    this.player.takeDamage(1);
-                    this.mobSpawner.removeMob(mob);
-                    // Optionally: add hit feedback here
-                    if (this.player.health <= 0) {
+                if (dist < 40) {
+                    stateManager.updatePlayerHealth(Math.max(0, playerState.health - 1));
+                    stateManager.removeMob(mob.id);
+                    if (playerState.health <= 0) {
                         this.add.text(400, 300, 'Game Over', { fontSize: '48px', color: '#ff5555' }).setOrigin(0.5);
                         this.scene.pause();
                     }
@@ -224,113 +222,39 @@ export default class GameScene extends Phaser.Scene {
                 }
             }
         }
-        // Improved mob input handling for combos and multiple mobs
+        // Input handling: update mob progress based on input
         const input = stateManager.getState().player.currentInput || '';
         if (input.length > 0) {
             let anyCorrect = false;
             for (const char of input) {
-                const keyInfo = getKeyInfo(char);
-                if (keyInfo) {
-                    this.fingerGroupManager.recordKeyPress(char, true, time);
-                }
-                let handled = false;
-                // 1. If no mob is targeted, find all mobs whose next letter matches the key
-                if (!this.targetedMob) {
-                    const candidates = mobs.filter(mob => !mob.isDefeated && mob.getNextLetter && mob.getNextLetter().toLowerCase() === char.toLowerCase());
-                    if (candidates.length > 0) {
-                        // Pick the closest mob
-                        let minDist = Infinity;
-                        let closest = null;
-                        for (const mob of candidates) {
-                            const dx = mob.x - this.player.x;
-                            const dy = mob.y - this.player.y;
-                            const dist = Math.sqrt(dx * dx + dy * dy);
-                            if (dist < minDist) {
-                                minDist = dist;
-                                closest = mob;
-                            }
-                        }
-                        this.targetedMob = closest;
-                        if (this.targetedMob) {
-                            this.targetedMob.setTargeted(true);
+                // Find mobs whose next letter matches
+                const candidates = mobs.filter(mob => !mob.isDefeated && mob.word[mob.currentTypedIndex]?.toLowerCase() === char.toLowerCase());
+                if (candidates.length > 0) {
+                    // Pick the closest mob
+                    let minDist = Infinity;
+                    let closest = null;
+                    for (const mob of candidates) {
+                        const dx = mob.position.x - playerState.position.x;
+                        const dy = mob.position.y - playerState.position.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            closest = mob;
                         }
                     }
-                }
-                // 2. If a mob is targeted, check if key matches its next letter
-                if (this.targetedMob && this.targetedMob.getNextLetter && !this.targetedMob.isDefeated) {
-                    if (this.targetedMob.getNextLetter().toLowerCase() === char.toLowerCase()) {
-                        this.targetedMob.advanceLetter();
+                    if (closest) {
+                        closest.currentTypedIndex++;
                         anyCorrect = true;
-                        // Particle burst at mob position
-                        this.particleManager.emitParticleAt(this.targetedMob.x, this.targetedMob.y, 12);
-                        // Score and combo
-                        this.combo++;
-                        this.score += 10 * this.combo;
-                        this.scoreText.setText(`Score: ${this.score}`);
-                        this.comboText.setText(`Combo x${this.combo}`);
-                        this.comboText.setVisible(this.combo > 1);
-                        // If mob is defeated, clear target and increment defeated count
-                        if (this.targetedMob.isDefeated) {
-                            this.targetedMob.setTargeted(false);
-                            this.targetedMob = null;
-                            this.defeatedCount++;
-                            // Check win condition
-                            if (this.defeatedCount >= this.winThreshold && !this.levelCompleteText) {
-                                this.handleLevelComplete();
-                            }
+                        // TODO: trigger particle effect at mob position
+                        // TODO: update score/combo in state
+                        if (closest.currentTypedIndex >= closest.word.length) {
+                            closest.isDefeated = true;
                         }
-                    } else {
-                        // 3. If not, check if key matches any other mob's next letter
-                        const otherCandidates = mobs.filter(mob => mob !== this.targetedMob && !mob.isDefeated && mob.getNextLetter && mob.getNextLetter().toLowerCase() === char.toLowerCase());
-                        if (otherCandidates.length > 0) {
-                            // Retarget to the closest matching mob
-                            let minDist = Infinity;
-                            let closest = null;
-                            for (const mob of otherCandidates) {
-                                const dx = mob.x - this.player.x;
-                                const dy = mob.y - this.player.y;
-                                const dist = Math.sqrt(dx * dx + dy * dy);
-                                if (dist < minDist) {
-                                    minDist = dist;
-                                    closest = mob;
-                                }
-                            }
-                            // Reset the previous target's progress if switching
-                            if (this.targetedMob && this.targetedMob.resetProgress) {
-                                this.targetedMob.resetProgress();
-                            }
-                            if (this.targetedMob) this.targetedMob.setTargeted(false);
-                            this.targetedMob = closest;
-                            if (this.targetedMob) {
-                                this.targetedMob.setTargeted(true);
-                                this.targetedMob.advanceLetter();
-                                handled = true;
-                                if (this.targetedMob.isDefeated) {
-                                    this.targetedMob.setTargeted(false);
-                                    this.targetedMob = null;
-                                }
-                            }
-                        } else {
-                            // No match, clear target
-                            if (this.targetedMob && this.targetedMob.resetProgress) {
-                                this.targetedMob.resetProgress();
-                            }
-                            if (this.targetedMob) this.targetedMob.setTargeted(false);
-                            this.targetedMob = null;
-                        }
-                    }
-                }
-                // Ensure only one mob is targeted at a time
-                for (const mob of mobs) {
-                    if (mob !== this.targetedMob && mob.setTargeted) {
-                        mob.setTargeted(false);
                     }
                 }
             }
-            // If no correct keypress, reset combo
             if (!anyCorrect) {
-                this.combo = 0;
-                this.comboText.setVisible(false);
+                // TODO: reset combo in state
             }
             stateManager.updatePlayerInput('');
         }
@@ -507,16 +431,8 @@ export default class GameScene extends Phaser.Scene {
         // Resume game logic
         this.scene.resume();
         // Re-register global Escape handler
-        this.globalEscapeHandler = (event: KeyboardEvent) => {
-            if (event.key === 'Escape' && !this.levelCompleteText) {
-                if (!this.isPaused) {
-                    this.showPauseMenu();
-                } else {
-                    // Always call hidePauseMenu to ensure pause header is removed and game resumes
-                    this.hidePauseMenu();
-                }
-            }
-        };
-        this.input.keyboard?.on('keydown', this.globalEscapeHandler);
+        if (this.globalEscapeHandler) {
+            this.input.keyboard?.on('keydown', this.globalEscapeHandler);
+        }
     }
 }

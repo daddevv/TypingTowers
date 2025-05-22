@@ -210,4 +210,6 @@ export default class FingerGroupManager {
     }
 }
 
-// Contains AI-generated edits.
+// DEPRECATED: FingerGroupManager logic is being migrated to StateManager and gameState.curriculum.fingerGroupStats.
+// This file is retained for reference and backward compatibility during migration.
+// All new code should use StateManager and gameState for finger group stats.

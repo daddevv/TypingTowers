@@ -1,12 +1,12 @@
 // MobSpawner.ts
 // Responsible for spawning and managing mobs in the game.
 import Phaser from 'phaser';
+import { v4 as uuidv4 } from 'uuid'; // For unique mob IDs
+import stateManager from '../state/stateManager';
 import WordGenerator from '../utils/wordGenerator';
-import Mob from './Mob';
 
 export default class MobSpawner {
     private scene: Phaser.Scene;
-    private mobs: Mob[] = [];
     private spawnTimer: number = 0;
     private spawnInterval: number;
     private wordGenerator: WordGenerator;
@@ -93,50 +93,63 @@ export default class MobSpawner {
         // Spawn mobs for this wave
         if (this.mobsSpawnedThisWave < this.mobsPerWave && this.spawnTimer >= this.spawnInterval) {
             for (let i = 0; i < this.mobsPerInterval && this.mobsSpawnedThisWave < this.mobsPerWave; i++) {
-                // Use wordList if available, else WordGenerator
                 let word: string;
                 if (this.wordList && this.wordList.length > 0) {
                     word = this.wordList[this.wordListIndex % this.wordList.length];
                     this.wordListIndex++;
-                    // DEBUG: Log each spawned word for 1-2
-                    if (this.wordList.includes('gh')) {
-                        // eslint-disable-next-line no-console
-                        console.log('Spawning mob with word:', word);
-                    }
                 } else {
                     word = this.wordGenerator.getWord(Phaser.Math.Between(2, 5));
                 }
                 const minY = 100;
                 const maxY = this.scene.scale.height - 100;
                 const y = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
-                const mob = new Mob(this.scene, this.scene.scale.width + 50, y, word, this.mobBaseSpeed);
-                this.mobs.push(mob);
+                const mobState = {
+                    id: uuidv4(),
+                    word,
+                    currentTypedIndex: 0,
+                    position: { x: this.scene.scale.width + 50, y },
+                    speed: this.mobBaseSpeed,
+                    type: 'normal',
+                    isDefeated: false,
+                };
+                stateManager.addMob(mobState);
                 this.mobsSpawnedThisWave++;
             }
             this.spawnTimer = 0;
         }
-        // Update mobs and let each mob handle its own avoidance
-        this.mobs.forEach(mob => mob.update(time, delta, this.mobs));
-        this.mobs = this.mobs.filter(mob => !mob.isDefeated);
+        // Remove defeated mobs from gameState
+        const mobs = stateManager.getState().mobs;
+        for (const mob of mobs) {
+            if (mob.isDefeated) {
+                stateManager.removeMob(mob.id);
+            }
+        }
         // If all mobs for this wave are defeated and all have spawned, end wave
-        if (this.mobsSpawnedThisWave >= this.mobsPerWave && this.mobs.length === 0) {
+        const remainingMobs = stateManager.getState().mobs.filter(m => !m.isDefeated);
+        if (this.mobsSpawnedThisWave >= this.mobsPerWave && remainingMobs.length === 0) {
             this.waveInProgress = false;
             if (this.onWaveEndCallback) this.onWaveEndCallback(this.currentWave);
         }
+        // Update mobSpawner state in gameState using a new method
+        stateManager.updateMobSpawnerState({
+            nextSpawnTime: this.spawnTimer,
+            currentWave: this.currentWave,
+            mobsRemainingInWave: this.mobsPerWave - this.mobsSpawnedThisWave,
+        });
     }
 
     /**
      * Returns mobs for collision/proximity checks
      */
-    getMobs(): Mob[] {
-        return this.mobs;
+    getMobs(): any[] {
+        return stateManager.getState().mobs;
     }
 
     /**
      * Removes a mob from the list (e.g., after hitting the player)
      */
-    removeMob(mob: Mob) {
-        this.mobs = this.mobs.filter(m => m !== mob);
+    removeMob(mob: any) {
+        stateManager.removeMob(mob.id);
     }
 
     /**
@@ -144,25 +157,6 @@ export default class MobSpawner {
      */
     setMobsPerInterval(count: number) {
         this.mobsPerInterval = count;
-    }
-
-    spawnMob() {
-        // Use wordList if available, else WordGenerator
-        let word: string;
-        if (this.wordList && this.wordList.length > 0) {
-            word = this.wordList[this.wordListIndex % this.wordList.length];
-            this.wordListIndex++;
-        } else {
-            word = this.wordGenerator.getWord(Phaser.Math.Between(2, 5));
-        }
-        const gameWidth = this.scene.scale.width;
-        const tempMob = new Mob(this.scene, 0, 0, word, this.mobBaseSpeed);
-        const mobWidth = tempMob.displayWidth || 64;
-        tempMob.destroy();
-        const x = gameWidth + mobWidth / 2;
-        const y = Phaser.Math.Between(100, 500);
-        const mob = new Mob(this.scene, x, y, word, this.mobBaseSpeed);
-        this.mobs.push(mob);
     }
 }
 // Contains AI-generated edits.

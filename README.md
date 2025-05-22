@@ -27,11 +27,13 @@ TypeDefense is a web-based typing game designed to help players improve their ty
 - Curriculum-based finger group tracking for typing improvement
 - Built with TypeScript, Vite, and Phaser
 - Centralized game state managed by StateManager
+- Level progression and finger group stats are now fully managed in the global game state (`gameState`) via StateManager, replacing the old LevelManager and FingerGroupManager. All progression and curriculum data is now state-driven and accessible for robust, testable gameplay and UI logic.
 - The main game loop now updates delta time and timestamp in the global game state each frame, and all core systems (Player, MobSpawner, UI, etc.) are updated using the current state via StateManager. This enables robust, testable, and state-driven gameplay logic.
 - Scenes are now managed via `gameState.gameStatus` and all transitions are triggered by updating state via StateManager, not by direct scene switching.
 - MainMenu, Menu (WorldSelect), and LevelMenu scenes now render UI and handle navigation based on state, and listen for state changes to update or stop themselves.
 - All scene transitions and UI updates are reactive to changes in `gameState.gameStatus`.
 - All input (keyboard/mouse) is now handled centrally by the InputSystem, which updates gameState via StateManager. Scenes and entities no longer register input listeners directly.
+- All core entities (Player, Mob, MobSpawner) are now fully state-driven: their data and logic are managed via the global game state (`gameState`) and all updates are performed through the `StateManager`. This enables robust, testable, and reactive gameplay logic, and allows for easy debugging and inspection of all entity state at runtime.
 
 ## Screenshots
 

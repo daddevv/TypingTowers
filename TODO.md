@@ -11,18 +11,18 @@
   - [x] Centralize all keyboard/mouse event listeners here.
   - [x] On input, `InputSystem` updates `gameState` (e.g., `gameState.player.currentInput`, or triggers `stateManager.setGameStatus('paused')` on Escape key).
   - [x] Remove input handling logic scattered across different scenes/entities.
-- [ ] **Refactor Entities (`Player`, `Mob`, `MobSpawner`):**
-  - [ ] `Player`: Behavior (e.g., taking damage) driven by `gameState`.
-  - [ ] `Mob`:
-    - [ ] Data (word, position) stored in `gameState.mobs`.
-    - [ ] Movement and logic updates based on its state in `gameState.mobs` and global `gameState` (e.g., delta time).
-    - [ ] When a mob is hit/defeated, update its state in `gameState.mobs` or remove it via `StateManager`.
-  - [ ] `MobSpawner`:
-    - [ ] Logic driven by `gameState.mobSpawnerState` and `gameState.currentLevel.spawnRules`.
-    - [ ] When spawning a mob, adds it to `gameState.mobs` via `StateManager`.
-- [ ] **Refactor Managers (or integrate into Systems):**
-  - [ ] `LevelManager`: Functionality largely moves to `ProgressionSystem` and `StateManager`. Data like unlocked levels stored in `gameState.progression`.
-  - [ ] `FingerGroupManager`: Operates on typing data, potentially sourced from `gameState.player.currentInput` or events. Stores its stats within `gameState.curriculum.fingerGroupStats`.
+- [x] **Refactor Entities (`Player`, `Mob`, `MobSpawner`):**
+  - [x] `Player`: Behavior (e.g., taking damage) driven by `gameState`.
+  - [x] `Mob`:
+    - [x] Data (word, position) stored in `gameState.mobs`.
+    - [x] Movement and logic updates based on its state in `gameState.mobs` and global `gameState` (e.g., delta time).
+    - [x] When a mob is hit/defeated, update its state in `gameState.mobs` or remove it via `StateManager`.
+  - [x] `MobSpawner`:
+    - [x] Logic driven by `gameState.mobSpawnerState` and `gameState.currentLevel.spawnRules`.
+    - [x] When spawning a mob, adds it to `gameState.mobs` via `StateManager`.
+- [x] **Refactor Managers (or integrate into Systems):**
+  - [x] `LevelManager`: Functionality largely moves to `ProgressionSystem` and `StateManager`. Data like unlocked levels stored in `gameState.progression`.
+  - [x] `FingerGroupManager`: Operates on typing data, potentially sourced from `gameState.player.currentInput` or events. Stores its stats within `gameState.curriculum.fingerGroupStats`.
 - [ ] **Implement Pause/Unpause Functionality:**
   - [ ] Escape key (via `InputSystem`) toggles `gameState.gameStatus` between `playing` and `paused`.
   - [ ] All time-based updates (mob movement, spawning, timers) must check `gameState.gameStatus` and halt if `paused`.
