@@ -21,6 +21,8 @@ TypeDefense is a web-based typing game designed to help players improve their ty
 - Defeat enemies by typing their associated words or letters
 - Real-time score and combo multiplier display
 - Particle effects and visual feedback for correct keystrokes
+- The level completion screen features Continue (Enter) and Back (Esc) buttons for seamless navigation through levels and worlds.
+  - **Keyboard shortcuts for Continue (Enter) and Back (Esc) are now handled via the centralized InputSystem, which updates gameState.**
 - Dynamic difficulty scaling (spawn rate, speed, word complexity)
 - Level and world progression system with unlockable content
   - **World selection menu now displays worlds based on `gameState.curriculum.worldConfig` and `gameState.progression.unlockedWorlds`.**
@@ -35,6 +37,7 @@ TypeDefense is a web-based typing game designed to help players improve their ty
 - Scenes are now managed via `gameState.gameStatus` and all transitions are triggered by updating state via StateManager, not by direct scene switching.
 - MainMenu, Menu (WorldSelect), and LevelMenu scenes now render UI and handle navigation based on state, and listen for state changes to update or stop themselves.
 - All scene transitions and UI updates are reactive to changes in `gameState.gameStatus`.
+- The core game engine (`client/src/engine/HeadlessGameEngine.ts`) is fully UI-agnostic and contains no rendering or UI logic. All rendering, UI, and effects are handled in the render layer (Phaser scenes or other renderer implementations) based on the current game state.
 - All input (keyboard/mouse) is now handled centrally by the InputSystem, which updates gameState via StateManager. Scenes and entities no longer register input listeners directly.
 - All core entities (Player, Mob, MobSpawner) are now fully state-driven: their data and logic are managed via the global game state (`gameState`) and all updates are performed through the `StateManager`. This enables robust, testable, and reactive gameplay logic, and allows for easy debugging and inspection of all entity state at runtime.
 
@@ -118,3 +121,54 @@ Contributions are welcome! Please open issues or pull requests for bug fixes, ne
 ## Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md) for a detailed list of changes and feature history.
+
+### Headless Game Engine
+
+- The core game logic (game loop, mob/player logic, win/loss, input, etc.) is now fully decoupled from Phaser and lives in the headless engine (`client/src/engine/HeadlessGameEngine.ts`).
+- The engine and all core systems are tested in a pure Node.js environment with no DOM or Phaser dependencies (see `HeadlessGameEngine.unit.test.ts`).
+- This engine provides a programmatic API for stepping the game, injecting input, and retrieving the full game state, enabling automated play, bots, and CLI/testing scenarios.
+- All gameplay state and logic are managed via the global `gameState` and `StateManager`, ensuring robust, testable, and decoupled gameplay.
+- **All rendering and UI logic is handled in the render layer (Phaser scenes or other renderer), not in the engine.**
+- See `client/src/engine/HeadlessGameEngine.unit.test.ts` for usage examples and tests.
+- **Comprehensive unit and integration tests now cover full game simulation, bot play, rapid input, empty/edge word lists, and extreme spawn rates/health edge cases.**
+
+---
+
+## Engine Integration & API
+
+The core engine exposes a clear interface (`IGameEngine`) for integration with any renderer (Phaser, Three.js, headless, etc):
+
+```typescript
+// See client/src/engine/HeadlessGameEngine.ts
+export interface IGameEngine {
+  step(delta: number, timestamp?: number): void;
+  injectInput(input: string): void;
+  getState(): GameState;
+  on(event: string, handler: (...args: any[]) => void): void;
+  off(event: string, handler: (...args: any[]) => void): void;
+  reset(): void;
+}
+```
+
+- **State-driven rendering:** Renderers should call `engine.getState()` each frame and render based on the returned state.
+- **Event-driven updates:** Subscribe to engine events (e.g., `'gameStatusChanged'`, `'playerInputChanged'`) via `engine.on(...)` to react to state changes.
+- **Input injection:** All input (keyboard, mouse, etc.) should be passed to the engine via `injectInput()`.
+- **No direct rendering:** The engine contains no rendering or UI logic; all visuals are handled externally.
+
+**Example integration:**
+
+```typescript
+import HeadlessGameEngine from './engine/HeadlessGameEngine';
+
+const engine = new HeadlessGameEngine();
+engine.on('gameStatusChanged', (status) => {
+  // Switch scenes or update UI based on status
+});
+function gameLoop(delta: number) {
+  engine.step(delta);
+  const state = engine.getState();
+  // Render state...
+}
+```
+
+See `client/src/engine/HeadlessGameEngine.unit.test.ts` for more usage examples.

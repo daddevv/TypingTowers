@@ -1,7 +1,7 @@
 // @ts-check
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const config = {
-    testDir: './e2e',
+    testDir: './tests',
     webServer: {
         command: 'npm run dev',
         port: 5173,
@@ -14,6 +14,12 @@ const config = {
         viewport: { width: 1280, height: 720 },
         ignoreHTTPSErrors: true,
         video: 'on',
+        launchOptions: {
+            args: ['--window-size=1280,720'],
+            env: {
+                PLAYWRIGHT: 'true',
+            },
+        },
         slowMo: 500,
     },
 };

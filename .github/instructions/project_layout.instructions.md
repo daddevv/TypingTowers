@@ -67,6 +67,21 @@ It is important to keep this document up-to-date to ensure that all team members
   - `state/` - Centralized game state and state management
     - `gameState.ts` - Defines the global `GameState` interface and default state object for the entire game. All gameplay, UI, and progression data is stored here for easy debugging and testing.
     - `stateManager.ts` - Singleton StateManager class for reading/updating game state, event subscription, and save/load. Exposes `window.gameState` for debugging and is the only way to mutate state.
+  - `engine/` - Headless game engine module
+    - `HeadlessGameEngine.ts` - Contains the headless, UI-agnostic core game logic for TypeDefense. This module exposes a programmatic API for stepping the game, injecting input, and retrieving the full game state. It enables automated play, bots, and CLI/testing scenarios. All gameplay logic is decoupled from the UI and managed via the global `gameState` and `StateManager`. **No Phaser or renderer dependencies exist in this module or its tests.**
+      - **The engine exposes the `IGameEngine` interface, which defines the contract for all engine implementations. Renderers (Phaser, Three.js, etc.) should interact with the engine only via this interface:**
+        ```typescript
+        export interface IGameEngine {
+          step(delta: number, timestamp?: number): void;
+          injectInput(input: string): void;
+          getState(): GameState;
+          on(event: string, handler: (...args: any[]) => void): void;
+          off(event: string, handler: (...args: any[]) => void): void;
+          reset(): void;
+        }
+        ```
+      - **Renderers should subscribe to engine events and render based on the current state. All input should be injected via `injectInput()`.**
+    - `HeadlessGameEngine.unit.test.ts` - Unit and integration tests for the headless engine, simulating full games, bots, edge cases, rapid input, empty/edge word lists, and extreme spawn/health scenarios. **Runs in pure Node.js with no DOM or Phaser.**
 
 ## Server Directory (`server/`)
 
@@ -112,6 +127,8 @@ It is important to keep this document up-to-date to ensure that all team members
 - The `GameScene` now includes score and combo UI elements in the top-left corner, updating in real-time as the player types. The UI is implemented using Phaser's `Text` objects and is visible throughout gameplay.
 - **A particle burst effect is now triggered at the mob or letter location on every correct keystroke, providing instant visual feedback.**
 - **The level completion screen features Continue (Enter) and Back (Esc) buttons for seamless navigation through levels and worlds.**
+  - **Keyboard shortcuts for Continue (Enter) and Back (Esc) are handled via the centralized `InputSystem`, which updates `gameState` and triggers navigation.**
+  - **The Continue button now updates `gameState.gameStatus` to `'playing'`, and scenes listen for this state change to advance to the next level/world or menu. Direct scene transitions are not used in the button handler.**
 
 ## Level & World Progression System
 
@@ -126,6 +143,7 @@ It is important to keep this document up-to-date to ensure that all team members
 - Scenes are activated/deactivated based on `gameState.gameStatus`.
 - `BootScene` is the entry point and listens for `gameStatus` changes to switch scenes.
 - All navigation and transitions should use `stateManager.setGameStatus(...)` instead of direct `scene.start()` calls.
+- **Keyboard navigation for level completion (Enter/Esc) is handled by `InputSystem` updating `gameState`, not by direct scene keyboard listeners.**
 
 ## Input Handling
 - All input (keyboard/mouse) is handled by `client/src/systems/InputSystem.ts`, which updates `gameState` via `StateManager`. Scenes and entities do not register input listeners directly.

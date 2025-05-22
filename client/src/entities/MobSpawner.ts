@@ -1,25 +1,40 @@
 // MobSpawner.ts
 // Responsible for spawning and managing mobs in the game.
-import Phaser from 'phaser';
 import { v4 as uuidv4 } from 'uuid'; // For unique mob IDs
 import stateManager from '../state/stateManager';
 import WordGenerator from '../utils/wordGenerator';
 
+function clamp(val: number, min: number, max: number) {
+    return Math.max(min, Math.min(max, val));
+}
+function lerp(a: number, b: number, t: number) {
+    return a + (b - a) * t;
+}
+function randomBetween(min: number, max: number) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+export interface MobSpawnerConfig {
+    width: number;
+    height: number;
+}
+
 export default class MobSpawner {
-    private scene: Phaser.Scene;
+    private width: number;
+    private height: number;
     private spawnTimer: number = 0;
     private spawnInterval: number;
     private wordGenerator: WordGenerator;
     private mobsPerInterval: number = 1;
-    private mobBaseSpeed: number = 90; // Increased default base speed for more challenge
-    private progression: number = 0; // 0 to 1, represents game progress
-    private minSpawnInterval: number = 600; // ms
+    private mobBaseSpeed: number = 90;
+    private progression: number = 0;
+    private minSpawnInterval: number = 600;
     private maxMobSpeed: number = 250;
     private initialSpawnInterval: number;
     private initialMobBaseSpeed: number;
     private currentWave: number = 0;
     private waveInProgress: boolean = false;
-    private waveDelay: number = 2000; // ms between waves
+    private waveDelay: number = 2000;
     private waveTimer: number = 0;
     private mobsPerWave: number = 5;
     private mobsSpawnedThisWave: number = 0;
@@ -28,32 +43,51 @@ export default class MobSpawner {
     private wordList?: string[];
     private wordListIndex: number = 0;
 
-    constructor(scene: Phaser.Scene, wordGenerator: WordGenerator, spawnInterval: number = 2000, mobsPerInterval: number = 1, mobBaseSpeed: number = 90, wordList?: string[]) {
-        this.scene = scene;
+    constructor(config: MobSpawnerConfig, wordGenerator: WordGenerator, spawnInterval: number = 2000, mobsPerInterval: number = 1, mobBaseSpeed: number = 90, wordList?: string[], mobsPerWave?: number) {
+        this.width = config.width;
+        this.height = config.height;
         this.wordGenerator = wordGenerator;
         this.spawnInterval = spawnInterval;
         this.mobsPerInterval = mobsPerInterval;
         this.mobBaseSpeed = mobBaseSpeed;
         this.initialSpawnInterval = spawnInterval;
         this.initialMobBaseSpeed = mobBaseSpeed;
-        this.wordList = wordList && wordList.length > 0 ? wordList : undefined;
+        // Always set wordList if provided, even if empty, so empty list disables spawning
+        if (typeof wordList !== 'undefined') {
+            this.wordList = wordList;
+        }
         this.wordListIndex = 0;
+        if (typeof mobsPerWave === 'number' && mobsPerWave > 0) {
+            this.mobsPerWave = mobsPerWave;
+        }
     }
 
     /**
      * Call this method to update scaling based on progression (0-1)
      */
     public setProgression(progression: number) {
-        this.progression = Phaser.Math.Clamp(progression, 0, 1);
+        this.progression = clamp(progression, 0, 1);
         // Linearly interpolate spawn interval and mob speed
-        this.spawnInterval = Phaser.Math.Linear(this.initialSpawnInterval, this.minSpawnInterval, this.progression);
-        this.mobBaseSpeed = Phaser.Math.Linear(this.initialMobBaseSpeed, this.maxMobSpeed, this.progression);
+        this.spawnInterval = lerp(this.initialSpawnInterval, this.minSpawnInterval, this.progression);
+        this.mobBaseSpeed = lerp(this.initialMobBaseSpeed, this.maxMobSpeed, this.progression);
     }
 
     /**
      * Start the next wave. Call from GameScene to trigger a new wave.
      */
     public startNextWave() {
+        // Prevent starting a wave if wordList is defined and empty
+        if (this.wordList && this.wordList.length === 0) {
+            this.waveInProgress = false;
+            if (this.onWaveEndCallback) this.onWaveEndCallback(this.currentWave + 1);
+            // Update mobSpawner state in gameState
+            stateManager.updateMobSpawnerState({
+                nextSpawnTime: this.spawnTimer,
+                currentWave: this.currentWave + 1,
+                mobsRemainingInWave: 0,
+            });
+            return;
+        }
         this.currentWave++;
         this.waveInProgress = true;
         this.waveTimer = 0;
@@ -89,6 +123,18 @@ export default class MobSpawner {
 
     update(time: number, delta: number) {
         if (!this.waveInProgress) return;
+        // Prevent spawning if wordList is defined but empty
+        if (this.wordList && this.wordList.length === 0) {
+            this.waveInProgress = false;
+            if (this.onWaveEndCallback) this.onWaveEndCallback(this.currentWave);
+            // Also update mobSpawner state in gameState
+            stateManager.updateMobSpawnerState({
+                nextSpawnTime: this.spawnTimer,
+                currentWave: this.currentWave,
+                mobsRemainingInWave: 0,
+            });
+            return;
+        }
         this.spawnTimer += delta;
         // Spawn mobs for this wave
         if (this.mobsSpawnedThisWave < this.mobsPerWave && this.spawnTimer >= this.spawnInterval) {
@@ -98,16 +144,16 @@ export default class MobSpawner {
                     word = this.wordList[this.wordListIndex % this.wordList.length];
                     this.wordListIndex++;
                 } else {
-                    word = this.wordGenerator.getWord(Phaser.Math.Between(2, 5));
+                    word = this.wordGenerator.generateWord(randomBetween(2, 5));
                 }
                 const minY = 100;
-                const maxY = this.scene.scale.height - 100;
-                const y = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
+                const maxY = this.height - 100;
+                const y = randomBetween(minY, maxY);
                 const mobState = {
                     id: uuidv4(),
                     word,
                     currentTypedIndex: 0,
-                    position: { x: this.scene.scale.width + 50, y },
+                    position: { x: this.width + 50, y },
                     speed: this.mobBaseSpeed,
                     type: 'normal',
                     isDefeated: false,
@@ -157,6 +203,14 @@ export default class MobSpawner {
      */
     setMobsPerInterval(count: number) {
         this.mobsPerInterval = count;
+    }
+    /**
+     * Optionally allow changing mobsPerWave at runtime
+     */
+    setMobsPerWave(count: number) {
+        if (typeof count === 'number' && count > 0) {
+            this.mobsPerWave = count;
+        }
     }
 }
 // Contains AI-generated edits.

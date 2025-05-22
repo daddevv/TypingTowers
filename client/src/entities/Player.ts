@@ -1,34 +1,36 @@
 // Player.ts
-// Represents the player character in the game.
-import Phaser from 'phaser';
+// Represents the player character as a pure data/model class (no Phaser dependency)
 import stateManager from '../state/stateManager';
 
-export default class Player extends Phaser.GameObjects.Sprite {
-    private healthText: Phaser.GameObjects.Text | null = null;
+export default class Player {
+    // Player state fields (mirrors GameState.player)
+    health: number;
+    maxHealth: number;
+    score: number;
+    combo: number;
+    currentInput: string;
+    position: { x: number; y: number };
 
-    constructor(scene: Phaser.Scene, x: number, y: number) {
-        super(scene, x, y, 'player');
-        scene.add.existing(this);
-        this.setOrigin(0.5, 0.5);
-        // Display health above the player
+    constructor() {
         const playerState = stateManager.getState().player;
-        this.healthText = scene.add.text(x, y - 40, `Health: ${playerState.health}`, {
-            fontSize: '20px',
-            color: '#ff5555',
-            fontStyle: 'bold',
-        }).setOrigin(0.5);
+        this.health = playerState.health;
+        this.maxHealth = playerState.maxHealth;
+        this.score = playerState.score;
+        this.combo = playerState.combo;
+        this.currentInput = playerState.currentInput;
+        this.position = { ...playerState.position };
     }
 
-    update(time: number, delta: number) {
-        // Player-specific update logic (if any)
+    syncFromState() {
         const playerState = stateManager.getState().player;
-        this.x = playerState.position.x;
-        this.y = playerState.position.y;
-        if (this.healthText) {
-            this.healthText.setPosition(this.x, this.y - 40);
-            this.healthText.setText(`Health: ${playerState.health}`);
-        }
+        this.health = playerState.health;
+        this.maxHealth = playerState.maxHealth;
+        this.score = playerState.score;
+        this.combo = playerState.combo;
+        this.currentInput = playerState.currentInput;
+        this.position = { ...playerState.position };
     }
 
-    // Remove takeDamage and local health, use StateManager instead
+    // Optionally, add methods for logic (not rendering)
+    // Rendering is now handled in GameScene based on stateManager
 }

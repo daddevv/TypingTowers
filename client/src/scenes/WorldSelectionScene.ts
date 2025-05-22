@@ -28,6 +28,7 @@ export default class WorldSelectionScene extends Phaser.Scene {
     create() {
         // Remove all children to clear any lingering error messages or UI
         this.children.removeAll();
+        // Always show heading for E2E selectors
         this.add.text(400, 40, 'TypeDefense', { fontSize: '40px', color: '#fff' }).setOrigin(0.5);
         // Load worlds and unlocked worlds from state
         const gameState = stateManager.getState();
@@ -50,15 +51,12 @@ export default class WorldSelectionScene extends Phaser.Scene {
             fontSize: '24px', color: '#fff', backgroundColor: '#333', padding: { left: 24, right: 24, top: 8, bottom: 8 }
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
         backButton.on('pointerdown', () => {
-            this.scene.stop();
-            // Always go to main menu
-            this.scene.start('MainMenuScene');
+            stateManager.setGameStatus('mainMenu');
         });
         // Listen for Escape key
         this.input.keyboard?.on('keydown', (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
-                this.scene.stop();
-                this.scene.start('MainMenuScene');
+                stateManager.setGameStatus('mainMenu');
             }
         });
         // Listen for gameStatus changes and transition if needed

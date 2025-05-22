@@ -16,6 +16,7 @@
     "dependencies": {
         "happy-dom": "^17.4.7",
         "phaser": "^3.88.2",
+        "playwright": "^1.52.0",
         "uuid": "^11.1.0"
     },
     "devDependencies": {

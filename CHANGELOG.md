@@ -29,6 +29,7 @@ All notable changes to this project will be documented in this file.
   - MainMenu, Menu (WorldSelect), and LevelMenu scenes render UI and handle navigation based on state, dispatching actions to StateManager.
   - All scene transitions and UI updates are reactive to state changes.
   - Added/updated tests for scene transitions and state-driven rendering.
+- Level completion UI now features a "Back" button that returns to level selection (updates `gameState.gameStatus`).
 
 ## [v0.1.0] - 2025-05-21
 

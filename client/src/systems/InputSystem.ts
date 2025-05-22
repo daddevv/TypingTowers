@@ -42,12 +42,23 @@ export default class InputSystem {
             return;
         }
         if (event.key === 'Escape') {
-            // Toggle pause/play
+            // Toggle pause/play or handle back navigation
             if (gameState.gameStatus === 'playing') {
                 stateManager.setGameStatus('paused');
             } else if (gameState.gameStatus === 'paused') {
                 stateManager.setGameStatus('playing');
+            } else if (gameState.gameStatus === 'levelComplete') {
+                // Back to level select from level complete
+                stateManager.setGameStatus('levelSelect');
             }
+            return;
+        }
+        // Handle Enter for continue on level complete
+        if (event.key === 'Enter' && gameState.gameStatus === 'levelComplete') {
+            // Advance to next level or world, or back to menu
+            // This logic should be handled by the scene listening to gameStatus change
+            // Here, just set a flag or update gameStatus to trigger scene transition
+            stateManager.setGameStatus('playing');
             return;
         }
         // Example: update currentInput for typing
