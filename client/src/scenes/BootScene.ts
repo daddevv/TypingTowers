@@ -15,10 +15,16 @@ export default class BootScene extends Phaser.Scene {
     }
 
     create() {
-        // Initialize StateManager (already done on import, but can reset if needed)
-        // stateManager.reset(); // Uncomment if you want to always start fresh
-        // Set gameStatus to 'mainMenu' to trigger main menu
-        stateManager.setGameStatus('mainMenu');
+        // Defensive: Reset to default state if state is missing/corrupt
+        const state = stateManager.getState();
+        if (!state || typeof state !== 'object' || !('gameStatus' in state)) {
+            // Reset to default state
+            stateManager.reset();
+        }
+
+        // Register global input listeners (only once)
+        InputSystem.getInstance().registerListeners();
+
         // Listen for gameStatus changes and switch scenes accordingly
         stateManager.on('gameStatusChanged', (status) => {
             if (status === 'mainMenu') {
@@ -33,7 +39,7 @@ export default class BootScene extends Phaser.Scene {
             // Add more as needed
         });
 
-        // Register global input listeners
-        InputSystem.getInstance().registerListeners();
+        // Always set gameStatus to 'mainMenu' on load for a clean start
+        stateManager.setGameStatus('mainMenu');
     }
 }

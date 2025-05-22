@@ -16,15 +16,49 @@ export default class LevelMenuScene extends Phaser.Scene {
         super({ key: 'LevelMenuScene' });
     }
 
-    init(data: { worldId: number, levelManager?: typeof levelManager }) {
-        this.world = WORLDS.find(w => w.id === data.worldId)!;
+    init(data: { worldId?: number, levelManager?: typeof levelManager } = {}) {
+        let worldId = data.worldId;
+        if (typeof worldId !== 'number') {
+            // Try to get from stateManager
+            const state = stateManager.getState();
+            worldId = state.level.currentWorld;
+        }
+        // Debug log
+        // eslint-disable-next-line no-console
+        console.log('[LevelMenuScene] Loading worldId:', worldId);
+        this.world = WORLDS.find(w => w.id === worldId)!;
         this.levelManager = data.levelManager || levelManager;
     }
 
     create() {
+        // Defensive: Check for valid world data
+        if (!this.world || !this.world.levels || this.world.levels.length === 0) {
+            this.add.text(400, 300, 'No levels available. Please check game data.', { fontSize: '24px', color: '#f00' }).setOrigin(0.5);
+            // Add Back button even if no levels
+            const backButton = this.add.text(400, 500, 'Back (Esc)', {
+                fontSize: '24px', color: '#fff', backgroundColor: '#333', padding: { left: 24, right: 24, top: 8, bottom: 8 }
+            }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+            backButton.on('pointerdown', () => stateManager.setGameStatus('worldSelect'));
+            this.input.keyboard?.on('keydown', (event: KeyboardEvent) => {
+                if (event.key === 'Escape') {
+                    stateManager.setGameStatus('worldSelect');
+                }
+            });
+            return;
+        }
         this.add.text(400, 40, this.world.name, { fontSize: '36px', color: '#fff' }).setOrigin(0.5);
         this.renderMenu();
-        // Input is now handled via InputSystem and stateManager
+        // Add Back button
+        const backButton = this.add.text(400, 500, 'Back (Esc)', {
+            fontSize: '24px', color: '#fff', backgroundColor: '#333', padding: { left: 24, right: 24, top: 8, bottom: 8 }
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        backButton.on('pointerdown', () => stateManager.setGameStatus('worldSelect'));
+        // Listen for Escape key
+        this.input.keyboard?.on('keydown', (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                stateManager.setGameStatus('worldSelect');
+            }
+        });
         // Re-render menu when scene is resumed (e.g., after completing a level)
         this.events.on('resume', () => {
             this.renderMenu();

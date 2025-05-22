@@ -7,7 +7,7 @@
 - [x] **Refactor Main Game Loop (`client/src/main.ts` or `GameScene.ts`):**
   - [x] Game loop should fetch current delta time and update it in `gameState`.
   - [x] Game loop should call update functions of various systems, passing `gameState` or relying on them to access it via `StateManager`.
-- [x] **Refactor Input Handling (New `InputSystem` - `client/src/systems/InputSystem.ts`):**
+- [x] **Refactor Input Handling (New   `InputSystem` - `client/src/systems/InputSystem.ts`):**
   - [x] Centralize all keyboard/mouse event listeners here.
   - [x] On input, `InputSystem` updates `gameState` (e.g., `gameState.player.currentInput`, or triggers `stateManager.setGameStatus('paused')` on Escape key).
   - [x] Remove input handling logic scattered across different scenes/entities.

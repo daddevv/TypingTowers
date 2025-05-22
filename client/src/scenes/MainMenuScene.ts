@@ -9,12 +9,20 @@ export default class MainMenuScene extends Phaser.Scene {
     }
 
     create() {
+        // Remove all children to clear any lingering error messages or UI
+        this.children.removeAll();
         const { width, height } = this.scale;
         this.add.text(width / 2, height / 2 - 80, 'Type Defense', {
             fontSize: '48px',
             color: '#fff',
             fontFamily: 'Arial',
         }).setOrigin(0.5);
+
+        // Defensive: Check stateManager
+        if (!stateManager || typeof stateManager.setGameStatus !== 'function') {
+            this.add.text(width / 2, height / 2 + 80, 'State manager error. Cannot start game.', { fontSize: '24px', color: '#f00' }).setOrigin(0.5);
+            return;
+        }
 
         // Add Play button
         const playButton = this.add.text(width / 2, height / 2 + 20, 'Play', {
@@ -26,6 +34,7 @@ export default class MainMenuScene extends Phaser.Scene {
         playButton.on('pointerdown', () => {
             stateManager.setGameStatus('worldSelect');
         });
+        // Remove Back button from title screen
         // Listen for gameStatus changes and transition if needed
         this.onGameStatusChanged = (status: string) => {
             if (status !== 'mainMenu') {

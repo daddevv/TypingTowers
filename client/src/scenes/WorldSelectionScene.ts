@@ -1,11 +1,11 @@
 // MenuScene.ts
 // World and Level selection menu with lock/unlock and local storage persistence
 import Phaser from 'phaser';
-import { WorldConfig } from '../curriculum/worldConfig';
+import { WorldConfig, WORLDS } from '../curriculum/worldConfig';
 import { levelManager } from '../managers/levelManager';
 import stateManager from '../state/stateManager';
 
-export default class MenuScene extends Phaser.Scene {
+export default class WorldSelectionScene extends Phaser.Scene {
     private worlds: WorldConfig[] = [];
     private levelManager = levelManager;
     private menuItems: Phaser.GameObjects.Text[] = [];
@@ -16,16 +16,35 @@ export default class MenuScene extends Phaser.Scene {
         super({ key: 'MenuScene' });
     }
 
-    init(data: { worlds: WorldConfig[], levelManager?: typeof levelManager }) {
-        this.worlds = data.worlds;
-        this.levelManager = data.levelManager || levelManager;
+    init(data?: { worlds?: WorldConfig[], levelManager?: typeof levelManager }) {
+        // Always load worlds from WORLDS if not provided
+        this.worlds = (data && data.worlds) ? data.worlds : WORLDS;
+        this.levelManager = (data && data.levelManager) || levelManager;
     }
 
     preload() { }
 
     create() {
+        // Remove all children to clear any lingering error messages or UI
+        this.children.removeAll();
         this.add.text(400, 40, 'TypeDefense', { fontSize: '40px', color: '#fff' }).setOrigin(0.5);
         this.renderMenu();
+        // Add Back button
+        const backButton = this.add.text(400, 500, 'Back (Esc)', {
+            fontSize: '24px', color: '#fff', backgroundColor: '#333', padding: { left: 24, right: 24, top: 8, bottom: 8 }
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        backButton.on('pointerdown', () => {
+            this.scene.stop();
+            // Always go to main menu
+            this.scene.start('MainMenuScene');
+        });
+        // Listen for Escape key
+        this.input.keyboard?.on('keydown', (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                this.scene.stop();
+                this.scene.start('MainMenuScene');
+            }
+        });
         // Input is now handled via InputSystem and stateManager
         // Listen for gameStatus changes and transition if needed
         this.onGameStatusChanged = (status: string) => {
@@ -42,8 +61,13 @@ export default class MenuScene extends Phaser.Scene {
     }
 
     renderMenu() {
-        if (!this.worlds || !this.levelManager) {
-            this.add.text(400, 300, 'Menu data not loaded. Please restart the game.', { fontSize: '24px', color: '#f00' }).setOrigin(0.5);
+        // Defensive: Check for valid world data
+        if (!this.worlds || !Array.isArray(this.worlds) || this.worlds.length === 0) {
+            this.add.text(400, 300, 'No worlds available. Please check game data.', { fontSize: '24px', color: '#f00' }).setOrigin(0.5);
+            return;
+        }
+        if (!this.levelManager) {
+            this.add.text(400, 340, 'Level manager not loaded.', { fontSize: '20px', color: '#f00' }).setOrigin(0.5);
             return;
         }
         this.menuItems.forEach(item => item.destroy());
@@ -89,9 +113,13 @@ export default class MenuScene extends Phaser.Scene {
     // When starting LevelMenuScene, always pass the singleton levelManager
     selectWorld(idx: number) {
         const world = this.worlds[idx];
-        // Instead of scene.start, update state
+        // Store selected world in stateManager.level
+        const state = stateManager.getState();
+        state.level.currentWorld = world.id;
+        stateManager.updateProgression({}); // trigger save
         // Optionally, store selected world in stateManager if needed
+        // For robust navigation, update current world in stateManager (if you have such a method)
+        // stateManager.setCurrentWorld(world.id); // Uncomment if implemented
         stateManager.setGameStatus('levelSelect');
-        // ...could also update current world in stateManager here...
     }
 }
