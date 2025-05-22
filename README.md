@@ -23,6 +23,9 @@ TypeDefense is a web-based typing game designed to help players improve their ty
 - Particle effects and visual feedback for correct keystrokes
 - Dynamic difficulty scaling (spawn rate, speed, word complexity)
 - Level and world progression system with unlockable content
+  - **World selection menu now displays worlds based on `gameState.curriculum.worldConfig` and `gameState.progression.unlockedWorlds`.**
+  - **World 1 is always unlocked, so players can always access Level 1-1.**
+  - **Level 1-1 is always unlocked, regardless of player progress.**
 - Player health system and game over state
 - Curriculum-based finger group tracking for typing improvement
 - Built with TypeScript, Vite, and Phaser

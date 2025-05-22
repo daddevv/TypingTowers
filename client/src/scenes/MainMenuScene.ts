@@ -31,7 +31,11 @@ export default class MainMenuScene extends Phaser.Scene {
             backgroundColor: '#222',
             padding: { left: 32, right: 32, top: 12, bottom: 12 },
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+        // Reset game state on Play
         playButton.on('pointerdown', () => {
+            stateManager.resetState();
+            // Transition to world select or game start as appropriate
             stateManager.setGameStatus('worldSelect');
         });
         // Remove Back button from title screen

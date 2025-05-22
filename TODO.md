@@ -81,10 +81,8 @@
 
 ### 2.4. Menu, World, and Level Selection UI & Logic
 
-- [ ] **Refine UI Scenes:**
-  - [ ] `WorldSelectScene`: Displays worlds based on `gameState.curriculum.worldConfig` and `gameState.progression.unlockedWorlds`.
-  - [ ] `LevelSelectScene`: Displays levels for the selected world based on `gameState` and `gameState.progression.unlockedLevels`.
-  - [ ] Ensure levels are clickable in `LevelSelectScene` to start the game (updates `gameState.gameStatus` to `playing` and loads `gameState.currentLevel`).
+- [x] `WorldSelectScene`: Displays worlds based on `gameState.curriculum.worldConfig` and `gameState.progression.unlockedWorlds`.
+  - [x] Ensure levels are clickable in `LevelSelectScene` to start the game (updates `gameState.gameStatus` to `playing` and loads `gameState.currentLevel`).
 - [ ] **Navigation:**
   - [ ] Implement "Back" button in level complete UI (`LevelCompleteScene`) that returns to level selection (updates `gameState.gameStatus`).
   - [ ] Ensure "Continue" button in `LevelCompleteScene` advances to the next level/world or menu as appropriate (updates `gameState`).

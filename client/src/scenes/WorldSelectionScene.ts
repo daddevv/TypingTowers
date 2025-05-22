@@ -11,6 +11,7 @@ export default class WorldSelectionScene extends Phaser.Scene {
     private menuItems: Phaser.GameObjects.Text[] = [];
     private selectedWorld: number = 0;
     private onGameStatusChanged?: (status: string) => void;
+    private unlockedWorlds: number[] = []; // Track unlocked worlds
 
     constructor() {
         super({ key: 'MenuScene' });
@@ -28,6 +29,21 @@ export default class WorldSelectionScene extends Phaser.Scene {
         // Remove all children to clear any lingering error messages or UI
         this.children.removeAll();
         this.add.text(400, 40, 'TypeDefense', { fontSize: '40px', color: '#fff' }).setOrigin(0.5);
+        // Load worlds and unlocked worlds from state
+        const gameState = stateManager.getState();
+        // Use curriculum.worldConfig if present, else fallback to WORLDS
+        this.worlds = (gameState.curriculum && Array.isArray(gameState.curriculum.worldConfig) && gameState.curriculum.worldConfig.length > 0)
+            ? gameState.curriculum.worldConfig
+            : WORLDS;
+        // Track unlocked worlds from progression, ensure number[]
+        let unlocked = Array.isArray(gameState.progression.unlockedWorlds) ? gameState.progression.unlockedWorlds : [1];
+        let unlockedWorlds: number[];
+        if (unlocked.length > 0 && typeof unlocked[0] === 'string') {
+            unlockedWorlds = (unlocked as string[]).map((id) => parseInt(id, 10));
+        } else {
+            unlockedWorlds = unlocked as number[];
+        }
+        this.unlockedWorlds = unlockedWorlds;
         this.renderMenu();
         // Add Back button
         const backButton = this.add.text(400, 500, 'Back (Esc)', {
@@ -45,7 +61,6 @@ export default class WorldSelectionScene extends Phaser.Scene {
                 this.scene.start('MainMenuScene');
             }
         });
-        // Input is now handled via InputSystem and stateManager
         // Listen for gameStatus changes and transition if needed
         this.onGameStatusChanged = (status: string) => {
             if (status !== 'worldSelect') {
@@ -66,23 +81,12 @@ export default class WorldSelectionScene extends Phaser.Scene {
             this.add.text(400, 300, 'No worlds available. Please check game data.', { fontSize: '24px', color: '#f00' }).setOrigin(0.5);
             return;
         }
-        if (!this.levelManager) {
-            this.add.text(400, 340, 'Level manager not loaded.', { fontSize: '20px', color: '#f00' }).setOrigin(0.5);
-            return;
-        }
         this.menuItems.forEach(item => item.destroy());
         this.menuItems = [];
         let y = 120;
         this.worlds.forEach((world, wIdx) => {
-            // Only unlock world 1 by default; others require previous world completion
-            let isUnlocked = true;
-            if (wIdx > 0) {
-                // Get last level of previous world
-                const prevWorld = this.worlds[wIdx - 1];
-                const lastLevel = prevWorld.levels[prevWorld.levels.length - 1];
-                const progress = this.levelManager.getLevelProgress(lastLevel.id);
-                isUnlocked = !!(progress && progress.completed);
-            }
+            // World 1 is always unlocked
+            const isUnlocked = (world.id === 1) ? true : this.unlockedWorlds.includes(world.id);
             const color = wIdx === this.selectedWorld ? (isUnlocked ? '#ff0' : '#888') : (isUnlocked ? '#fff' : '#888');
             const label = `World ${wIdx + 1}: ${world.name}${isUnlocked ? '' : ' (Locked)'}`;
             const txt = this.add.text(400, y, label, { fontSize: '28px', color, backgroundColor: wIdx === this.selectedWorld ? '#333' : undefined }).setOrigin(0.5).setInteractive({ useHandCursor: isUnlocked });

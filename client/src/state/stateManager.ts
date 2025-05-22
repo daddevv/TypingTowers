@@ -146,6 +146,12 @@ class StateManager {
         this.emitAndSave('reset');
     }
 
+    // Reset the entire game state to default values
+    resetState() {
+        this.state = JSON.parse(JSON.stringify(defaultGameState));
+        this.emitAndSave('stateReset', this.state);
+    }
+
     // --- Internal ---
     private emitAndSave(event: string, ...args: any[]) {
         this.save();

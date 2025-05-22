@@ -297,19 +297,22 @@ export default class GameScene extends Phaser.Scene {
         // Render/update visuals for each mob
         for (const mob of mobsForRender) {
             if (!this.mobVisuals.has(mob.id)) {
-                // Create sprite and text for new mob
-                const sprite = this.add.sprite(mob.position.x, mob.position.y, 'mob');
-                if (!this.textures.exists('mob')) {
-                    // Fallback: draw a circle if no mob texture
-                    const g = this.add.graphics();
-                    g.fillStyle(0x8888ff, 1);
-                    g.fillCircle(0, 0, 24);
-                    g.generateTexture('mob', 48, 48);
-                    g.destroy();
-                    sprite.setTexture('mob');
+                // Remove old sprite if it exists (defensive)
+                if (this.mobVisuals.has(mob.id)) {
+                    this.mobVisuals.get(mob.id)?.sprite.destroy();
+                    this.mobVisuals.get(mob.id)?.text.destroy();
                 }
-                sprite.setOrigin(0.5);
-                const text = this.add.text(mob.position.x, mob.position.y, mob.word, {
+                // Draw a full circle for the mob using Graphics
+                const graphics = this.add.graphics();
+                graphics.fillStyle(0x3498db, 1); // Blue color, fully opaque
+                graphics.fillCircle(0, 0, 32); // Full circle, radius 32
+                // Convert graphics to a texture for performance
+                const key = `mob-circle-${mob.id}`;
+                graphics.generateTexture(key, 64, 64);
+                graphics.destroy();
+                const sprite = this.add.sprite(mob.position.x, mob.position.y, key).setOrigin(0.5);
+                // Mob word text
+                const text = this.add.text(mob.position.x, mob.position.y - 32, mob.word, {
                     fontSize: '22px',
                     color: '#fff',
                     stroke: '#000',
@@ -326,7 +329,11 @@ export default class GameScene extends Phaser.Scene {
             // Highlight typed letters
             const typed = mob.word.substring(0, mob.currentTypedIndex);
             const rest = mob.word.substring(mob.currentTypedIndex);
-            visual.text.setText(`[${typed}]${rest}`);
+            if (typed.length > 0) {
+                visual.text.setText(`[${typed}]${rest}`);
+            } else {
+                visual.text.setText(rest);
+            }
             // Optionally, fade out defeated mobs
             if (mob.isDefeated) {
                 visual.sprite.setAlpha(0.3);
