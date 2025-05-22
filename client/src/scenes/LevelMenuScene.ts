@@ -17,16 +17,37 @@ export default class LevelMenuScene extends Phaser.Scene {
     }
 
     init(data: { worldId?: number, levelManager?: typeof levelManager } = {}) {
-        let worldId = data.worldId;
-        if (typeof worldId !== 'number') {
-            // Try to get from stateManager
+        let effectiveWorldId: number | undefined | null = data.worldId;
+
+        // If worldId is not passed directly (e.g., when BootScene starts this scene based on gameStatus),
+        // retrieve it from the global state.
+        if (typeof effectiveWorldId !== 'number') {
             const state = stateManager.getState();
-            worldId = state.level.currentWorld;
+            // Ensure state.level and state.level.currentWorld exist and are of the expected type.
+            // GameState['level']['currentWorld'] should be number | null.
+            effectiveWorldId = state.level?.currentWorld;
         }
-        // Debug log
+
         // eslint-disable-next-line no-console
-        console.log('[LevelMenuScene] Loading worldId:', worldId);
-        this.world = WORLDS.find(w => w.id === worldId)!;
+        console.log('[LevelMenuScene] Initializing with worldId:', effectiveWorldId);
+
+        if (typeof effectiveWorldId !== 'number') {
+            // eslint-disable-next-line no-console
+            console.error('[LevelMenuScene] Invalid or missing worldId. Cannot initialize scene properly.');
+            // Setting this.world to undefined will be caught by the check in create()
+            this.world = undefined!;
+            this.levelManager = data.levelManager || levelManager;
+            return;
+        }
+
+        this.world = WORLDS.find(w => w.id === effectiveWorldId)!;
+
+        if (!this.world) {
+        // eslint-disable-next-line no-console
+            console.error(`[LevelMenuScene] World configuration not found for ID: ${effectiveWorldId}.`);
+            // this.world will be undefined, and the create() method's check will handle UI.
+        }
+
         this.levelManager = data.levelManager || levelManager;
     }
 

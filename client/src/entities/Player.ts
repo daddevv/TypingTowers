@@ -11,7 +11,8 @@ export default class Player extends Phaser.GameObjects.Sprite {
         scene.add.existing(this);
         this.setOrigin(0.5, 0.5);
         // Display health above the player
-        this.healthText = scene.add.text(x, y - 40, `Health: 0`, {
+        const playerState = stateManager.getState().player;
+        this.healthText = scene.add.text(x, y - 40, `Health: ${playerState.health}`, {
             fontSize: '20px',
             color: '#ff5555',
             fontStyle: 'bold',

@@ -1,3 +1,4 @@
+// @vitest-environment happy-dom
 // InputSystem.test.ts
 // Unit tests for InputSystem: ensures input updates gameState as expected
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -19,6 +20,8 @@ describe('InputSystem', () => {
     });
     afterEach(() => {
         InputSystem.getInstance().unregisterListeners();
+        // Reset player input after each test to avoid cross-test contamination
+        stateManager.updatePlayerInput('');
     });
 
     it('updates gameState.player.currentInput on keydown', () => {
@@ -40,5 +43,29 @@ describe('InputSystem', () => {
         expect(stateManager.getState().player.currentInput).toBe('');
         simulateKey('Escape');
         expect(stateManager.getState().gameStatus).toBe('playing');
+    });
+
+    it('works with a mocked gameState', () => {
+        // Save original getState
+        const originalGetState = stateManager.getState;
+        // Mock gameState
+        const mockState = {
+            gameStatus: 'playing',
+            player: { currentInput: '' },
+            // ...other properties as needed
+        };
+        // Mock getState to return mockState
+        (stateManager.getState as any) = () => mockState;
+        // Mock updatePlayerInput to update mockState
+        const originalUpdatePlayerInput = stateManager.updatePlayerInput;
+        stateManager.updatePlayerInput = (key: string) => {
+            mockState.player.currentInput = key;
+        };
+        // Simulate input
+        simulateKey('z');
+        expect(mockState.player.currentInput).toBe('z');
+        // Restore originals
+        (stateManager.getState as any) = originalGetState;
+        stateManager.updatePlayerInput = originalUpdatePlayerInput;
     });
 });

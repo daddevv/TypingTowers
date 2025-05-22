@@ -8,11 +8,17 @@ if (typeof global !== 'undefined' && typeof global.localStorage === 'undefined')
         clear() { this.store = {}; }
     };
 }
-
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import LevelManager from '../levelManager';
 
 describe('LevelManager', () => {
+    beforeEach(() => {
+        // Clear localStorage before each test to avoid cross-test contamination
+        if (typeof localStorage !== 'undefined' && localStorage.clear) {
+            localStorage.clear();
+        }
+    });
+
     it('initializes with first level unlocked', () => {
         const manager = new LevelManager();
         expect(manager.isLevelUnlocked('1-1')).toBe(true);
@@ -109,3 +115,4 @@ describe('LevelManager', () => {
         expect(fs.existsSync('src/wordpacks/fjghrutyvmbn_bossWords.json')).toBe(true);
     });
 });
+

@@ -113,13 +113,22 @@ export default class WorldSelectionScene extends Phaser.Scene {
     // When starting LevelMenuScene, always pass the singleton levelManager
     selectWorld(idx: number) {
         const world = this.worlds[idx];
-        // Store selected world in stateManager.level
-        const state = stateManager.getState();
-        state.level.currentWorld = world.id;
-        stateManager.updateProgression({}); // trigger save
-        // Optionally, store selected world in stateManager if needed
-        // For robust navigation, update current world in stateManager (if you have such a method)
-        // stateManager.setCurrentWorld(world.id); // Uncomment if implemented
+        if (!world) {
+            // eslint-disable-next-line no-console
+            console.error(`[WorldSelectionScene] Selected world at index ${idx} is undefined.`);
+            // Optionally, provide user feedback here
+            return;
+        }
+
+        // world.id is already a number as per WorldConfig interface in worldConfig.ts
+        // Update the currentWorld in the global state using the new StateManager method.
+        // This ensures LevelMenuScene can retrieve it.
+        stateManager.updateCurrentLevelContext({ currentWorld: world.id });
+
+        // Optionally, clear currentLevelId if that's desired when changing worlds
+        // stateManager.updateCurrentLevelContext({ currentWorld: world.id, currentLevelId: null });
+
+        // Trigger the transition to the level selection scene for the chosen world.
         stateManager.setGameStatus('levelSelect');
     }
 }

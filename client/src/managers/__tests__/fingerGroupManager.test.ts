@@ -45,4 +45,3 @@ describe('FingerGroupManager', () => {
         expect(manager.isKeyMastered('f')).toBe(true);
     });
 });
-// Contains AI-generated edits.

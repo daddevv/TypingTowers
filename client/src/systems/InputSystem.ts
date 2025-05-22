@@ -19,16 +19,20 @@ export default class InputSystem {
 
     public registerListeners(): void {
         if (this.listenersRegistered) return;
-        window.addEventListener('keydown', this.handleKeyDown);
-        window.addEventListener('keyup', this.handleKeyUp);
-        this.listenersRegistered = true;
+        if (typeof window !== 'undefined' && window.addEventListener) {
+            window.addEventListener('keydown', this.handleKeyDown);
+            window.addEventListener('keyup', this.handleKeyUp);
+            this.listenersRegistered = true;
+        }
     }
 
     public unregisterListeners(): void {
         if (!this.listenersRegistered) return;
-        window.removeEventListener('keydown', this.handleKeyDown);
-        window.removeEventListener('keyup', this.handleKeyUp);
-        this.listenersRegistered = false;
+        if (typeof window !== 'undefined' && window.removeEventListener) {
+            window.removeEventListener('keydown', this.handleKeyDown);
+            window.removeEventListener('keyup', this.handleKeyUp);
+            this.listenersRegistered = false;
+        }
     }
 
     private handleKeyDown = (event: KeyboardEvent) => {

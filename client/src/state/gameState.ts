@@ -113,8 +113,8 @@ export const defaultGameState: GameState = {
         position: { x: 100, y: 300 },
     },
     level: {
-        currentWorld: 0,
-        currentLevelId: '',
+        currentWorld: 1,
+        currentLevelId: '1-1',
         levelStatus: 'notStarted',
     },
     gameStatus: 'booting',

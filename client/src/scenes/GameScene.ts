@@ -46,6 +46,10 @@ export default class GameScene extends Phaser.Scene {
 
     private onGameStatusChanged?: (status: string) => void;
 
+    // Group for mob visuals
+    private mobGroup!: Phaser.GameObjects.Group;
+    private mobVisuals: Map<string, { sprite: Phaser.GameObjects.Sprite, text: Phaser.GameObjects.Text }> = new Map();
+
     constructor() {
         super('GameScene');
     }
@@ -137,6 +141,9 @@ export default class GameScene extends Phaser.Scene {
             emitting: false // Do not emit constantly
         });
 
+        // Mob rendering group
+        this.mobGroup = this.add.group();
+
         this.onGameStatusChanged = (status: string) => {
             if (status !== 'playing') {
                 this.scene.stop();
@@ -181,6 +188,10 @@ export default class GameScene extends Phaser.Scene {
     }
 
     update(time: number, delta: number) {
+        const gameState = stateManager.getState();
+        if (gameState.gameStatus === 'paused') {
+            return; // Halt updates when paused
+        }
         // Guard: wait for mobSpawner to be initialized
         if (!this.mobSpawner) return;
         // --- Difficulty scaling system ---
@@ -215,8 +226,8 @@ export default class GameScene extends Phaser.Scene {
                     stateManager.updatePlayerHealth(Math.max(0, playerState.health - 1));
                     stateManager.removeMob(mob.id);
                     if (playerState.health <= 0) {
-                        this.add.text(400, 300, 'Game Over', { fontSize: '48px', color: '#ff5555' }).setOrigin(0.5);
-                        this.scene.pause();
+                        this.showGameOverUI();
+                        return;
                     }
                     break;
                 }
@@ -271,6 +282,59 @@ export default class GameScene extends Phaser.Scene {
                 });
             }
             this.lastScore = this.score;
+        }
+
+        // --- Mob rendering logic ---
+        const mobsForRender = stateManager.getState().mobs;
+        // Remove visuals for mobs no longer present
+        for (const [mobId, visual] of this.mobVisuals.entries()) {
+            if (!mobsForRender.find(m => m.id === mobId)) {
+                visual.sprite.destroy();
+                visual.text.destroy();
+                this.mobVisuals.delete(mobId);
+            }
+        }
+        // Render/update visuals for each mob
+        for (const mob of mobsForRender) {
+            if (!this.mobVisuals.has(mob.id)) {
+                // Create sprite and text for new mob
+                const sprite = this.add.sprite(mob.position.x, mob.position.y, 'mob');
+                if (!this.textures.exists('mob')) {
+                    // Fallback: draw a circle if no mob texture
+                    const g = this.add.graphics();
+                    g.fillStyle(0x8888ff, 1);
+                    g.fillCircle(0, 0, 24);
+                    g.generateTexture('mob', 48, 48);
+                    g.destroy();
+                    sprite.setTexture('mob');
+                }
+                sprite.setOrigin(0.5);
+                const text = this.add.text(mob.position.x, mob.position.y, mob.word, {
+                    fontSize: '22px',
+                    color: '#fff',
+                    stroke: '#000',
+                    strokeThickness: 3,
+                }).setOrigin(0.5);
+                this.mobGroup.add(sprite);
+                this.mobGroup.add(text);
+                this.mobVisuals.set(mob.id, { sprite, text });
+            }
+            // Update position and text
+            const visual = this.mobVisuals.get(mob.id)!;
+            visual.sprite.setPosition(mob.position.x, mob.position.y);
+            visual.text.setPosition(mob.position.x, mob.position.y - 32);
+            // Highlight typed letters
+            const typed = mob.word.substring(0, mob.currentTypedIndex);
+            const rest = mob.word.substring(mob.currentTypedIndex);
+            visual.text.setText(`[${typed}]${rest}`);
+            // Optionally, fade out defeated mobs
+            if (mob.isDefeated) {
+                visual.sprite.setAlpha(0.3);
+                visual.text.setAlpha(0.3);
+            } else {
+                visual.sprite.setAlpha(1);
+                visual.text.setAlpha(1);
+            }
         }
     }
 
@@ -349,6 +413,38 @@ export default class GameScene extends Phaser.Scene {
             // No more levels, go back to menu
             stateManager.setGameStatus('worldSelect');
         }
+    }
+
+    /**
+     * Show Game Over UI and allow returning to level select.
+     */
+    private showGameOverUI() {
+        // Prevent multiple overlays
+        if (this.children.getByName('gameOverText')) return;
+        const gameOverText = this.add.text(400, 260, 'Game Over', {
+            fontSize: '48px',
+            color: '#ff5555',
+            backgroundColor: '#222',
+            padding: { left: 24, right: 24, top: 12, bottom: 12 },
+        }).setOrigin(0.5).setName('gameOverText');
+        const backButton = this.add.text(400, 340, 'Back to Level Select (Esc/Enter)', {
+            fontSize: '32px',
+            color: '#fff',
+            backgroundColor: '#444',
+            padding: { left: 24, right: 24, top: 8, bottom: 8 },
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setName('gameOverBackBtn');
+        backButton.on('pointerdown', () => this.handleBackToLevelSelect());
+        // Keyboard navigation: Enter or Esc for back
+        const keyHandler = (event: KeyboardEvent) => {
+            if (event.key === 'Enter' || event.key === 'Escape') {
+                this.handleBackToLevelSelect();
+            }
+        };
+        this.input.keyboard?.on('keydown', keyHandler);
+        this.events.once('shutdown', () => {
+            this.input.keyboard?.off('keydown', keyHandler);
+        });
+        this.scene.pause();
     }
 
     /**

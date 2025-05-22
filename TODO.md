@@ -23,17 +23,17 @@
 - [x] **Refactor Managers (or integrate into Systems):**
   - [x] `LevelManager`: Functionality largely moves to `ProgressionSystem` and `StateManager`. Data like unlocked levels stored in `gameState.progression`.
   - [x] `FingerGroupManager`: Operates on typing data, potentially sourced from `gameState.player.currentInput` or events. Stores its stats within `gameState.curriculum.fingerGroupStats`.
-- [ ] **Implement Pause/Unpause Functionality:**
-  - [ ] Escape key (via `InputSystem`) toggles `gameState.gameStatus` between `playing` and `paused`.
-  - [ ] All time-based updates (mob movement, spawning, timers) must check `gameState.gameStatus` and halt if `paused`.
-  - [ ] Rendering of pause menu UI driven by `gameState.gameStatus === 'paused'`.
-  - [ ] Resume/Quit options in pause menu update `gameState.gameStatus` accordingly.
+- [x] **Implement Pause/Unpause Functionality:**
+  - [x] Escape key (via `InputSystem`) toggles `gameState.gameStatus` between `playing` and `paused`.
+  - [x] All time-based updates (mob movement, spawning, timers) must check `gameState.gameStatus` and halt if `paused`.
+  - [x] Rendering of pause menu UI driven by `gameState.gameStatus === 'paused'`.
+  - [x] Resume/Quit options in pause menu update `gameState.gameStatus` accordingly.
 
 ### 1.3. Testing & Debugging for Core Architecture
 
-- [ ] **Unit Tests for `StateManager`:** Test state initialization, updates, getters.
-- [ ] **Unit Tests for Systems:** Test system logic with mocked `gameState`.
-- [ ] **Console Debugging:** Continuously verify that `window.gameState` is accessible and reflects the current state accurately. Use it to debug issues during refactoring.
+- [x] **Unit Tests for `StateManager`:** Test state initialization, updates, getters.
+- [x] **Unit Tests for Systems:** Test system logic with mocked `gameState`.
+- [x] **Console Debugging:** Continuously verify that `window.gameState` is accessible and reflects the current state accurately. Use it to debug issues during refactoring.
 
 ## Phase 2: Gameplay Enhancements & Content (Leveraging New Architecture)
 

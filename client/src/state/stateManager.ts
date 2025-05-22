@@ -29,7 +29,7 @@ class StateManager {
     private static STORAGE_KEY = 'typeDefenseGameStateV2';
 
     constructor() {
-        this.state = this.load() || { ...defaultGameState };
+        this.state = this.load() || JSON.parse(JSON.stringify(defaultGameState));
         this.emitter = new EventEmitter();
         // Expose for debugging
         (window as any).gameState = this.state;
@@ -92,6 +92,19 @@ class StateManager {
         this.emitAndSave('mobsUpdated', newMobs);
     }
 
+    // --- Level Context (Current World/Level) ---
+    updateCurrentLevelContext(context: Partial<GameState['level']>) {
+        // Ensure this.state.level is initialized if it's not already
+        if (!this.state.level) {
+            // Assuming GameState['level'] has a structure like { currentWorld: null, currentLevelId: null, ... }
+            // You might need to adjust this based on your actual defaultGameState structure for 'level'
+            this.state.level = { currentWorld: null, currentLevelId: null, ...context } as GameState['level'];
+        } else {
+            this.state.level = { ...this.state.level, ...context };
+        }
+        this.emitAndSave('levelContextChanged', this.state.level);
+    }
+
     // --- Level Progression ---
     updateProgression(newProgression: Partial<GameState['progression']>) {
         this.state.progression = { ...this.state.progression, ...newProgression };
@@ -129,7 +142,7 @@ class StateManager {
     }
 
     reset() {
-        this.state = { ...defaultGameState };
+        this.state = JSON.parse(JSON.stringify(defaultGameState));
         this.emitAndSave('reset');
     }
 

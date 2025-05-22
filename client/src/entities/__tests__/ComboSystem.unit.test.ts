@@ -49,5 +49,3 @@ describe('ComboSystem Unit', () => {
         expect(comboSys.score).toBe(30); // 0 + 10*3
     });
 });
-
-// Contains AI-generated edits.

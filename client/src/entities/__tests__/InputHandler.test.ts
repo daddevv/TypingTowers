@@ -1,7 +1,11 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import InputHandler from '../InputHandler';
 
 describe('InputHandler', () => {
+    beforeEach(() => {
+        vi.restoreAllMocks();
+    });
+
     it('accumulates input on keydown', () => {
         // Mock Phaser.Scene and input
         const events = { once: vi.fn() };
