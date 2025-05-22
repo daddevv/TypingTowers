@@ -24,7 +24,7 @@ export default class LevelMenuScene extends Phaser.Scene {
     create() {
         this.add.text(400, 40, this.world.name, { fontSize: '36px', color: '#fff' }).setOrigin(0.5);
         this.renderMenu();
-        this.input.keyboard?.on('keydown', this.handleInput, this);
+        // Input is now handled via InputSystem and stateManager
         // Re-render menu when scene is resumed (e.g., after completing a level)
         this.events.on('resume', () => {
             this.renderMenu();

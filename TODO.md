@@ -1,63 +1,25 @@
 # TypeDefense v2 - Detailed TODO List
 
-## Phase 0: Project Setup & Planning (v2 Kickoff)
-
-- [x] **Initialize v2 Branch:** Create a new branch for v2 development (e.g., `feature/v2-architecture`).
-- [x] **Review v2 Goals:** Confirm understanding of core v2 objectives:
-  - Single, centralized game state.
-  - Improved architecture for maintainability and scalability.
-  - Simplified debugging (especially for pause/unpause).
-  - Console inspectable game state.
-- [x] **Adopt New Project Layout:** Start organizing files according to the new `project_layout.instructions.md` as you refactor/create.
-
 ## Phase 1: Core Architecture Refactor - Single Game State
-
-This is the most critical phase and will touch most parts of the codebase.
-
-### 1.1. Design & Implement Global Game State
-
-- [x] **Define `GameState` Interface/Type (`client/src/state/gameState.ts`):
-  - [x] Player state (health, score, combo, current input).
-  - [x] Level state (current world, current level ID, level status - not started, playing, complete, failed).
-  - [x] Game status (e.g., `booting`, `mainMenu`, `worldSelect`, `levelSelect`, `playing`, `paused`, `levelComplete`, `gameOver`).
-  - [x] Mob state (array of active mob objects: id, word, currentTypedIndex, position, speed, type).
-  - [x] Mob Spawner state (next spawn time, current wave, mobs remaining in wave).
-  - [x] UI state (active modals, notifications, visibility flags for UI elements).
-  - [x] Settings (volume, difficulty (if applicable)).
-  - [x] Curriculum/Progression state (unlocked levels/worlds, finger group stats from `FingerGroupManager`).
-  - [x] Timestamp/Delta time for time-based logic.
-- [x] **Implement `StateManager` (`client/src/state/stateManager.ts`):**
-  - [x] Initialize default/empty game state.
-  - [x] Provide function to get the current game state (immutable or copy preferred).
-  - [x] Provide functions to update specific parts of the game state (e.g., `updatePlayerHealth(newHealth)`, `addMob(mobData)`, `setGameStatus('paused')`). These functions will be the primary way systems interact with the state.
-  - [x] Implement mechanism to expose `gameState` to `window.gameState` for console debugging.
-  - [x] (Optional but Recommended) Implement a simple event emitter within `StateManager` for systems to subscribe to specific state changes (e.g., `stateManager.on('gameStatusChanged', handler)`).
-  - [x] Implement basic save/load functionality for `gameState` (using `localStorage`) for progression.
 
 ### 1.2. Refactor Core Game Systems
 
-- [ ] **Refactor Main Game Loop (`client/src/main.ts` or `GameScene.ts` initially):**
+- [x] **Refactor Main Game Loop (`client/src/main.ts` or `GameScene.ts`):**
   - [x] Game loop should fetch current delta time and update it in `gameState`.
   - [x] Game loop should call update functions of various systems, passing `gameState` or relying on them to access it via `StateManager`.
-- [x] **Refactor Scene Management:**
-  - [x] Update all scenes (`GameScene`, `MainMenuScene`, `MenuScene`, `LevelMenuScene`) to read from `gameState.gameStatus` and other relevant state for rendering and behavior.
-  - [x] Refactor scene transitions to be triggered by changing `gameState.gameStatus` via `stateManager.setGameStatus(...)`, not by direct scene switching.
-  - [x] Refactor `MainMenuScene`, `MenuScene` (WorldSelect), and `LevelMenuScene` to render UI based on `gameState`, and dispatch actions to `StateManager` for navigation.
-  - [x] Ensure all scene transitions and UI updates are reactive to changes in `gameState.gameStatus`.
-  - [x] Add or update tests to verify correct scene transitions and state-driven rendering.
-- [ ] **Refactor Input Handling (New `InputSystem` - `client/src/systems/InputSystem.ts`):**
-  - [ ] Centralize all keyboard/mouse event listeners here.
-  - [ ] On input, `InputSystem` updates `gameState` (e.g., `gameState.player.currentInput`, or triggers `stateManager.setGameStatus('paused')` on Escape key).
-  - [ ] Remove input handling logic scattered across different scenes/entities.
+- [x] **Refactor Input Handling (New `InputSystem` - `client/src/systems/InputSystem.ts`):**
+  - [x] Centralize all keyboard/mouse event listeners here.
+  - [x] On input, `InputSystem` updates `gameState` (e.g., `gameState.player.currentInput`, or triggers `stateManager.setGameStatus('paused')` on Escape key).
+  - [x] Remove input handling logic scattered across different scenes/entities.
 - [ ] **Refactor Entities (`Player`, `Mob`, `MobSpawner`):**
   - [ ] `Player`: Behavior (e.g., taking damage) driven by `gameState`.
   - [ ] `Mob`:
-    - Data (word, position) stored in `gameState.mobs`.
-    - Movement and logic updates based on its state in `gameState.mobs` and global `gameState` (e.g., delta time).
-    - When a mob is hit/defeated, update its state in `gameState.mobs` or remove it via `StateManager`.
+    - [ ] Data (word, position) stored in `gameState.mobs`.
+    - [ ] Movement and logic updates based on its state in `gameState.mobs` and global `gameState` (e.g., delta time).
+    - [ ] When a mob is hit/defeated, update its state in `gameState.mobs` or remove it via `StateManager`.
   - [ ] `MobSpawner`:
-    - Logic driven by `gameState.mobSpawnerState` and `gameState.currentLevel.spawnRules`.
-    - When spawning a mob, adds it to `gameState.mobs` via `StateManager`.
+    - [ ] Logic driven by `gameState.mobSpawnerState` and `gameState.currentLevel.spawnRules`.
+    - [ ] When spawning a mob, adds it to `gameState.mobs` via `StateManager`.
 - [ ] **Refactor Managers (or integrate into Systems):**
   - [ ] `LevelManager`: Functionality largely moves to `ProgressionSystem` and `StateManager`. Data like unlocked levels stored in `gameState.progression`.
   - [ ] `FingerGroupManager`: Operates on typing data, potentially sourced from `gameState.player.currentInput` or events. Stores its stats within `gameState.curriculum.fingerGroupStats`.
@@ -74,8 +36,6 @@ This is the most critical phase and will touch most parts of the codebase.
 - [ ] **Console Debugging:** Continuously verify that `window.gameState` is accessible and reflects the current state accurately. Use it to debug issues during refactoring.
 
 ## Phase 2: Gameplay Enhancements & Content (Leveraging New Architecture)
-
-This phase integrates remaining tasks from the old TODO and builds upon the new architecture.
 
 ### 2.1. Mob & Spawning System
 

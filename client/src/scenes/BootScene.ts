@@ -2,6 +2,7 @@
 // Initializes StateManager, loads essential assets, and sets gameStatus to 'mainMenu'
 import Phaser from 'phaser';
 import stateManager from '../state/stateManager';
+import InputSystem from '../systems/InputSystem';
 
 export default class BootScene extends Phaser.Scene {
     constructor() {
@@ -31,5 +32,8 @@ export default class BootScene extends Phaser.Scene {
             }
             // Add more as needed
         });
+
+        // Register global input listeners
+        InputSystem.getInstance().registerListeners();
     }
 }

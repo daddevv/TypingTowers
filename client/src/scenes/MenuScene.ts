@@ -26,7 +26,7 @@ export default class MenuScene extends Phaser.Scene {
     create() {
         this.add.text(400, 40, 'TypeDefense', { fontSize: '40px', color: '#fff' }).setOrigin(0.5);
         this.renderMenu();
-        this.input.keyboard?.on('keydown', this.handleInput, this);
+        // Input is now handled via InputSystem and stateManager
         // Listen for gameStatus changes and transition if needed
         this.onGameStatusChanged = (status: string) => {
             if (status !== 'worldSelect') {

@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
 import { getKeyInfo } from '../curriculum/fingerGroups';
 import { WORLDS } from '../curriculum/worldConfig';
-import InputHandler from '../entities/InputHandler';
 import MobSpawner from '../entities/MobSpawner';
 import Player from '../entities/Player';
 import FingerGroupManager from '../managers/fingerGroupManager';
@@ -12,7 +11,6 @@ import WordGenerator from '../utils/wordGenerator';
 
 export default class GameScene extends Phaser.Scene {
     private player!: Player;
-    private inputHandler!: InputHandler;
     private mobSpawner!: MobSpawner;
     private fingerGroupManager!: FingerGroupManager;
     private targetedMob: any = null; // Track the currently targeted mob
@@ -67,7 +65,6 @@ export default class GameScene extends Phaser.Scene {
 
         // Initialize Player and InputHandler
         this.player = new Player(this, 100, 300);
-        this.inputHandler = new InputHandler(this);
         this.fingerGroupManager = new FingerGroupManager();
 
         // Support starting at a specific world/level
@@ -139,19 +136,6 @@ export default class GameScene extends Phaser.Scene {
             alpha: { start: 1, end: 0 },
             emitting: false // Do not emit constantly
         });
-
-        // Register global Escape handler
-        this.globalEscapeHandler = (event: KeyboardEvent) => {
-            if (event.key === 'Escape' && !this.levelCompleteText) {
-                if (!this.isPaused) {
-                    this.showPauseMenu();
-                } else {
-                    // Always call hidePauseMenu to ensure pause header is removed and game resumes
-                    this.hidePauseMenu();
-                }
-            }
-        };
-        this.input.keyboard?.on('keydown', this.globalEscapeHandler);
 
         this.onGameStatusChanged = (status: string) => {
             if (status !== 'playing') {
@@ -241,7 +225,7 @@ export default class GameScene extends Phaser.Scene {
             }
         }
         // Improved mob input handling for combos and multiple mobs
-        const input = this.inputHandler.getInput();
+        const input = stateManager.getState().player.currentInput || '';
         if (input.length > 0) {
             let anyCorrect = false;
             for (const char of input) {
@@ -348,7 +332,7 @@ export default class GameScene extends Phaser.Scene {
                 this.combo = 0;
                 this.comboText.setVisible(false);
             }
-            this.inputHandler.clearInput();
+            stateManager.updatePlayerInput('');
         }
         // Animate score pop-up when score changes
         if (this.scoreText && this.scoreText.visible) {

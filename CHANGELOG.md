@@ -9,6 +9,26 @@ All notable changes to this project will be documented in this file.
 - Input handling centralized in new `InputSystem`.
 - Entities (`Player`, `Mob`, `MobSpawner`) now operate on state from `gameState`.
 - Level and finger group progression managed via state and dedicated managers.
+- Initialized v2 branch for development.
+- Reviewed and confirmed v2 goals: centralized game state, improved architecture, easier debugging, and console-inspectable state.
+- Adopted new project layout per `project_layout.instructions.md`.
+- Defined comprehensive `GameState` interface/type, including player, level, game, mob, spawner, UI, settings, curriculum/progression, and timing state.
+- Implemented `StateManager` with:
+  - Default/empty state initialization.
+  - Immutable/copy getter for state.
+  - Update functions for all major state parts.
+  - Exposed `gameState` to `window` for debugging.
+  - Event emitter for state changes.
+  - Save/load to localStorage for progression.
+- Refactored main game loop to:
+  - Fetch and update delta time in state.
+  - Call system update functions using state.
+- Refactored scene management:
+  - All scenes now read from `gameState.gameStatus` and relevant state.
+  - Scene transitions are triggered by updating `gameState.gameStatus` via `stateManager.setGameStatus(...)`.
+  - MainMenu, Menu (WorldSelect), and LevelMenu scenes render UI and handle navigation based on state, dispatching actions to StateManager.
+  - All scene transitions and UI updates are reactive to state changes.
+  - Added/updated tests for scene transitions and state-driven rendering.
 
 ## [v0.1.0] - 2025-05-21
 
