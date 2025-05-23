@@ -4,20 +4,21 @@ import Phaser from 'phaser';
 import { WORLDS, WorldConfig } from '../curriculum/worldConfig';
 import { levelManager } from '../managers/levelManager';
 import stateManager from '../state/stateManager';
+import { IRenderManager } from '../render/RenderManager';
 
 export default class LevelMenuScene extends Phaser.Scene {
     private world!: WorldConfig;
-    private menuItems: Phaser.GameObjects.Text[] = [];
     private selectedLevel: number = 0;
     private levelManager = levelManager;
     private onGameStatusChanged?: (status: string) => void;
     private stateUnsubscribe?: () => void;
+    private renderManager!: IRenderManager;
 
     constructor() {
         super({ key: 'LevelMenuScene' });
     }
 
-    init(data: { worldId?: number, levelManager?: typeof levelManager } = {}) {
+    init(data: { worldId?: number, levelManager?: typeof levelManager, renderManager?: IRenderManager } = {}) {
         // Always fetch the latest worldId from stateManager if not provided
         let effectiveWorldId: number | undefined | null = data.worldId;
         if (typeof effectiveWorldId !== 'number') {
@@ -31,22 +32,26 @@ export default class LevelMenuScene extends Phaser.Scene {
         this.world = WORLDS.find(w => w.id === effectiveWorldId)!;
         this.selectedLevel = 0;
         this.levelManager = (data && data.levelManager) || levelManager;
-        // Defensive: clear menu items
-        this.menuItems = [];
+        this.renderManager = data?.renderManager || (window as any).renderManager;
+        if (!this.renderManager) {
+            throw new Error('RenderManager instance must be provided to LevelMenuScene');
+        }
         // eslint-disable-next-line no-console
         console.log('[LevelMenuScene] Initializing with worldId:', effectiveWorldId);
     }
 
     create() {
-        // Defensive: Remove all children and menu items
-        this.children.removeAll();
-        this.menuItems = [];
         // Always re-fetch world from state in case of navigation
         const state = stateManager.getState();
         const worldId = state?.level?.currentWorld || 1;
         this.world = WORLDS.find(w => w.id === worldId) || WORLDS[0];
         this.selectedLevel = 0;
-        this.renderMenu();
+
+        // Remove all direct Phaser rendering code.
+        // Instead, delegate to renderManager:
+        this.renderManager.init(this.game.canvas.parentElement as HTMLElement);
+        this.renderManager.render(stateManager.getState());
+
         // Listen for gameStatus changes to stop scene if needed
         this.onGameStatusChanged = (status: string) => {
             if (status !== 'levelSelect') {
@@ -67,36 +72,14 @@ export default class LevelMenuScene extends Phaser.Scene {
         });
     }
 
-    renderMenu() {
-        this.menuItems.forEach(item => item.destroy());
-        this.menuItems = [];
-        const levels = this.world.levels;
-        levels.forEach((level, idx) => {
-            const y = 120 + idx * 48;
-            // Always unlock 1-1, regardless of progress
-            const isUnlocked = (level.id === '1-1') ? true : this.levelManager.isLevelUnlocked(level.id);
-            const color = isUnlocked ? '#fff' : '#888';
-            const item = this.add.text(400, y, `${level.name}${isUnlocked ? '' : ' (Locked)'}`, {
-                fontSize: '28px',
-                color,
-                backgroundColor: idx === this.selectedLevel ? '#444' : undefined,
-                padding: { left: 12, right: 12, top: 4, bottom: 4 },
-            }).setOrigin(0.5).setInteractive({ useHandCursor: isUnlocked });
-            if (isUnlocked) {
-                item.on('pointerdown', () => this.selectLevel(idx));
-            }
-            this.menuItems.push(item);
-        });
-    }
-
     handleInput(event: KeyboardEvent) {
         const levels = this.world.levels;
         if (event.key === 'ArrowUp') {
             this.selectedLevel = (this.selectedLevel - 1 + levels.length) % levels.length;
-            this.renderMenu();
+            this.renderManager.render(stateManager.getState());
         } else if (event.key === 'ArrowDown') {
             this.selectedLevel = (this.selectedLevel + 1) % levels.length;
-            this.renderMenu();
+            this.renderManager.render(stateManager.getState());
         } else if (event.key === 'Enter') {
             this.selectLevel(this.selectedLevel);
         } else if (event.key === 'Escape') {

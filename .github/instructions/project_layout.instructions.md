@@ -20,6 +20,9 @@ It is important to keep this document up-to-date to ensure that all team members
 
 ## Client Directory (`client/`)
 
+- `render/` - Rendering abstraction and implementations
+  - `RenderManager.ts` - **Defines the `IRenderManager` interface, which acts as the bridge between the engine and the chosen render library (Phaser, Three.js, etc.). All rendering logic should be implemented via this interface.**
+  - `__tests__/RenderManager.test.ts` - **Unit tests and mocks for the RenderManager interface. Verifies that scenes and game logic call the correct rendering methods. Use this as a template for testing new renderer implementations.**
 - `src/` - Source code for the game
   - `assets/` - Game assets organized by type
     - `audio/` - Sound effects and music files
@@ -174,5 +177,59 @@ It is important to keep this document up-to-date to ensure that all team members
 - **Testing:**
   - The engine is fully testable in Node.js with no DOM or rendering dependencies.
   - See `client/src/engine/HeadlessGameEngine.unit.test.ts` for usage examples and integration tests.
+
+## RenderManager Abstraction
+
+- The `RenderManager` abstraction decouples game logic from rendering. The `IRenderManager` interface defines the contract for rendering the current game state.
+- Concrete implementations (e.g., Phaser, Three.js) implement this interface and are responsible for all rendering, UI, and effects.
+- See `client/src/render/RenderManager.ts` for the interface definition.
+- Renderers should implement `init`, `render`, and `destroy` methods.
+- The engine and game logic interact with the renderer only via this interface, enabling easy swapping or extension of render backends.
+- **Tests and mocks for the RenderManager interface are provided in `client/src/render/__tests__/RenderManager.test.ts`.** These verify that scenes and game logic call the correct rendering methods and make it easy to test new renderer implementations.
+
+### Implementing a New Renderer (e.g., Three.js)
+
+To add a new renderer (such as Three.js), follow these steps:
+
+1. **Create a new RenderManager implementation:**
+   - Create a file such as `client/src/render/ThreeJsRenderManager.ts`.
+   - Implement the `IRenderManager` interface from `RenderManager.ts`.
+   - Example skeleton:
+     ```typescript
+     import { IRenderManager } from './RenderManager';
+     import { GameState } from '../state/gameState';
+
+     export class ThreeJsRenderManager implements IRenderManager {
+       init(container: HTMLElement): void {
+         // Initialize Three.js renderer and scene here
+       }
+       render(state: GameState): void {
+         // Render the current game state using Three.js
+       }
+       destroy(): void {
+         // Clean up Three.js resources
+       }
+       resize?(width: number, height: number): void {
+         // Handle resize if needed
+       }
+     }
+     ```
+
+2. **Integrate with the game:**
+   - Pass your new `ThreeJsRenderManager` instance to scenes via the `renderManager` parameter.
+   - Ensure all scenes use only the `IRenderManager` interface for rendering.
+
+3. **Testing:**
+   - Add or update tests in `client/src/render/__tests__/RenderManager.test.ts` to verify your implementation.
+   - Use mocks or stubs as needed.
+
+4. **Switching Renderers:**
+   - Add a build/runtime flag or configuration to select between renderers (e.g., Phaser or Three.js).
+   - Ensure feature parity and test both renderers for correct behavior.
+
+5. **Documentation:**
+   - Update this documentation and the README to describe how to implement and select new renderers.
+
+By following this pattern, you can add additional renderers (CLI, Canvas2D, etc.) with minimal changes to the core game logic.
 
 Contains AI-generated edits.

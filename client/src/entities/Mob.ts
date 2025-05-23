@@ -29,10 +29,7 @@ export class MobSystem {
                 mob.isDefeated = true;
             }
         }
-        // Write back updated mobs
-        // (In a real ECS, this would be more granular)
+        // Only update state, no rendering here.
         stateManager.updateMobs(mobs);
     }
 }
-
-//Contains AI - generated edits.

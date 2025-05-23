@@ -33,4 +33,5 @@ export default class Player {
 
     // Optionally, add methods for logic (not rendering)
     // Rendering is now handled in GameScene based on stateManager
+    // No rendering logic here; handled by RenderManager.
 }

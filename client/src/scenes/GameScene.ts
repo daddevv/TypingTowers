@@ -2,12 +2,12 @@ import Phaser from 'phaser';
 import { WORLDS } from '../curriculum/worldConfig';
 import { MobSystem } from '../entities/Mob';
 import MobSpawner from '../entities/MobSpawner';
-import Player from '../entities/Player';
 import FingerGroupManager from '../managers/fingerGroupManager';
 import LevelManager, { levelManager } from '../managers/levelManager';
 import stateManager from '../state/stateManager';
 import { loadWordList } from '../utils/loadWordList';
 import WordGenerator from '../utils/wordGenerator';
+import { IRenderManager } from '../render/RenderManager';
 
 export default class GameScene extends Phaser.Scene {
     private mobSpawner!: MobSpawner;
@@ -26,13 +26,6 @@ export default class GameScene extends Phaser.Scene {
 
     protected score: number = 0;
     protected combo: number = 0;
-    protected particleManager!: Phaser.GameObjects.Particles.ParticleEmitter;
-    protected scoreText!: Phaser.GameObjects.Text;
-    protected comboText!: Phaser.GameObjects.Text;
-    protected enemiesRemainingText!: Phaser.GameObjects.Text; // Enemies remaining UI element
-    private waveText?: Phaser.GameObjects.Text;
-    private waveTween?: Phaser.Tweens.Tween;
-    private lastScore: number = 0; // Store last score for pulsing logic
 
     private levelManager!: LevelManager;
     private currentWorldIdx: number = 0;
@@ -53,6 +46,23 @@ export default class GameScene extends Phaser.Scene {
     private playerSprite!: Phaser.GameObjects.Sprite;
     private playerHealthText!: Phaser.GameObjects.Text;
 
+    private renderManager!: IRenderManager;
+
+    // Wave notification properties
+    private waveText?: Phaser.GameObjects.Text;
+    private waveTween?: Phaser.Tweens.Tween;
+
+    // Enemies remaining text
+    private enemiesRemainingText!: Phaser.GameObjects.Text;
+
+    // Add these properties for score/combo UI
+    protected scoreText?: Phaser.GameObjects.Text;
+    protected comboText?: Phaser.GameObjects.Text;
+    protected lastScore: number = 0;
+
+    // Add particleManager property
+    private particleManager?: { emitParticleAt: (x: number, y: number, count?: number) => void };
+
     constructor() {
         super('GameScene');
     }
@@ -63,7 +73,7 @@ export default class GameScene extends Phaser.Scene {
         // Example: this.load.image('mob', 'assets/images/mob.png');
     }
 
-    async create(data?: { world?: number; level?: number; levelManager?: any }) {
+    async create(data?: { world?: number; level?: number; levelManager?: any, renderManager?: IRenderManager }) {
         // Set up the main game scene here
         // this.add.text(400, 300, 'Type Defense', {
         //     fontSize: '48px',
@@ -111,62 +121,15 @@ export default class GameScene extends Phaser.Scene {
         // Score and combo UI
         this.score = 0;
         this.combo = 0;
-        this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '28px', color: '#fff', stroke: '#000', strokeThickness: 4 });
-        this.comboText = this.add.text(16, 52, '', { fontSize: '22px', color: '#ff0', stroke: '#000', strokeThickness: 3 });
-        this.comboText.setVisible(false);
 
-        // Enemies remaining UI
-        this.enemiesRemainingText = this.add.text(20, 80, '', {
-            fontSize: '20px',
-            color: '#fff',
-            fontStyle: 'bold',
-            stroke: '#000',
-            strokeThickness: 3,
-        }).setScrollFactor(0).setDepth(100);
-        this.updateEnemiesRemainingUI();
-
-        // Particle manager for bursts (white circle texture)
-        if (!this.textures.exists('white')) {
-            const g = this.add.graphics();
-            g.fillStyle(0xffffff, 1);
-            g.fillCircle(8, 8, 8);
-            g.generateTexture('white', 16, 16);
-            g.destroy();
+        // Inject or create the renderManager
+        this.renderManager = data?.renderManager || (window as any).renderManager;
+        if (!this.renderManager) {
+            throw new Error('RenderManager instance must be provided to GameScene');
         }
-        // Only create the emitter for bursts, not a persistent emitter at (0,0)
-        this.particleManager = this.add.particles(0, 0, 'white', {
-            speed: { min: 80, max: 180 },
-            angle: { min: 0, max: 360 },
-            lifespan: 350,
-            quantity: 12,
-            scale: { start: 0.5, end: 0 },
-            alpha: { start: 1, end: 0 },
-            emitting: false // Do not emit constantly
-        });
-
-        // Mob rendering group
-        this.mobGroup = this.add.group();
-
-        // Player sprite and health text
-        const playerState = stateManager.getState().player;
-        this.playerSprite = this.add.sprite(playerState.position.x, playerState.position.y, 'player').setOrigin(0.5, 0.5);
-        this.playerHealthText = this.add.text(playerState.position.x, playerState.position.y - 40, `Health: ${playerState.health}`, {
-            fontSize: '20px',
-            color: '#ff5555',
-            fontStyle: 'bold',
-        }).setOrigin(0.5);
-
-        this.onGameStatusChanged = (status: string) => {
-            if (status !== 'playing') {
-                this.scene.stop();
-            }
-        };
-        stateManager.on('gameStatusChanged', this.onGameStatusChanged);
-        this.events.once('shutdown', () => {
-            if (this.onGameStatusChanged) {
-                stateManager.off('gameStatusChanged', this.onGameStatusChanged);
-            }
-        });
+        this.renderManager.init(this.game.canvas.parentElement as HTMLElement);
+        // Delegate all initial rendering to RenderManager
+        this.renderManager.render(stateManager.getState());
     }
 
     private showWaveNotification(wave: number) {
@@ -202,33 +165,25 @@ export default class GameScene extends Phaser.Scene {
     update(time: number, delta: number) {
         const gameState = stateManager.getState();
         if (gameState.gameStatus === 'paused') {
-            return; // Halt updates when paused
+            return;
         }
-        // Guard: wait for mobSpawner to be initialized
         if (!this.mobSpawner) return;
-        // --- Difficulty scaling system ---
         this.elapsedTime += delta;
         this.scalingProgression = Phaser.Math.Clamp(this.elapsedTime / this.scalingDuration, 0, 1);
         this.mobSpawner.setProgression(this.scalingProgression);
-        this.minWordLength = 2 + Math.floor(2 * this.scalingProgression); // 2 to 4
-        this.maxWordLength = 5 + Math.floor(2 * this.scalingProgression); // 5 to 7
+        this.minWordLength = 2 + Math.floor(2 * this.scalingProgression);
+        this.maxWordLength = 5 + Math.floor(2 * this.scalingProgression);
         if (this.mobSpawner['wordGenerator'] && typeof this.mobSpawner['wordGenerator'].setWordLengthScaling === 'function') {
             this.mobSpawner['wordGenerator'].setWordLengthScaling(this.minWordLength, this.maxWordLength);
         }
-        // --- Update global gameState with delta and timestamp ---
         stateManager.updateTimestampAndDelta(time, delta);
-        // Update player view based on state
-        const playerState = stateManager.getState().player;
-        this.playerSprite.setPosition(playerState.position.x, playerState.position.y);
-        this.playerHealthText.setPosition(playerState.position.x, playerState.position.y - 40);
-        this.playerHealthText.setText(`Health: ${playerState.health}`);
-        // Update mobs via MobSystem
+        // Remove all direct Phaser rendering code below.
+        // Only update state and call systems:
         MobSystem.updateAll(time, delta);
-        // Update MobSpawner (spawning logic)
         this.mobSpawner.update(time, delta);
-        this.updateEnemiesRemainingUI();
         // Collision: check for mobs near player
         const mobs = stateManager.getState().mobs;
+        const playerState = stateManager.getState().player; // <-- Add this line
         for (const mob of mobs) {
             if (!mob.isDefeated) {
                 const dx = mob.position.x - playerState.position.x;
@@ -290,71 +245,18 @@ export default class GameScene extends Phaser.Scene {
                     scale: 1.2,
                     duration: 120,
                     yoyo: true,
-                    onComplete: () => this.scoreText.setData('tweened', false)
+                    onComplete: () => {
+                        if (this.scoreText) {
+                            this.scoreText.setData('tweened', false);
+                        }
+                    }
                 });
             }
             this.lastScore = this.score;
         }
 
-        // --- Mob rendering logic ---
-        const mobsForRender = stateManager.getState().mobs;
-        // Remove visuals for mobs no longer present
-        for (const [mobId, visual] of this.mobVisuals.entries()) {
-            if (!mobsForRender.find(m => m.id === mobId)) {
-                visual.sprite.destroy();
-                visual.text.destroy();
-                this.mobVisuals.delete(mobId);
-            }
-        }
-        // Render/update visuals for each mob
-        for (const mob of mobsForRender) {
-            if (!this.mobVisuals.has(mob.id)) {
-                // Remove old sprite if it exists (defensive)
-                if (this.mobVisuals.has(mob.id)) {
-                    this.mobVisuals.get(mob.id)?.sprite.destroy();
-                    this.mobVisuals.get(mob.id)?.text.destroy();
-                }
-                // Draw a full circle for the mob using Graphics
-                const graphics = this.add.graphics();
-                graphics.fillStyle(0x3498db, 1); // Blue color, fully opaque
-                graphics.fillCircle(0, 0, 32); // Full circle, radius 32
-                // Convert graphics to a texture for performance
-                const key = `mob-circle-${mob.id}`;
-                graphics.generateTexture(key, 64, 64);
-                graphics.destroy();
-                const sprite = this.add.sprite(mob.position.x, mob.position.y, key).setOrigin(0.5);
-                // Mob word text
-                const text = this.add.text(mob.position.x, mob.position.y - 32, mob.word, {
-                    fontSize: '22px',
-                    color: '#fff',
-                    stroke: '#000',
-                    strokeThickness: 3,
-                }).setOrigin(0.5);
-                this.mobGroup.add(sprite);
-                this.mobGroup.add(text);
-                this.mobVisuals.set(mob.id, { sprite, text });
-            }
-            // Update position and text
-            const visual = this.mobVisuals.get(mob.id)!;
-            visual.sprite.setPosition(mob.position.x, mob.position.y);
-            visual.text.setPosition(mob.position.x, mob.position.y - 32);
-            // Highlight typed letters
-            const typed = mob.word.substring(0, mob.currentTypedIndex);
-            const rest = mob.word.substring(mob.currentTypedIndex);
-            if (typed.length > 0) {
-                visual.text.setText(`[${typed}]${rest}`);
-            } else {
-                visual.text.setText(rest);
-            }
-            // Optionally, fade out defeated mobs
-            if (mob.isDefeated) {
-                visual.sprite.setAlpha(0.3);
-                visual.text.setAlpha(0.3);
-            } else {
-                visual.sprite.setAlpha(1);
-                visual.text.setAlpha(1);
-            }
-        }
+        // Delegate rendering to the renderManager
+        this.renderManager.render(stateManager.getState());
     }
 
     /**
@@ -474,10 +376,10 @@ export default class GameScene extends Phaser.Scene {
     public handleCorrectKeystroke(pos: { x: number; y: number }) {
         this.combo++;
         this.score += 10 * this.combo;
-        if (this.particleManager && typeof this.particleManager.emitParticleAt === 'function') {
+        if (this.particleManager?.emitParticleAt) {
             this.particleManager.emitParticleAt(pos.x, pos.y, 12);
         }
-        if (this.scoreText) this.scoreText.setText(`Score: ${this.score}`);
+        this.scoreText?.setText(`Score: ${this.score}`);
         if (this.comboText) {
             this.comboText.setText(`Combo x${this.combo}`);
             this.comboText.setVisible(this.combo > 1);
@@ -489,7 +391,7 @@ export default class GameScene extends Phaser.Scene {
      */
     public handleIncorrectKeystroke() {
         this.combo = 0;
-        if (this.comboText) this.comboText.setVisible(false);
+        this.comboText?.setVisible(false);
     }
 
     /**

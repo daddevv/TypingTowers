@@ -184,3 +184,12 @@ See `client/src/engine/HeadlessGameEngine.unit.test.ts` for comprehensive usage 
 - **All rendering and UI logic is handled in the render layer (Phaser scenes or other renderer), not in the engine.**
 - See `client/src/engine/HeadlessGameEngine.unit.test.ts` for usage examples and tests.
 - **Comprehensive unit and integration tests now cover full game simulation, bot play, rapid input, empty/edge word lists, and extreme spawn rates/health edge cases.**
+
+## RenderManager Abstraction
+
+TypeDefense uses a `RenderManager` abstraction to decouple game logic from rendering. The `IRenderManager` interface defines the contract for rendering the current game state. Concrete implementations (e.g., Phaser, Three.js) implement this interface and are responsible for all rendering, UI, and effects.
+
+- See `client/src/render/RenderManager.ts` for the interface definition.
+- Renderers should implement `init`, `render`, and `destroy` methods.
+- The engine and game logic interact with the renderer only via this interface, enabling easy swapping or extension of render backends.
+- **Tests and mocks for the RenderManager interface are provided in `client/src/render/__tests__/RenderManager.test.ts`.** These verify that scenes and game logic call the correct rendering methods and make it easy to test new renderer implementations.

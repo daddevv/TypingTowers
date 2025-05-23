@@ -3,6 +3,7 @@
 import Phaser from 'phaser';
 import stateManager from '../state/stateManager';
 import InputSystem from '../systems/InputSystem';
+import { IRenderManager } from '../render/RenderManager';
 
 export default class BootScene extends Phaser.Scene {
     constructor() {
@@ -25,16 +26,22 @@ export default class BootScene extends Phaser.Scene {
         // Register global input listeners (only once)
         InputSystem.getInstance().registerListeners();
 
-        // Listen for gameStatus changes and switch scenes accordingly
+        // Create or get the RenderManager instance (singleton or global)
+        const renderManager: IRenderManager = (window as any).renderManager;
+        if (!renderManager) {
+            throw new Error('RenderManager instance must be available on window');
+        }
+
+        // Listen for gameStatus changes and switch scenes accordingly, passing renderManager
         stateManager.on('gameStatusChanged', (status) => {
             if (status === 'mainMenu') {
-                this.scene.start('MainMenuScene');
+                this.scene.start('MainMenuScene', { renderManager });
             } else if (status === 'worldSelect') {
-                this.scene.start('MenuScene');
+                this.scene.start('MenuScene', { renderManager });
             } else if (status === 'levelSelect') {
-                this.scene.start('LevelMenuScene');
+                this.scene.start('LevelMenuScene', { renderManager });
             } else if (status === 'playing') {
-                this.scene.start('GameScene');
+                this.scene.start('GameScene', { renderManager });
             }
             // Add more as needed
         });

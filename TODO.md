@@ -10,11 +10,11 @@
 
 ### 1.2. Render Manager Abstraction
 
-- [ ] Design and implement a `RenderManager` abstraction that acts as the bridge between the engine and the chosen render library.
-- [ ] Refactor Phaser-specific rendering code in scenes (e.g., `GameScene`, `LevelMenuScene`, etc.) to use the `RenderManager` interface.
-- [ ] Ensure all rendering (mobs, player, UI, effects) is handled via the `RenderManager`, not directly in the engine or game logic.
-- [ ] Add tests/mocks for the `RenderManager` to verify correct rendering calls are made based on engine state.
-- [ ] Document how to implement a new renderer (e.g., Three.js) by providing a new `RenderManager` implementation.
+- [x] Design and implement a `RenderManager` abstraction that acts as the bridge between the engine and the chosen render library.
+- [x] Refactor Phaser-specific rendering code in scenes (e.g., `GameScene`, `LevelMenuScene`, etc.) to use the `RenderManager` interface.
+- [x] Ensure all rendering (mobs, player, UI, effects) is handled via the `RenderManager`, not directly in the engine or game logic.
+- [x] Add tests/mocks for the `RenderManager` to verify correct rendering calls are made based on engine state.
+- [x] Document how to implement a new renderer (e.g., Three.js) by providing a new `RenderManager` implementation.
 
 ### 1.3. Multi-Renderer Support & Experimentation
 

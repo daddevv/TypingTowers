@@ -182,6 +182,7 @@ export default class MobSpawner {
             currentWave: this.currentWave,
             mobsRemainingInWave: this.mobsPerWave - this.mobsSpawnedThisWave,
         });
+        // Only updates state; no rendering here.
     }
 
     /**
