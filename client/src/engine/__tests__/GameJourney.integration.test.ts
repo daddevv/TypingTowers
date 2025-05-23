@@ -4,6 +4,7 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WORLDS } from '../../curriculum/worldConfig'; // Added LevelConfig
 import HeadlessGameEngine from '../../engine/HeadlessGameEngine'; // Added HeadlessGameEngineOptions
+import { NullRenderAdapter } from '../../render/NullRenderAdapter';
 import stateManager from '../../state/stateManager';
 
 // Helper function to fast forward time in the engine
@@ -98,7 +99,7 @@ describe('Game Journey - Full Playthrough', () => {
         engine = new HeadlessGameEngine({
             winThreshold: 10, // Make win condition easier for tests
             wordList: ['test', 'word', 'love', 'game', 'type', 'fast'] // Simple words for testing
-        });
+        }, new NullRenderAdapter());
         engine.reset();
 
         // Save initial state

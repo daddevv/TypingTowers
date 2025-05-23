@@ -31,7 +31,7 @@ This document tracks everything required to *prove* in CI that the game works an
 
 ## 3  Headless-Only Integration Suite (`client/__tests__/integration/`)  
 
-> *Every test instantiates **HeadlessGameEngine** with `NullRenderAdapter`, steps the
+- [x] *Every test instantiates **HeadlessGameEngine** with `NullRenderAdapter`, steps the
 simulation, injects input, then asserts against `engine.getState()`.*
 
 | ID | Category | What we prove | Key APIs |

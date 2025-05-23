@@ -3,6 +3,7 @@
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WorldConfig, WORLDS } from '../../curriculum/worldConfig'; // Updated imports
+import { NullRenderAdapter } from '../../render/NullRenderAdapter';
 import stateManager from '../../state/stateManager';
 import HeadlessGameEngine, { HeadlessGameEngineOptions } from '../HeadlessGameEngine'; // Updated import
 
@@ -224,7 +225,7 @@ describe('Game Journey - Complete Playthrough with Statistics', () => {
             // winThreshold will be set per level by LevelConfig.mobsToDefeat
             // availableKeys will be set per level
             // wordList can be omitted to use WordGenerator with availableKeys
-        });
+        }, new NullRenderAdapter());
         // engine.reset() will be called before each level with specific options.
         // Initial stateManager.reset() is good here.
         stateManager.reset();
