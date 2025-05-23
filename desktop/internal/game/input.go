@@ -21,7 +21,19 @@ type InputState struct {
 
 func NewUserInput() *InputState {
 	return &InputState{
+		MouseX:        0,
+		MouseY:        0,
+		MouseButton1:  false,
+		MouseButton2:  false,
+		MouseButton3:  false,
 		KeyboardKeys: make(map[ebiten.Key]bool),
+		Up:            false,
+		Down:          false,
+		Left:          false,
+		Right:         false,
+		Enter:         false,
+		Escape:        false,
+		Space:         false,
 	}
 }
 

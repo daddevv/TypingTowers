@@ -21,27 +21,19 @@ const (
 	UI_TITLE = "Hello, World!"
 )
 
-var (
-	engine *game.Engine
-)
-
 func init() {
-	// get screen size
-	screenWidth, screenHeight := ebiten.Monitor().Size()
-	engine = &game.Engine{
-		Width:   screenWidth,
-		Height:  screenHeight,
-		Title:   UI_TITLE,
-		Version: VERSION,
-	}
-
-	ebiten.SetTPS(100)
-	ebiten.SetWindowSize(screenWidth, screenHeight)
-	ebiten.SetFullscreen(true)
-	ebiten.SetWindowTitle(UI_TITLE)
+	ebiten.SetTPS(10)
 }
 
 func main() {
+	// get screen size
+	screenWidth, screenHeight := ebiten.Monitor().Size()
+	engine := game.NewEngine(screenWidth, screenHeight, UI_TITLE, VERSION)
+
+	ebiten.SetWindowSize(screenWidth, screenHeight)
+	ebiten.SetFullscreen(true)
+	ebiten.SetWindowTitle(UI_TITLE)
+
 	if err := ebiten.RunGame(engine); err != nil {
 		log.Fatal(err)
 	}
