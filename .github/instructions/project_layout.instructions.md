@@ -21,10 +21,12 @@ It is important to keep this document up-to-date to ensure that all team members
 ## Client Directory (`client/`)
 
 - `render/` - Rendering abstraction and implementations
-  - `RenderManager.ts` - **Defines the `IRenderManager` interface, which acts as the bridge between the engine and the chosen render library (Phaser, Three.js, etc.). All rendering logic should be implemented via this interface.**
+  - `IRenderAdapter.ts` - **Defines the minimal contract for engine/renderer integration. The engine depends only on this interface: `init(width, height)`, `render(state)`, `destroy()`.**
+  - `RenderManager.ts` - Defines the `IRenderManager` interface, which acts as the bridge between the engine and the chosen render library (Phaser, Three.js, etc.). All rendering logic should be implemented via this interface.
   - `PhaserRenderManager.ts` - Concrete implementation of `IRenderManager` using Phaser for rendering.
-  - `ThreeJsRenderManager.ts` - **Prototype implementation of `IRenderManager` using Three.js for rendering. Renders mobs and player as colored spheres. Used to validate the render abstraction.**
-  - `__tests__/RenderManager.test.ts` - **Unit tests and mocks for the RenderManager interface. Verifies that scenes and game logic call the correct rendering methods. Use this as a template for testing new renderer implementations.**
+  - `ThreeJsRenderManager.ts` - Prototype implementation of `IRenderManager` using Three.js for rendering. Renders mobs and player as colored spheres. Used to validate the render abstraction.
+  - `NullRenderAdapter.ts` - **No-op implementation of `IRenderAdapter` for headless/integration testing. All methods are empty; used to decouple the engine from any real renderer.**
+  - `__tests__/RenderManager.test.ts` - Unit tests and mocks for the RenderManager interface. Verifies that scenes and game logic call the correct rendering methods. Use this as a template for testing new renderer implementations.
 - `src/` - Source code for the game
   - `assets/` - Game assets organized by type
     - `audio/` - Sound effects and music files

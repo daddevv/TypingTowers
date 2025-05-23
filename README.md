@@ -267,16 +267,36 @@ TypeDefense uses a `RenderManager` abstraction to decouple game logic from rende
 - The engine and game logic interact with the renderer only via this interface, enabling easy swapping or extension of render backends.
 - **Tests and mocks for the RenderManager interface are provided in `client/src/render/__tests__/RenderManager.test.ts`.** These verify that scenes and game logic call the correct rendering methods and make it easy to test new renderer implementations.
 
-## Render Backend Selection
+## Engine/Renderer Contract: IRenderAdapter
 
-TypeDefense supports multiple rendering backends via the `RenderManager` abstraction. You can choose between Phaser (default) and a prototype Three.js renderer.
+The engine is now fully decoupled from any specific renderer (Phaser, Three.js, etc.) and depends only on the `IRenderAdapter` interface:
 
-- **Phaser:** Full-featured, production-ready renderer.
-- **Three.js:** Prototype implementation (`ThreeJsRenderManager.ts`) that renders mobs and player as colored spheres. Used to validate the render abstraction.
+```typescript
+interface IRenderAdapter {
+  init(width: number, height: number): void;
+  render(state: GameState): void;
+  destroy(): void;
+}
+```
 
-To use the Three.js renderer, set the backend before loading the app:
+- The engine accepts an optional `IRenderAdapter` in its constructor.
+- All rendering is performed via this contract; the engine never imports or references Phaser classes.
+- This enables headless testing, easy swapping of renderers, and future CLI/Null/Mock adapters for CI.
 
-- **Build-time:** `VITE_RENDER_BACKEND=three npm run dev`
-- **Runtime:** In the browser console, set `window.RENDER_BACKEND = 'three'` before loading the app.
+## NullRenderAdapter for Headless/Integration Testing
 
-See `client/src/render/ThreeJsRenderManager.ts` for details.
+For integration tests and headless engine runs, TypeDefense provides a `NullRenderAdapter`:
+
+- **Location:** `client/src/render/NullRenderAdapter.ts`
+- **Purpose:** Implements the `IRenderAdapter` interface with all methods as no-ops. This allows the engine to run without any rendering or UI dependencies, making it ideal for automated tests and CI environments.
+- **Usage:** Pass an instance of `NullRenderAdapter` to the engine in tests to fully decouple game logic from rendering.
+
+Example:
+
+```typescript
+import { NullRenderAdapter } from './client/src/render/NullRenderAdapter';
+const nullRenderer = new NullRenderAdapter();
+const engine = new HeadlessGameEngine({ /* options */ }, nullRenderer);
+```
+
+This enables robust, fast, and deterministic integration testing of the game engine without requiring a DOM or graphics context.

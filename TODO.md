@@ -21,10 +21,10 @@ This document tracks everything required to *prove* in CI that the game works an
 
 ## 2  Engine / Renderer Contract
 
-- [ ] **Extract an `IRenderAdapter` interface** if not already done.  
+- [x] **Extract an `IRenderAdapter` interface** if not already done.  
       Methods: `init(width,height)`, `render(state)`, `destroy()`.  
       The engine must depend only on this contract, never on Phaser classes.  
-- [ ] **NullRenderAdapter**: no-ops every call; used in all integration tests.  
+- [x] **NullRenderAdapter**: no-ops every call; used in all integration tests.  
 - [ ] **Plugin detection**: pick adapter from `process.env.RENDER_BACKEND || 'phaser'` at runtime.  
 
 ---

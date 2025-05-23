@@ -5,6 +5,7 @@
  */
 
 import { GameState } from '../state/gameState';
+import { IRenderAdapter } from './IRenderAdapter';
 
 export interface IRenderManager {
     /**
@@ -28,6 +29,10 @@ export interface IRenderManager {
      */
     resize?(width: number, height: number): void;
 }
+
+// Note: IRenderAdapter is the minimal contract for engine integration (init(width, height), render(state), destroy()).
+// IRenderManager is for full-featured renderers (Phaser, Three.js) with UI, resize, etc.
+export type { IRenderAdapter };
 
 // Example stub for a concrete implementation (Phaser, Three.js, etc.)
 // export class PhaserRenderManager implements IRenderManager { ... }

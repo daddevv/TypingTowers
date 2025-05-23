@@ -4,6 +4,7 @@
 
 import { MobSystem } from '../entities/Mob';
 import MobSpawner, { MobSpawnerConfig } from '../entities/MobSpawner';
+import { IRenderAdapter } from '../render/IRenderAdapter';
 import { GameState } from '../state/gameState';
 import stateManager from '../state/stateManager';
 import WordGenerator from '../utils/wordGenerator';
@@ -93,10 +94,12 @@ export class HeadlessGameEngine implements IGameEngine {
   private defeatedCount = 0; // Track total defeated mobs
 
   private initialOptions: HeadlessGameEngineOptions;
+  private renderAdapter?: IRenderAdapter;
 
-  constructor(options: HeadlessGameEngineOptions = {}) {
+  constructor(options: HeadlessGameEngineOptions = {}, renderAdapter?: IRenderAdapter) {
     this.initialOptions = { ...defaultEngineOptions, ...options };
     this.configure(this.initialOptions);
+    this.renderAdapter = renderAdapter;
 
     // Listen for mobRemoved events to track defeated mobs
     stateManager.on('mobRemoved', (mobId: string) => {
@@ -299,6 +302,35 @@ export class HeadlessGameEngine implements IGameEngine {
       const updatedState = stateManager.getState();
       updatedState.level.levelStatus = 'failed';
       updatedState.gameStatus = 'gameOver';
+    }
+  }
+
+  /**
+   * Optionally, call the render adapter to render the current state.
+   * This should be called by the game loop or test harness, not automatically in step().
+   */
+  render() {
+    if (this.renderAdapter) {
+      this.renderAdapter.render(this.getState());
+    }
+  }
+
+  /**
+   * Optionally, initialize the render adapter with width/height.
+   * Should be called by the host if using a render adapter.
+   */
+  initRenderer(width: number, height: number) {
+    if (this.renderAdapter) {
+      this.renderAdapter.init(width, height);
+    }
+  }
+
+  /**
+   * Optionally, destroy the render adapter.
+   */
+  destroyRenderer() {
+    if (this.renderAdapter) {
+      this.renderAdapter.destroy();
     }
   }
 }
