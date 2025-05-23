@@ -143,20 +143,28 @@ if (typeof g !== 'undefined') {
 // Mock Math.random for deterministic tests
 import { vi } from 'vitest';
 
+// It's important that 'Math' here refers to the original global Math object
+// before vi.stubGlobal replaces it.
+const originalMathProperties = { ...globalThis.Math };
+
 if (typeof vi !== 'undefined' && vi.fn) {
     let randomValues: number[] = [];
     let randomIndex = 0;
-    vi.stubGlobal('Math', {
-        ...Math,
-        random: vi.fn(() => {
-            if (randomValues.length > 0) {
-                const val = randomValues[randomIndex % randomValues.length];
-                randomIndex++;
-                return val;
-            }
-            return 0.42; // Default deterministic value
-        })
+
+    const mockedRandomFn = vi.fn(() => {
+        if (randomValues.length > 0) {
+            const val = randomValues[randomIndex % randomValues.length];
+            randomIndex++;
+            return val;
+        }
+        return 0.42; // Default deterministic value
     });
+
+    vi.stubGlobal('Math', {
+        ...originalMathProperties, // Spread the original Math properties
+        random: mockedRandomFn  // Override random
+    });
+
     // Helper to set deterministic sequence in tests
     (globalThis as any).setDeterministicRandomSequence = (values: number[]) => {
         randomValues = values;

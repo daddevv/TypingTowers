@@ -1,15 +1,10 @@
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import WordGenerator from '../wordGenerator';
 
 describe('WordGenerator', () => {
     beforeAll(() => {
         if (typeof (globalThis as any).setDeterministicRandomSequence === 'function') {
             (globalThis as any).setDeterministicRandomSequence([0.1, 0.5, 0.9, 0.3, 0.7]);
-        }
-    });
-    afterAll(() => {
-        if (typeof vi !== 'undefined' && vi.restoreAllMocks) {
-            vi.restoreAllMocks();
         }
     });
 

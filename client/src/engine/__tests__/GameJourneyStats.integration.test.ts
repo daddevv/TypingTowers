@@ -211,11 +211,21 @@ describe('Game Journey - Complete Playthrough with Statistics', () => {
         if (typeof (globalThis as any).setDeterministicRandomSequence === 'function') {
             (globalThis as any).setDeterministicRandomSequence([0.1, 0.9, 0.5, 0.7, 0.3]);
         }
+        // Explicitly restore Math functions in case they were stubbed globally
+        (globalThis as any).Math.min = Math.min;
+        (globalThis as any).Math.max = Math.max;
+        (globalThis as any).Math.abs = Math.abs;
+        (globalThis as any).Math.floor = Math.floor;
     });
     afterAll(() => {
         if (typeof vi !== 'undefined' && vi.restoreAllMocks) {
             vi.restoreAllMocks();
         }
+        // Explicitly restore Math functions again
+        (globalThis as any).Math.min = Math.min;
+        (globalThis as any).Math.max = Math.max;
+        (globalThis as any).Math.abs = Math.abs;
+        (globalThis as any).Math.floor = Math.floor;
     });
 
     beforeEach(() => {
