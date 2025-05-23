@@ -148,4 +148,31 @@ It is important to keep this document up-to-date to ensure that all team members
 ## Input Handling
 - All input (keyboard/mouse) is handled by `client/src/systems/InputSystem.ts`, which updates `gameState` via `StateManager`. Scenes and entities do not register input listeners directly.
 
+## Headless Game Engine & Renderer Integration
+
+- The core game logic is implemented in `client/src/engine/HeadlessGameEngine.ts` as a headless, UI-agnostic engine.
+- The engine exposes the following public API (see `IGameEngine` interface):
+
+  ```typescript
+  export interface IGameEngine {
+    step(delta: number, timestamp?: number): void;
+    injectInput(input: string): void;
+    getState(): GameState;
+    on(event: string, handler: (...args: any[]) => void): void;
+    off(event: string, handler: (...args: any[]) => void): void;
+    reset(): void;
+  }
+  ```
+
+- **Renderer Integration:**
+  - Renderers (Phaser, Three.js, CLI, etc.) interact with the engine only via this API.
+  - All rendering/UI updates should be based on the current state from `getState()` and engine events.
+  - All input (keyboard, mouse, etc.) should be injected via `injectInput()`.
+  - Scene transitions and navigation are triggered by listening to state changes (e.g., `gameStatusChanged`).
+  - No direct mutation of state is allowed in the renderer.
+
+- **Testing:**
+  - The engine is fully testable in Node.js with no DOM or rendering dependencies.
+  - See `client/src/engine/HeadlessGameEngine.unit.test.ts` for usage examples and integration tests.
+
 Contains AI-generated edits.

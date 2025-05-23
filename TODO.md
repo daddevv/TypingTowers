@@ -5,8 +5,8 @@
 - [x] Audit all game logic to ensure no direct Phaser dependencies remain in the engine (core update loop, mob/player logic, win/loss, input, etc.).
 - [x] Refactor any remaining UI or rendering logic out of the engine and into a dedicated render layer.
 - [x] Define a clear interface/contract for the engine’s state and events, so any render system (Phaser, Three.js, etc.) can subscribe and react.
-- [ ] Add tests to verify the engine can run and be tested in a pure Node.js environment (no DOM, no Phaser).
-- [ ] Document the engine’s public API and how to integrate it with different renderers (Phaser, Three.js, headless).
+- [x] Add tests to verify the engine can run and be tested in a pure Node.js environment (no DOM, no Phaser).
+- [x] Document the engine’s public API and how to integrate it with different renderers (Phaser, Three.js, headless).
 
 ### 1.2. Render Manager Abstraction
 

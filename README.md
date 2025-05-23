@@ -122,24 +122,13 @@ Contributions are welcome! Please open issues or pull requests for bug fixes, ne
 
 See [CHANGELOG.md](./CHANGELOG.md) for a detailed list of changes and feature history.
 
-### Headless Game Engine
+## Headless Game Engine API & Renderer Integration
 
-- The core game logic (game loop, mob/player logic, win/loss, input, etc.) is now fully decoupled from Phaser and lives in the headless engine (`client/src/engine/HeadlessGameEngine.ts`).
-- The engine and all core systems are tested in a pure Node.js environment with no DOM or Phaser dependencies (see `HeadlessGameEngine.unit.test.ts`).
-- This engine provides a programmatic API for stepping the game, injecting input, and retrieving the full game state, enabling automated play, bots, and CLI/testing scenarios.
-- All gameplay state and logic are managed via the global `gameState` and `StateManager`, ensuring robust, testable, and decoupled gameplay.
-- **All rendering and UI logic is handled in the render layer (Phaser scenes or other renderer), not in the engine.**
-- See `client/src/engine/HeadlessGameEngine.unit.test.ts` for usage examples and tests.
-- **Comprehensive unit and integration tests now cover full game simulation, bot play, rapid input, empty/edge word lists, and extreme spawn rates/health edge cases.**
+The core game logic is implemented in a headless, UI-agnostic engine (`client/src/engine/HeadlessGameEngine.ts`). This engine exposes a public API for stepping the game, injecting input, retrieving state, and subscribing to events. Renderers (Phaser, Three.js, CLI, etc.) interact with the engine only via this API.
 
----
-
-## Engine Integration & API
-
-The core engine exposes a clear interface (`IGameEngine`) for integration with any renderer (Phaser, Three.js, headless, etc):
+### Engine Interface
 
 ```typescript
-// See client/src/engine/HeadlessGameEngine.ts
 export interface IGameEngine {
   step(delta: number, timestamp?: number): void;
   injectInput(input: string): void;
@@ -150,25 +139,48 @@ export interface IGameEngine {
 }
 ```
 
-- **State-driven rendering:** Renderers should call `engine.getState()` each frame and render based on the returned state.
-- **Event-driven updates:** Subscribe to engine events (e.g., `'gameStatusChanged'`, `'playerInputChanged'`) via `engine.on(...)` to react to state changes.
-- **Input injection:** All input (keyboard, mouse, etc.) should be passed to the engine via `injectInput()`.
-- **No direct rendering:** The engine contains no rendering or UI logic; all visuals are handled externally.
-
-**Example integration:**
+### Usage Example
 
 ```typescript
-import HeadlessGameEngine from './engine/HeadlessGameEngine';
+import HeadlessGameEngine from './client/src/engine/HeadlessGameEngine';
 
 const engine = new HeadlessGameEngine();
+
+// Step the game forward (e.g., in a requestAnimationFrame loop)
+engine.step(16);
+
+// Inject player input (simulate typing)
+engine.injectInput('f');
+
+// Subscribe to game events (e.g., for rendering or UI updates)
 engine.on('gameStatusChanged', (status) => {
-  // Switch scenes or update UI based on status
+  // React to status change (e.g., switch scenes)
 });
-function gameLoop(delta: number) {
-  engine.step(delta);
-  const state = engine.getState();
-  // Render state...
-}
+
+// Get the current game state for rendering
+const state = engine.getState();
 ```
 
-See `client/src/engine/HeadlessGameEngine.unit.test.ts` for more usage examples.
+### Renderer Integration
+
+- **Phaser/Three.js/Other Renderers:**  
+  Renderers should subscribe to engine events and render based on the current state. All input should be injected via `injectInput()`.  
+  Scene transitions and UI updates should be triggered by listening to state changes (e.g., `gameStatusChanged`).
+
+- **No Direct State Mutation:**  
+  All state updates must go through the engine/state manager API. Do not mutate state directly in the renderer.
+
+- **Testing/Automation:**  
+  The engine can be used in Node.js for automated play, bots, and CLI/testing scenarios. No DOM or rendering dependencies are required.
+
+See `client/src/engine/HeadlessGameEngine.unit.test.ts` for comprehensive usage and integration tests.
+
+### Headless Game Engine
+
+- The core game logic (game loop, mob/player logic, win/loss, input, etc.) is now fully decoupled from Phaser and lives in the headless engine (`client/src/engine/HeadlessGameEngine.ts`).
+- The engine and all core systems are tested in a pure Node.js environment with no DOM or Phaser dependencies (see `HeadlessGameEngine.unit.test.ts`).
+- This engine provides a programmatic API for stepping the game, injecting input, and retrieving the full game state, enabling automated play, bots, and CLI/testing scenarios.
+- All gameplay state and logic are managed via the global `gameState` and `StateManager`, ensuring robust, testable, and decoupled gameplay.
+- **All rendering and UI logic is handled in the render layer (Phaser scenes or other renderer), not in the engine.**
+- See `client/src/engine/HeadlessGameEngine.unit.test.ts` for usage examples and tests.
+- **Comprehensive unit and integration tests now cover full game simulation, bot play, rapid input, empty/edge word lists, and extreme spawn rates/health edge cases.**

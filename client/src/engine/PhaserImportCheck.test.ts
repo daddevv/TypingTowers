@@ -1,5 +1,7 @@
+// Ensures headless engine and its tests are pure Node.js (no Phaser, no DOM)
+// This test will fail if any import/require of 'phaser' is present in engine or its tests
+
 // PhaserImportCheck.test.ts
-// Fails if any import from 'phaser' is present in engine or its tests
 import fs from 'fs';
 import path from 'path';
 import { describe, it, expect } from 'vitest';
