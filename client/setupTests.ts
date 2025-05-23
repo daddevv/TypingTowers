@@ -1,6 +1,47 @@
 // setupTests.ts
 // Global test setup for Vitest: mock browser globals for Node.js
 
+// Polyfill browser APIs for tests using jsdom, node-canvas, and headless-gl
+try {
+    // jsdom: create a global window/document if not present
+    if (typeof globalThis.window === 'undefined' || typeof globalThis.document === 'undefined') {
+        const { JSDOM } = require('jsdom');
+        const dom = new JSDOM('<!doctype html><html><body></body></html>');
+        globalThis.window = dom.window;
+        globalThis.document = dom.window.document;
+        globalThis.navigator = dom.window.navigator;
+        globalThis.HTMLElement = dom.window.HTMLElement;
+        globalThis.Node = dom.window.Node;
+        globalThis.getComputedStyle = dom.window.getComputedStyle;
+    }
+    // node-canvas: patch window.CanvasRenderingContext2D and HTMLCanvasElement
+    if (typeof globalThis.window !== 'undefined' && typeof globalThis.window.HTMLCanvasElement === 'undefined') {
+        try {
+            const canvas = require('canvas');
+            globalThis.window.HTMLCanvasElement = canvas.Canvas;
+            globalThis.window.CanvasRenderingContext2D = canvas.CanvasRenderingContext2D;
+            globalThis.HTMLCanvasElement = canvas.Canvas;
+            globalThis.CanvasRenderingContext2D = canvas.CanvasRenderingContext2D;
+        } catch (e) {
+            // node-canvas not available, warn and continue (tests that require Canvas2D will fail)
+            // eslint-disable-next-line no-console
+            console.warn('[setupTests] node-canvas not installed or failed to load. Canvas 2D APIs will not be polyfilled.');
+        }
+    }
+    // headless-gl: patch window.WebGLRenderingContext
+    if (typeof globalThis.window !== 'undefined' && typeof globalThis.window.WebGLRenderingContext === 'undefined') {
+        try {
+            const gl = require('gl');
+            globalThis.window.WebGLRenderingContext = gl.WebGLRenderingContext || function () { };
+            globalThis.WebGLRenderingContext = globalThis.window.WebGLRenderingContext;
+        } catch (e) {
+            // headless-gl not available, skip
+        }
+    }
+} catch (e) {
+    // Ignore errors if polyfills are already present or modules not found
+}
+
 // Mock 'phaser3spectorjs' for Phaser compatibility in Vitest/Node.js
 try {
     if (typeof require !== 'undefined') {
@@ -98,4 +139,3 @@ if (typeof g !== 'undefined') {
         };
     }
 }
-// Contains AI-generated edits.

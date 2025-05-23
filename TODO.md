@@ -1,78 +1,72 @@
-# TypeDefense v2 - TODO List
+# TypeDefense v2 — Headless Integration-Test Roadmap
 
-## Phase 2: Gameplay Enhancements & Content
-
-### 2.1. Mob & Spawning System
-
-- [ ] Playtest and balance mob spawn rates and speeds for all levels. Adjust configurations in level data files read by `MobSpawner` via `gameState`.
-
-### 2.2. Gameplay Loop & Feedback
-
-- [ ] Implement audio cue when a mob is defeated (triggered by state change in `gameState.mobs`).
-- [ ] Add camera shake and screen flash effects for wave completion and boss defeat (triggered by relevant `gameState` changes).
-
-### 2.3. Level & World Progression (World 1 Completion)
-
-#### Level 1-4 (T/Y)
-
-- [ ] Update level selection UI (`LevelSelectScene`) to include Level 1-4 and handle unlocking via `gameState.progression`.
-- [ ] Add tests verifying Level 1-4 unlocks and that the correct word list is used.
-
-#### Level 1-5 (V/M)
-
-- [ ] Create word list JSON file (`fjghrutyvmWords.json`).
-- [ ] Update level selection UI.
-- [ ] Add tests (unlocks and word list).
-- [ ] Playtest Level 1-5.
-
-#### Level 1-6 (B/N)
-
-- [ ] Create word list JSON file (`fjghrutyvmbnWords.json`).
-- [ ] Update level selection UI.
-- [ ] Add tests (unlocks and word list).
-- [ ] Playtest Level 1-6.
-
-#### Level 1-7 (Boss)
-
-- [ ] Create word list JSON file (`fjghrutyvmbn_bossWords.json`).
-- [ ] Update level selection UI.
-- [ ] Add tests (unlocks and word list).
-- [ ] Playtest Level 1-7.
-
-#### General Level Progression & Win Conditions
-
-- [x] Add tests to ensure Level 1-2 word generation uses only the specified letters ("f", "j", "g", "h").
-- [x] Test that Level 1-3 unlocks after Level 1-2 is marked complete in `gameState.progression`.
-- [x] Implement robust win condition logic (e.g., defeat X enemies, survive Y waves) updating `gameState.levelStatus`to complete.
-- [x] Ensure all new code is well-commented and thoroughly tested.
-
-## Phase 3: Polish & Expansion Prep
-
-### 3.1. Visual & Audio Feedback
-
-- [ ] Create finger position guidance overlays for tutorials.
-- [ ] Implement a letter highlighting system to indicate the correct finger for each key.
-- [ ] Design unique visual effects for each world/finger group.
-- [ ] Create thematic boss designs for each world.
-- [ ] Implement distinctive sound effects for different finger groups.
-- [ ] Create celebratory animations and sounds for level completion.
-
-### 3.2. Documentation & Testing
-
-- [ ] Document new levels and keys as they are completed in the README.
-- [ ] Document the v2 architecture with emphasis on global game state benefits.
-- [ ] Update testing instructions for v2.
-- [ ] Keep `.github/instructions/project_layout.instructions.md` updated as v2 evolves.
-- [ ] Aim for high test coverage for `StateManager`, critical systems, and key UI interactions.
-- [x] Write E2E tests for key user flows (e.g., starting game, completing level, pausing).
-- [x] Create comprehensive game journey test with statistics tracking that simulates playing through all worlds and levels.
-
-## Phase 4: Future Expansion
-
-- [ ] Create Numbers & Symbols World with specialized levels.
-- [ ] Implement Programming/Coding Mode with syntax exercises.
-- [ ] Design advanced challenges combining all character types.
+This document tracks everything required to *prove* in CI that the game works and is balanceable without manual play-testing.  It assumes the engine stays renderer-agnostic and that future renderers (PixiJS, Three.js, etc.) can be swapped in by writing a new **RenderAdapter**.
 
 ---
 
-This TODO provides a focused, actionable roadmap for TypeDefense v2. Keep documentation and tests up-to-date as features are completed.
+## 1  Testing Runtime & Toolchain
+
+- [x] **Adopt Vitest + jsdom as the primary test runner**  
+      *Add `vitest` and `@vitest/ui` dev-deps; extend `vite.config.ts` with a `test` block.*  
+      See Vitest config guide for canonical setup :contentReference[oaicite:0]{index=0}
+- [x] **Polyfill browser APIs once**  
+      *Install `jsdom`, `node-canvas` (2-D Canvas), and `headless-gl` (WebGL) and register them in `setupTests.ts`.*  
+      Phaser & Pixi both compile against these shims :contentReference[oaicite:1]{index=1}
+- [ ] **Mock non-deterministic or heavy subsystems**  
+      Use `vi.mock()` for loaders, audio and `Math.random`-driven helpers so frame-to-frame snapshots remain stable :contentReference[oaicite:2]{index=2}
+- [ ] **Enable branch-level coverage (`c8`)** and fail PRs when < 90 % on `client/src/engine/**`
+      The GitHub Action *vitest-coverage-report* emits PR comments and badges :contentReference[oaicite:3]{index=3}
+
+---
+
+## 2  Engine / Renderer Contract
+
+- [ ] **Extract an `IRenderAdapter` interface** if not already done.  
+      Methods: `init(width,height)`, `render(state)`, `destroy()`.  
+      The engine must depend only on this contract, never on Phaser classes.  
+- [ ] **NullRenderAdapter**: no-ops every call; used in all integration tests.  
+- [ ] **Plugin detection**: pick adapter from `process.env.RENDER_BACKEND || 'phaser'` at runtime.  
+
+---
+
+## 3  Headless-Only Integration Suite (`client/__tests__/integration/`)  
+
+> *Every test instantiates **HeadlessGameEngine** with `NullRenderAdapter`, steps the
+simulation, injects input, then asserts against `engine.getState()`.*
+
+| ID | Category | What we prove | Key APIs |
+|----|----------|---------------|----------|
+| IT-01 | Boot-strap | `reset()` yields pristine state, no leaks across tests | `reset` |
+| IT-02 | Wave flow | After N `step()` calls spawn ≥ expected mobs, wave counter increments | `getState().spawners` |
+| IT-03 | Input kill | `injectInput(word)` removes correct mob, awards score & combo | `injectInput`, `getState().player` |
+| IT-04 | Lose / Win | Deplete `player.health` → `gameStatus='gameOver'`; defeat boss → `gameStatus='victory'` | `step`, `getState` |
+| IT-05 | Progression | Simulate finishing L-1-3 and assert L-1-4 unlock flag toggles | `StateManager` |
+| IT-06 | Dynamic diff. | Parameterised test (`it.each`) over spawn-rate & word-length tables; assert TTK within 5 % margin | `spawnConfig`, `it.each` :contentReference[oaicite:4]{index=4} |
+| IT-07 | Edge lists | Empty word list or 1-char words do **not** crash engine | word-fixtures |
+| IT-08 | Extreme fps | `step(1)` in a 10 000-iteration loop finishes in < 200 ms on CI box | performance |
+| IT-09 | Save/load | Serialise + deserialise state; content round-trips equal | `StateManager.save/load` |
+| IT-10 | Regression snapshots (optional) | Serialise minimal JSON of `gameState` every 100 frames and `expect(...).toMatchSnapshot()` | Vitest snapshots |
+
+---
+
+## 4  Alternative Renderer Experiments (spike stories)  
+
+> *These do not block CI but give you confidence that the adapter boundary is solid.*
+
+- [ ] **Phaser HEADLESS** with `@geckos.io/phaser-on-nodejs` for physics stress tests :contentReference[oaicite:5]{index=5}  
+- [ ] **PixiJS + node-canvas** demo scene (render 100 sprites, export PNG) :contentReference[oaicite:6]{index=6}  
+- [ ] **Three.js + headless-gl** proof: render coloured cubes, assert pixel buffer average ≠ 0 :contentReference[oaicite:7]{index=7}  
+- [ ] Record startup time & memory, compare to Phaser; decide long-term renderer.
+
+---
+
+## 5  Continuous Integration  
+
+- [ ] `.github/workflows/ci.yml`  
+
+  ```yaml
+  steps:
+    - uses: actions/checkout@v4
+    - uses: pnpm/action-setup@v3
+    - run: pnpm install --frozen-lockfile
+    - run: pnpm run test -- --run

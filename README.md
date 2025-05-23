@@ -49,16 +49,16 @@ The core game logic is implemented in a headless, UI-agnostic module: `client/sr
 - **No rendering or UI dependencies:** The engine contains only gameplay logic and state management. It does not import Phaser, Three.js, or any DOM APIs.
 - **Programmatic API:** The engine exposes the following interface for integration and testing:
 
-```typescript
-export interface IGameEngine {
-  step(delta: number, timestamp?: number): void;
-  injectInput(input: string): void;
-  getState(): GameState;
-  on(event: string, handler: (...args: any[]) => void): void;
-  off(event: string, handler: (...args: any[]) => void): void;
-  reset(): void;
-}
-```
+  ```typescript
+  export interface IGameEngine {
+    step(delta: number, timestamp?: number): void;
+    injectInput(input: string): void;
+    getState(): GameState;
+    on(event: string, handler: (...args: any[]) => void): void;
+    off(event: string, handler: (...args: any[]) => void): void;
+    reset(): void;
+  }
+  ```
 
 - **Usage:**
   - Call `step(delta)` to advance the simulation.
@@ -148,15 +148,23 @@ See `.github/instructions/project_layout.instructions.md` for a detailed breakdo
 
 ## Testing
 
-- All tests are located in `__tests__` subdirectories next to the code under test.
-- The project uses [Vitest](https://vitest.dev/) for running tests:
+TypeDefense uses [Vitest](https://vitest.dev/) as the primary test runner, with [jsdom](https://github.com/jsdom/jsdom) providing a browser-like environment for running tests in Node.js.
 
-  ```bash
-  cd client
-  npm run test
-  ```
+**Browser API Polyfills:**
 
-- Add new tests in the appropriate `__tests__` folder for each module.
+- The test environment automatically polyfills browser APIs using `jsdom`, `node-canvas` (for Canvas 2D), and `headless-gl` (for WebGL) in `client/setupTests.ts`.
+- This allows headless testing of Phaser, PixiJS, and Three.js code in CI and local development.
+- No manual setup is required; all shims are registered before tests run.
+
+To run all tests:
+
+```sh
+npm run test
+```
+
+- All unit and integration tests are located in `__tests__` subdirectories next to the code under test.
+- The test environment is configured in `client/vitest.config.ts`.
+- Coverage reports are generated in text, JSON, and HTML formats.
 
 ## Contributing
 

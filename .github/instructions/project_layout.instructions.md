@@ -124,6 +124,10 @@ It is important to keep this document up-to-date to ensure that all team members
 - All tests are located in `__tests__` subdirectories next to the code under test.
 - The project uses Vitest for running tests (`npm run test` in the `client` directory).
 - Add new tests in the appropriate `__tests__` folder for each module.
+- **Browser API Polyfills:**
+  - The test environment automatically polyfills browser APIs using `jsdom`, `node-canvas` (for Canvas 2D), and `headless-gl` (for WebGL) in `client/setupTests.ts`.
+  - This allows headless testing of Phaser, PixiJS, and Three.js code in CI and local development.
+  - No manual setup is required; all shims are registered before tests run.
 - **Unit tests for `StateManager` are located in `client/src/state/__tests__/stateManager.unit.test.ts`. These tests cover state initialization, updates, and getters.**
 - **System logic is tested with mocked `gameState` in system unit tests (see `client/src/systems/__tests__/InputSystem.test.ts`).**
 
