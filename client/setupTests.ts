@@ -139,3 +139,27 @@ if (typeof g !== 'undefined') {
         };
     }
 }
+
+// Mock Math.random for deterministic tests
+import { vi } from 'vitest';
+
+if (typeof vi !== 'undefined' && vi.fn) {
+    let randomValues: number[] = [];
+    let randomIndex = 0;
+    vi.stubGlobal('Math', {
+        ...Math,
+        random: vi.fn(() => {
+            if (randomValues.length > 0) {
+                const val = randomValues[randomIndex % randomValues.length];
+                randomIndex++;
+                return val;
+            }
+            return 0.42; // Default deterministic value
+        })
+    });
+    // Helper to set deterministic sequence in tests
+    (globalThis as any).setDeterministicRandomSequence = (values: number[]) => {
+        randomValues = values;
+        randomIndex = 0;
+    };
+}

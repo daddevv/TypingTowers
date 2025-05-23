@@ -1,7 +1,7 @@
 // GameJourney.integration.test.ts
 // Integration test for simulating a full game journey through all worlds and levels
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WORLDS } from '../../curriculum/worldConfig'; // Added LevelConfig
 import HeadlessGameEngine from '../../engine/HeadlessGameEngine'; // Added HeadlessGameEngineOptions
 import stateManager from '../../state/stateManager';
@@ -88,6 +88,11 @@ describe('Game Journey - Full Playthrough', () => {
         finalStats: {}
     };
 
+    beforeAll(() => {
+        if (typeof (globalThis as any).setDeterministicRandomSequence === 'function') {
+            (globalThis as any).setDeterministicRandomSequence([0.2, 0.8, 0.4, 0.6, 0.3]);
+        }
+    });
     beforeEach(() => {
         // Set up a clean engine instance for each test
         engine = new HeadlessGameEngine({
@@ -100,6 +105,11 @@ describe('Game Journey - Full Playthrough', () => {
         journeyStats.initialState = getPlayerStats(engine);
     });
 
+    afterAll(() => {
+        if (typeof vi !== 'undefined' && vi.restoreAllMocks) {
+            vi.restoreAllMocks();
+        }
+    });
     afterEach(() => {
         // Reset state manager after each test
         stateManager.reset();

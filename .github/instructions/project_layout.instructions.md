@@ -130,6 +130,19 @@ It is important to keep this document up-to-date to ensure that all team members
   - No manual setup is required; all shims are registered before tests run.
 - **Unit tests for `StateManager` are located in `client/src/state/__tests__/stateManager.unit.test.ts`. These tests cover state initialization, updates, and getters.**
 - **System logic is tested with mocked `gameState` in system unit tests (see `client/src/systems/__tests__/InputSystem.test.ts`).**
+- **Deterministic Testing:**
+  - All tests mock `Math.random` globally using Vitest's `vi.stubGlobal` in `client/setupTests.ts`.
+  - Each test suite can set a deterministic sequence of random values using the global `setDeterministicRandomSequence` helper.
+  - This ensures frame-to-frame and run-to-run stability for all tests involving random word generation, mob spawning, or any non-deterministic logic.
+  - Example usage in a test file:
+    ```ts
+    beforeAll(() => {
+      if (typeof (globalThis as any).setDeterministicRandomSequence === 'function') {
+        (globalThis as any).setDeterministicRandomSequence([0.1, 0.5, 0.9]);
+      }
+    });
+    ```
+  - This approach is used in all integration and unit tests for word generation, mob spawning, and engine simulation.
 
 ## GameScene Updates
 

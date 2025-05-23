@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 // Patch: Mock MobSpawner without importing Phaser or Mob for scaling test
 class MockMobSpawner {
@@ -24,6 +24,16 @@ class MockMobSpawner {
 }
 
 describe('MobSpawner scaling', () => {
+    beforeAll(() => {
+        if (typeof (globalThis as any).setDeterministicRandomSequence === 'function') {
+            (globalThis as any).setDeterministicRandomSequence([0.3, 0.6, 0.2, 0.8, 0.4]);
+        }
+    });
+    afterAll(() => {
+        if (typeof vi !== 'undefined' && vi.restoreAllMocks) {
+            vi.restoreAllMocks();
+        }
+    });
     it('should interpolate spawnInterval and mobBaseSpeed smoothly as progression increases', () => {
         const initialInterval = 2000;
         const minInterval = 600;

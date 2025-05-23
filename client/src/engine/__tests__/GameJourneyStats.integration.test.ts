@@ -1,7 +1,7 @@
 // GameJourneyStats.integration.test.ts
 // Integration test for simulating a full game journey with detailed stats reporting
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WorldConfig, WORLDS } from '../../curriculum/worldConfig'; // Updated imports
 import stateManager from '../../state/stateManager';
 import HeadlessGameEngine, { HeadlessGameEngineOptions } from '../HeadlessGameEngine'; // Updated import
@@ -205,6 +205,17 @@ describe('Game Journey - Complete Playthrough with Statistics', () => {
         skillProgression: {},
         difficultyByWorld: {}
     };
+
+    beforeAll(() => {
+        if (typeof (globalThis as any).setDeterministicRandomSequence === 'function') {
+            (globalThis as any).setDeterministicRandomSequence([0.1, 0.9, 0.5, 0.7, 0.3]);
+        }
+    });
+    afterAll(() => {
+        if (typeof vi !== 'undefined' && vi.restoreAllMocks) {
+            vi.restoreAllMocks();
+        }
+    });
 
     beforeEach(() => {
         // Set up a clean engine instance for each test

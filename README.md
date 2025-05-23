@@ -166,6 +166,23 @@ npm run test
 - The test environment is configured in `client/vitest.config.ts`.
 - Coverage reports are generated in text, JSON, and HTML formats.
 
+## Deterministic Testing
+
+- All tests mock `Math.random` globally using Vitest's `vi.stubGlobal` in `client/setupTests.ts`.
+- Each test suite can set a deterministic sequence of random values using the global `setDeterministicRandomSequence` helper.
+- This ensures frame-to-frame and run-to-run stability for all tests involving random word generation, mob spawning, or any non-deterministic logic.
+- Example usage in a test file:
+
+  ```ts
+  beforeAll(() => {
+    if (typeof (globalThis as any).setDeterministicRandomSequence === 'function') {
+      (globalThis as any).setDeterministicRandomSequence([0.1, 0.5, 0.9]);
+    }
+  });
+  ```
+
+- This approach is used in all integration and unit tests for word generation, mob spawning, and engine simulation.
+
 ## Contributing
 
 Contributions are welcome! Please open issues or pull requests for bug fixes, new features, or documentation improvements.

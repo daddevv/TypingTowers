@@ -12,7 +12,7 @@ This document tracks everything required to *prove* in CI that the game works an
 - [x] **Polyfill browser APIs once**  
       *Install `jsdom`, `node-canvas` (2-D Canvas), and `headless-gl` (WebGL) and register them in `setupTests.ts`.*  
       Phaser & Pixi both compile against these shims :contentReference[oaicite:1]{index=1}
-- [ ] **Mock non-deterministic or heavy subsystems**  
+- [x] **Mock non-deterministic or heavy subsystems**  
       Use `vi.mock()` for loaders, audio and `Math.random`-driven helpers so frame-to-frame snapshots remain stable :contentReference[oaicite:2]{index=2}
 - [ ] **Enable branch-level coverage (`c8`)** and fail PRs when < 90 % on `client/src/engine/**`
       The GitHub Action *vitest-coverage-report* emits PR comments and badges :contentReference[oaicite:3]{index=3}
