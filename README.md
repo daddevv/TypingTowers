@@ -94,6 +94,27 @@ TypeDefense is a web-based typing game designed to help players improve their ty
 - Open your browser to the provided local address (usually <http://localhost:5173>).
 - For production, build the frontend and serve the `dist/` directory using the Go backend or any static file server.
 
+### Selecting the Render Backend (Phaser or Three.js)
+
+TypeDefense supports multiple rendering backends via a runtime flag. By default, Phaser is used.  
+To use the Three.js renderer (if implemented), set the `RENDER_BACKEND` flag before loading the app:
+
+- **In development:**  
+  Set the environment variable before running Vite:
+  ```bash
+  VITE_RENDER_BACKEND=three npm run dev
+  ```
+- **At runtime (in browser console):**
+  ```js
+  window.RENDER_BACKEND = 'three';
+  // Then reload the page
+  ```
+
+- **Default:**  
+  If no flag is set, Phaser is used.
+
+The selected renderer is attached to `window.renderManager` and used by all scenes.
+
 ## Project Structure
 
 See `.github/instructions/project_layout.instructions.md` for a detailed breakdown of the project structure and file organization.
@@ -193,3 +214,17 @@ TypeDefense uses a `RenderManager` abstraction to decouple game logic from rende
 - Renderers should implement `init`, `render`, and `destroy` methods.
 - The engine and game logic interact with the renderer only via this interface, enabling easy swapping or extension of render backends.
 - **Tests and mocks for the RenderManager interface are provided in `client/src/render/__tests__/RenderManager.test.ts`.** These verify that scenes and game logic call the correct rendering methods and make it easy to test new renderer implementations.
+
+## Render Backend Selection
+
+TypeDefense supports multiple rendering backends via the `RenderManager` abstraction. You can choose between Phaser (default) and a prototype Three.js renderer.
+
+- **Phaser:** Full-featured, production-ready renderer.
+- **Three.js:** Prototype implementation (`ThreeJsRenderManager.ts`) that renders mobs and player as colored spheres. Used to validate the render abstraction.
+
+To use the Three.js renderer, set the backend before loading the app:
+
+- **Build-time:** `VITE_RENDER_BACKEND=three npm run dev`
+- **Runtime:** In the browser console, set `window.RENDER_BACKEND = 'three'` before loading the app.
+
+See `client/src/render/ThreeJsRenderManager.ts` for details.

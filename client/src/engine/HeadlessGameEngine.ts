@@ -89,12 +89,17 @@ export class HeadlessGameEngine implements IGameEngine {
 
     this.defeatedCount = 0;
 
+    console.log('[HeadlessGameEngine] Constructor called with options:', options);
+
     // Listen for mobRemoved events to track defeated mobs
     stateManager.on('mobRemoved', (mobId: string) => {
-      // Only increment if the mob was defeated (best effort: check last state)
-      // This is a limitation, but for headless engine, we assume all removals are due to defeat
       this.defeatedCount++;
+      console.debug(`[HeadlessGameEngine] mobRemoved event: mobId=${mobId}, defeatedCount=${this.defeatedCount}`);
     });
+
+    // Expose stateManager globally for renderer access (for menu button)
+    (window as any).stateManager = stateManager;
+    console.debug('[HeadlessGameEngine] Initialized and stateManager exposed on window');
   }
 
   /**
@@ -102,6 +107,7 @@ export class HeadlessGameEngine implements IGameEngine {
    * Updates mobs, spawner, win/loss, and state.
    */
   step(delta: number, timestamp?: number) {
+    console.log('[HeadlessGameEngine] step() called, delta:', delta, 'timestamp:', timestamp);
     if (!this.isInitialized) throw new Error('Engine not initialized');
     this.elapsedTime += delta;
     this.scalingProgression = Math.min(this.elapsedTime / this.scalingDuration, 1);
@@ -116,6 +122,7 @@ export class HeadlessGameEngine implements IGameEngine {
     MobSystem.updateAll(timestamp ?? this.lastTime + delta, delta);
     this.mobSpawner.update(timestamp ?? this.lastTime + delta, delta);
     this.lastTime = timestamp ?? this.lastTime + delta;
+    console.debug(`[HeadlessGameEngine] step: delta=${delta}, timestamp=${timestamp}, elapsedTime=${this.elapsedTime}, scalingProgression=${this.scalingProgression}`);
     this._checkWinLoss();
   }
 
@@ -123,6 +130,7 @@ export class HeadlessGameEngine implements IGameEngine {
    * Inject player input (simulate typing a key or string)
    */
   injectInput(input: string) {
+    console.log('[HeadlessGameEngine] injectInput() called, input:', input);
     stateManager.updatePlayerInput(input);
   }
 
@@ -130,17 +138,30 @@ export class HeadlessGameEngine implements IGameEngine {
    * Get a deep copy of the current game state
    */
   getState(): GameState {
-    return stateManager.getState();
+    const state = stateManager.getState();
+    if (!state.player) {
+      state.player = { position: { x: 400, y: 500 }, score: 0, combo: 0, health: 3, currentInput: '' };
+    }
+    // Log state summary for debugging
+    console.debug('[HeadlessGameEngine] getState:', {
+      gameStatus: state.gameStatus,
+      player: state.player,
+      mobs: state.mobs?.length,
+      level: state.level,
+    });
+    return state;
   }
 
   /**
    * Listen for game events (state changes)
    */
   on(event: string, handler: (...args: any[]) => void) {
+    console.debug(`[HeadlessGameEngine] Registering event handler for "${event}"`);
     stateManager.on(event, handler);
   }
 
   off(event: string, handler: (...args: any[]) => void) {
+    console.debug(`[HeadlessGameEngine] Removing event handler for "${event}"`);
     stateManager.off(event, handler);
   }
 
@@ -148,17 +169,16 @@ export class HeadlessGameEngine implements IGameEngine {
    * Reset the engine and state
    */
   reset() {
+    console.debug('[HeadlessGameEngine] Resetting engine and state');
     stateManager.reset();
-    // Always set level status to 'playing' and gameStatus to 'playing' on reset
     stateManager.updateCurrentLevelContext({ levelStatus: 'playing' });
     stateManager.setGameStatus('playing');
-    // Also ensure player health is reset
     stateManager.updatePlayerHealth(3);
     this.elapsedTime = 0;
     this.scalingProgression = 0;
     this.lastTime = 0;
     this.isInitialized = true;
-    this.mobSpawner.startNextWave(); // Start the first wave on reset
+    this.mobSpawner.startNextWave();
     this.defeatedCount = 0;
   }
 
@@ -166,15 +186,16 @@ export class HeadlessGameEngine implements IGameEngine {
    * Internal: check win/loss conditions and update state
    */
   private _checkWinLoss() {
-    // Use both defeatedCount and count of defeated mobs in state
     const state = stateManager.getState();
     const defeatedInState = state.mobs.filter(m => m.isDefeated).length;
     const defeated = Math.max(this.defeatedCount, defeatedInState);
     if (defeated >= this.winThreshold && state.level.levelStatus !== 'complete') {
+      console.debug('[HeadlessGameEngine] Win condition met. Defeated:', defeated, 'Threshold:', this.winThreshold);
       stateManager.updateCurrentLevelContext({ levelStatus: 'complete' });
       stateManager.setGameStatus('levelComplete');
     }
     if (state.player.health <= 0 && state.level.levelStatus !== 'failed') {
+      console.debug('[HeadlessGameEngine] Loss condition met. Player health:', state.player.health);
       stateManager.updateCurrentLevelContext({ levelStatus: 'failed' });
       stateManager.setGameStatus('gameOver');
     }

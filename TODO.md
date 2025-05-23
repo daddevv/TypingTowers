@@ -18,10 +18,10 @@
 
 ### 1.3. Multi-Renderer Support & Experimentation
 
-- [ ] Create a branch or prototype for a Three.js-based `RenderManager` to validate the abstraction.
-- [ ] Add a build/runtime flag to select between Phaser and Three.js rendering backends.
-- [ ] Playtest both renderers to ensure feature parity and performance.
-- [ ] Update documentation to describe how to switch or extend renderers.
+- [x] Create a prototype for a Three.js-based `RenderManager` to validate the abstraction.
+- [x] Add a build/runtime flag to select between Phaser and Three.js rendering backends.
+- [x] Playtest both renderers to ensure feature parity and performance.
+- [x] Update documentation to describe how to switch or extend renderers.
 
 ### 1.4. General
 

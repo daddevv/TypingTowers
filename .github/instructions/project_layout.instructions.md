@@ -22,6 +22,8 @@ It is important to keep this document up-to-date to ensure that all team members
 
 - `render/` - Rendering abstraction and implementations
   - `RenderManager.ts` - **Defines the `IRenderManager` interface, which acts as the bridge between the engine and the chosen render library (Phaser, Three.js, etc.). All rendering logic should be implemented via this interface.**
+  - `PhaserRenderManager.ts` - Concrete implementation of `IRenderManager` using Phaser for rendering.
+  - `ThreeJsRenderManager.ts` - **Prototype implementation of `IRenderManager` using Three.js for rendering. Renders mobs and player as colored spheres. Used to validate the render abstraction.**
   - `__tests__/RenderManager.test.ts` - **Unit tests and mocks for the RenderManager interface. Verifies that scenes and game logic call the correct rendering methods. Use this as a template for testing new renderer implementations.**
 - `src/` - Source code for the game
   - `assets/` - Game assets organized by type
@@ -231,5 +233,14 @@ To add a new renderer (such as Three.js), follow these steps:
    - Update this documentation and the README to describe how to implement and select new renderers.
 
 By following this pattern, you can add additional renderers (CLI, Canvas2D, etc.) with minimal changes to the core game logic.
+
+## Render Backend Selection
+
+- The render backend (Phaser or Three.js) is selected at build or runtime via the `RENDER_BACKEND` flag.
+  - **Build-time:** Set `VITE_RENDER_BACKEND=three` (or `phaser`) in your environment before starting the frontend.
+  - **Runtime:** Set `window.RENDER_BACKEND = 'three'` (or `'phaser'`) in the browser console before loading the app.
+  - **Convenience:** Use `npm run dev:phaser` or `npm run dev:three` to start the dev server with the desired renderer.
+- The selected renderer is attached to `window.renderManager` and used by all scenes.
+- See `client/src/main.ts` for the backend selection logic.
 
 Contains AI-generated edits.

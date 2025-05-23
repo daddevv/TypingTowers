@@ -16,9 +16,11 @@ export default class BootScene extends Phaser.Scene {
     }
 
     create() {
+        console.log('[BootScene] create() called');
         // Defensive: Reset to default state if state is missing/corrupt
         const state = stateManager.getState();
         if (!state || typeof state !== 'object' || !('gameStatus' in state)) {
+            console.warn('[BootScene] State missing/corrupt, resetting to default');
             // Reset to default state
             stateManager.reset();
         }
@@ -34,6 +36,7 @@ export default class BootScene extends Phaser.Scene {
 
         // Listen for gameStatus changes and switch scenes accordingly, passing renderManager
         stateManager.on('gameStatusChanged', (status) => {
+            console.log('[BootScene] gameStatusChanged:', status);
             if (status === 'mainMenu') {
                 this.scene.start('MainMenuScene', { renderManager });
             } else if (status === 'worldSelect') {
@@ -47,6 +50,7 @@ export default class BootScene extends Phaser.Scene {
         });
 
         // Always set gameStatus to 'mainMenu' on load for a clean start
+        console.log('[BootScene] Setting gameStatus to mainMenu');
         stateManager.setGameStatus('mainMenu');
     }
 }
