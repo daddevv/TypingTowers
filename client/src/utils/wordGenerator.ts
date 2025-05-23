@@ -5,11 +5,11 @@
  */
 
 export default class WordGenerator {
-    private availableLetters: string[];
-    private usePseudoWords: boolean;
+    public availableLetters: string[];
+    public usePseudoWords: boolean;
 
-    private minWordLength: number = 2;
-    private maxWordLength: number = 5;
+    public minWordLength: number = 2;
+    public maxWordLength: number = 5;
 
     constructor(availableLetters: string[], usePseudoWords: boolean = true) {
         this.availableLetters = availableLetters.map(letter => letter.toLowerCase());
@@ -86,7 +86,11 @@ export default class WordGenerator {
      * @param length Desired word length
      * @returns A pseudo-word string
      */
-    generatePseudoWord(length: number = 4): string {
+    generatePseudoWord(length?: number): string {
+        // Use minWordLength/maxWordLength if length not provided
+        const len = typeof length === 'number'
+            ? length
+            : (this.minWordLength + Math.floor(Math.random() * (this.maxWordLength - this.minWordLength + 1)));
         // Simple implementation: alternate consonant/vowel if possible
         const vowels = ['a', 'e', 'i', 'o', 'u'].filter(v => this.availableLetters.includes(v));
         const consonants = this.availableLetters.filter(l => !vowels.includes(l));
@@ -95,7 +99,7 @@ export default class WordGenerator {
         }
         let word = '';
         let useVowel = Math.random() > 0.5;
-        for (let i = 0; i < length; i++) {
+        for (let i = 0; i < len; i++) {
             if (useVowel && vowels.length > 0) {
                 word += vowels[Math.floor(Math.random() * vowels.length)];
             } else if (consonants.length > 0) {
@@ -114,11 +118,15 @@ export default class WordGenerator {
      * @param length Desired word length
      * @returns A word string
      */
-    getWord(length: number = 3): string {
+    getWord(length?: number): string {
+        // Use minWordLength/maxWordLength if length not provided
+        const len = typeof length === 'number'
+            ? length
+            : (this.minWordLength + Math.floor(Math.random() * (this.maxWordLength - this.minWordLength + 1)));
         if (this.usePseudoWords) {
-            return this.generatePseudoWord(length);
+            return this.generatePseudoWord(len);
         }
-        return this.generateWord(length);
+        return this.generateWord(len);
     }
 }
 

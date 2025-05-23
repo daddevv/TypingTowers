@@ -144,7 +144,10 @@ export default class MobSpawner {
                     word = this.wordList[this.wordListIndex % this.wordList.length];
                     this.wordListIndex++;
                 } else {
-                    word = this.wordGenerator.generateWord(randomBetween(2, 5));
+                    // Use wordGenerator's min/max word length if available, else fallback to 2-5
+                    const minLen = (this.wordGenerator as any).minWordLength ?? 2;
+                    const maxLen = (this.wordGenerator as any).maxWordLength ?? 5;
+                    word = this.wordGenerator.generateWord(randomBetween(minLen, maxLen));
                 }
                 const minY = 100;
                 const maxY = this.height - 100;

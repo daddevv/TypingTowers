@@ -28,8 +28,8 @@ export interface PlayerState {
 }
 
 export interface LevelState {
-    currentWorld: number;
-    currentLevelId: string;
+    currentWorld?: number | null;
+    currentLevelId?: string | null;
     levelStatus: 'notStarted' | 'playing' | 'complete' | 'failed';
     // Add more as needed (e.g., wave, win condition)
 }

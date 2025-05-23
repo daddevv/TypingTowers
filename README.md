@@ -5,6 +5,7 @@ TypeDefense is a web-based typing game designed to help players improve their ty
 ## Table of Contents
 
 - [Features](#features)
+- [Headless Game Engine](#headless-game-engine)
 - [Screenshots](#screenshots)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -40,6 +41,32 @@ TypeDefense is a web-based typing game designed to help players improve their ty
 - The core game engine (`client/src/engine/HeadlessGameEngine.ts`) is fully UI-agnostic and contains no rendering or UI logic. All rendering, UI, and effects are handled in the render layer (Phaser scenes or other renderer implementations) based on the current game state.
 - All input (keyboard/mouse) is now handled centrally by the InputSystem, which updates gameState via StateManager. Scenes and entities no longer register input listeners directly.
 - All core entities (Player, Mob, MobSpawner) are now fully state-driven: their data and logic are managed via the global game state (`gameState`) and all updates are performed through the `StateManager`. This enables robust, testable, and reactive gameplay logic, and allows for easy debugging and inspection of all entity state at runtime.
+
+## Headless Game Engine
+
+The core game logic is implemented in a headless, UI-agnostic module: `client/src/engine/HeadlessGameEngine.ts`.
+
+- **No rendering or UI dependencies:** The engine contains only gameplay logic and state management. It does not import Phaser, Three.js, or any DOM APIs.
+- **Programmatic API:** The engine exposes the following interface for integration and testing:
+
+```typescript
+export interface IGameEngine {
+  step(delta: number, timestamp?: number): void;
+  injectInput(input: string): void;
+  getState(): GameState;
+  on(event: string, handler: (...args: any[]) => void): void;
+  off(event: string, handler: (...args: any[]) => void): void;
+  reset(): void;
+}
+```
+
+- **Usage:**
+  - Call `step(delta)` to advance the simulation.
+  - Use `injectInput(input)` to simulate player keystrokes.
+  - Retrieve the current state with `getState()`.
+  - Listen for state changes or events with `on(event, handler)`.
+  - Reset the engine with `reset()`.
+- **Testing:** The engine is fully testable in Node.js with no DOM or rendering dependencies. See `client/src/engine/HeadlessGameEngine.unit.test.ts` for usage examples and integration tests.
 
 ## Screenshots
 

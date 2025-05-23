@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { IRenderManager } from './RenderManager';
 import { GameState } from '../state/gameState';
+import { IRenderManager } from './RenderManager';
 
 export class ThreeJsRenderManager implements IRenderManager {
     private renderer?: THREE.WebGLRenderer;
@@ -92,13 +92,36 @@ export class ThreeJsRenderManager implements IRenderManager {
             instr.style.color = '#aaa';
             menuDiv.appendChild(instr);
 
-            // Keyboard support
+            // Version text
+            const versionDiv = document.createElement('div');
+            versionDiv.textContent = 'Version 2.0';
+            versionDiv.style.fontSize = '16px';
+            versionDiv.style.color = '#888';
+            versionDiv.style.marginTop = '40px';
+            menuDiv.appendChild(versionDiv);
+
+            // Credits text
+            const creditsDiv = document.createElement('div');
+            creditsDiv.textContent = '© TypeDefense Team';
+            creditsDiv.style.fontSize = '14px';
+            creditsDiv.style.color = '#666';
+            creditsDiv.style.marginTop = '10px';
+            menuDiv.appendChild(creditsDiv);
+
+            // Keyboard support with proper cleanup
             const keyHandler = (e: KeyboardEvent) => {
                 if (e.key === 'Enter') {
                     (window as any).stateManager?.setGameStatus('worldSelect');
+                    // Remove the event listener to prevent duplicates
+                    window.removeEventListener('keydown', keyHandler);
                 }
             };
-            window.addEventListener('keydown', keyHandler, { once: true });
+            window.addEventListener('keydown', keyHandler);
+
+            // Store the handler for cleanup when menu is removed
+            menuDiv.dataset.keyHandler = 'true';
+            // @ts-ignore - Store the handler function for later removal
+            menuDiv._keyHandler = keyHandler;
 
             // Attach to container
             if (this.container) {
@@ -111,9 +134,16 @@ export class ThreeJsRenderManager implements IRenderManager {
             return;
         }
 
-        // Remove menu if not in mainMenu
+        // Remove menu if not in mainMenu and clean up event listener
         const menu = document.getElementById('threejs-mainmenu');
-        if (menu) menu.remove();
+        if (menu) {
+            // @ts-ignore - Clean up the stored key handler
+            if (menu._keyHandler) {
+                // @ts-ignore
+                window.removeEventListener('keydown', menu._keyHandler);
+            }
+            menu.remove();
+        }
 
         // Clear previous frame
         // Remove all mob meshes

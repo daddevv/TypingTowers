@@ -1,6 +1,7 @@
 // StateManager for centralized game state management
 // Provides immutable access, update functions, event subscription, and save/load
 
+import { LevelConfig, WORLDS } from '../curriculum/worldConfig'; // Added WORLDS and LevelConfig
 import { GameState, defaultGameState } from './gameState';
 
 // Simple event emitter for state change notifications
@@ -96,13 +97,19 @@ class StateManager {
     updateCurrentLevelContext(context: Partial<GameState['level']>) {
         // Ensure this.state.level is initialized if it's not already
         if (!this.state.level) {
-            // Assuming GameState['level'] has a structure like { currentWorld: null, currentLevelId: null, ... }
-            // You might need to adjust this based on your actual defaultGameState structure for 'level'
-            this.state.level = { currentWorld: null, currentLevelId: null, ...context } as GameState['level'];
+            this.state.level = { currentWorld: null, currentLevelId: null, levelStatus: 'notStarted', ...context };
         } else {
             this.state.level = { ...this.state.level, ...context };
         }
         this.emitAndSave('levelContextChanged', this.state.level);
+
+        if (
+            this.state.level.levelStatus === 'complete' &&
+            this.state.level.currentWorld != null &&
+            this.state.level.currentLevelId != null
+        ) {
+            this.unlockNextLevel(this.state.level.currentWorld, this.state.level.currentLevelId);
+        }
     }
 
     // --- Level Progression ---
@@ -156,6 +163,51 @@ class StateManager {
     private emitAndSave(event: string, ...args: any[]) {
         this.save();
         this.emitter.emit(event, ...args);
+    }
+
+    private unlockNextLevel(worldId: number, completedLevelId: string) {
+        const worldConfig = WORLDS.find(w => w.id === worldId);
+        if (!worldConfig) {
+            console.warn(`[StateManager] unlockNextLevel: World config not found for worldId: ${worldId}`);
+            return;
+        }
+
+        const completedLevelIndex = worldConfig.levels.findIndex(l => l.id === completedLevelId);
+        if (completedLevelIndex === -1) {
+            console.warn(`[StateManager] unlockNextLevel: Level config not found for levelId: ${completedLevelId} in worldId: ${worldId}`);
+            return;
+        }
+
+        let nextLevelToUnlock: LevelConfig | undefined = undefined;
+
+        // Try to find next level in the same world
+        if (completedLevelIndex < worldConfig.levels.length - 1) {
+            nextLevelToUnlock = worldConfig.levels[completedLevelIndex + 1];
+        } else {
+            // Try to find first level of the next world
+            const nextWorldConfig = WORLDS.find(w => w.id === worldId + 1);
+            if (nextWorldConfig && nextWorldConfig.levels.length > 0) {
+                nextLevelToUnlock = nextWorldConfig.levels[0];
+                // Unlock the next world as well
+                const nextWorldIdStr = String(nextWorldConfig.id);
+                if (!this.state.progression.unlockedWorlds.includes(nextWorldIdStr)) {
+                    this.updateProgression({
+                        unlockedWorlds: [...this.state.progression.unlockedWorlds, nextWorldIdStr]
+                    });
+                }
+            }
+        }
+
+        if (nextLevelToUnlock) {
+            if (!this.state.progression.unlockedLevels.includes(nextLevelToUnlock.id)) {
+                this.updateProgression({
+                    unlockedLevels: [...this.state.progression.unlockedLevels, nextLevelToUnlock.id]
+                });
+                console.log(`[StateManager] Unlocked level: ${nextLevelToUnlock.id}`);
+            }
+        } else {
+            console.log(`[StateManager] No next level to unlock after ${completedLevelId}. End of curriculum?`);
+        }
     }
 }
 

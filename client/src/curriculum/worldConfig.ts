@@ -12,6 +12,7 @@ export interface LevelConfig {
     targetWPM: number;
     enemySpeed: number;
     enemySpawnRate: number;
+    mobsToDefeat: number; // Added: Number of mobs to defeat to win the level
     isBossLevel: boolean;
 }
 
@@ -38,6 +39,7 @@ export const WORLDS: WorldConfig[] = [
                 targetWPM: 10,
                 enemySpeed: 50,
                 enemySpawnRate: 3000,
+                mobsToDefeat: 10, // Added
                 isBossLevel: false
             },
             {
@@ -48,6 +50,7 @@ export const WORLDS: WorldConfig[] = [
                 targetWPM: 15,
                 enemySpeed: 60,
                 enemySpawnRate: 2800,
+                mobsToDefeat: 12, // Added
                 isBossLevel: false
             },
             {
@@ -58,6 +61,7 @@ export const WORLDS: WorldConfig[] = [
                 targetWPM: 18,
                 enemySpeed: 70,
                 enemySpawnRate: 2600,
+                mobsToDefeat: 15, // Added
                 isBossLevel: false
             },
             {
@@ -68,6 +72,7 @@ export const WORLDS: WorldConfig[] = [
                 targetWPM: 20,
                 enemySpeed: 80,
                 enemySpawnRate: 2400,
+                mobsToDefeat: 18, // Added
                 isBossLevel: false
             },
             {
@@ -78,6 +83,7 @@ export const WORLDS: WorldConfig[] = [
                 targetWPM: 22,
                 enemySpeed: 90,
                 enemySpawnRate: 2200,
+                mobsToDefeat: 20, // Added
                 isBossLevel: false
             },
             {
@@ -88,6 +94,7 @@ export const WORLDS: WorldConfig[] = [
                 targetWPM: 25,
                 enemySpeed: 100,
                 enemySpawnRate: 2000,
+                mobsToDefeat: 25, // Added
                 isBossLevel: false
             },
             {
@@ -98,6 +105,7 @@ export const WORLDS: WorldConfig[] = [
                 targetWPM: 30,
                 enemySpeed: 120,
                 enemySpawnRate: 1500,
+                mobsToDefeat: 30, // Added
                 isBossLevel: true
             }
         ]
@@ -116,9 +124,42 @@ export const WORLDS: WorldConfig[] = [
                 targetWPM: 10,
                 enemySpeed: 50,
                 enemySpawnRate: 3000,
+                mobsToDefeat: 10, // Added
                 isBossLevel: false
             },
-            // Additional levels would be defined here...
+            {
+                id: "2-2",
+                name: "Expanding Horizons",
+                description: "Introduce E and I for a broader reach.",
+                availableKeys: ["d", "k", "e", "i"],
+                targetWPM: 12,
+                enemySpeed: 55,
+                enemySpawnRate: 2900,
+                mobsToDefeat: 12, // Added
+                isBossLevel: false
+            },
+            {
+                id: "2-3",
+                name: "Diagonal Drills",
+                description: "Practice diagonal movements with C and ,.",
+                availableKeys: ["d", "k", "e", "i", "c", ","],
+                targetWPM: 15,
+                enemySpeed: 60,
+                enemySpawnRate: 2800,
+                mobsToDefeat: 15, // Added
+                isBossLevel: false
+            },
+            {
+                id: "2-4",
+                name: "Middle Row Mastery",
+                description: "Master the middle row with complex patterns using all learned keys.",
+                availableKeys: ["d", "k", "e", "i", "c", ",", "m", "b"],
+                targetWPM: 20,
+                enemySpeed: 70,
+                enemySpawnRate: 2600,
+                mobsToDefeat: 18, // Added
+                isBossLevel: false
+            },
             {
                 id: "2-5",
                 name: "Middle Master",
@@ -127,6 +168,7 @@ export const WORLDS: WorldConfig[] = [
                 targetWPM: 30,
                 enemySpeed: 120,
                 enemySpawnRate: 1500,
+                mobsToDefeat: 30, // Added
                 isBossLevel: true
             }
         ]
@@ -145,9 +187,42 @@ export const WORLDS: WorldConfig[] = [
                 targetWPM: 10,
                 enemySpeed: 50,
                 enemySpawnRate: 3000,
+                mobsToDefeat: 10, // Added
                 isBossLevel: false
             },
-            // Additional levels would be defined here...
+            {
+                id: "3-2",
+                name: "Adding Depth",
+                description: "Incorporate D and H for deeper reaches.",
+                availableKeys: ["s", "l", "d", "h"],
+                targetWPM: 12,
+                enemySpeed: 55,
+                enemySpawnRate: 2900,
+                mobsToDefeat: 12, // Added
+                isBossLevel: false
+            },
+            {
+                id: "3-3",
+                name: "Complex Patterns",
+                description: "Practice complex patterns with all learned keys.",
+                availableKeys: ["s", "l", "d", "h", "r", "u", "t", "y"],
+                targetWPM: 18,
+                enemySpeed: 70,
+                enemySpawnRate: 2600,
+                mobsToDefeat: 15, // Added
+                isBossLevel: false
+            },
+            {
+                id: "3-4",
+                name: "Ring Mastery",
+                description: "Master ring finger movements with advanced drills.",
+                availableKeys: ["s", "l", "d", "h", "r", "u", "t", "y", "v", "m"],
+                targetWPM: 22,
+                enemySpeed: 90,
+                enemySpawnRate: 2200,
+                mobsToDefeat: 20, // Added
+                isBossLevel: false
+            },
             {
                 id: "3-5",
                 name: "Ring Champion",
@@ -156,6 +231,7 @@ export const WORLDS: WorldConfig[] = [
                 targetWPM: 30,
                 enemySpeed: 120,
                 enemySpawnRate: 1500,
+                mobsToDefeat: 30, // Added
                 isBossLevel: true
             }
         ]
@@ -174,17 +250,51 @@ export const WORLDS: WorldConfig[] = [
                 targetWPM: 10,
                 enemySpeed: 50,
                 enemySpawnRate: 3000,
+                mobsToDefeat: 10, // Added
                 isBossLevel: false
             },
-            // Additional levels would be defined here...
             {
-                id: "4-6",
-                name: "Typing Overlord",
-                description: "Defeat the final boss using all keys you've learned!",
-                availableKeys: ["a", "q", "z", ";", "p", "/"],
-                targetWPM: 40,
-                enemySpeed: 150,
-                enemySpawnRate: 1200,
+                id: "4-2",
+                name: "Uppercase Challenge",
+                description: "Introduce Q and P for uppercase challenges.",
+                availableKeys: ["a", ";", "q", "p"],
+                targetWPM: 12,
+                enemySpeed: 55,
+                enemySpawnRate: 2900,
+                mobsToDefeat: 12, // Added
+                isBossLevel: false
+            },
+            {
+                id: "4-3",
+                name: "Symbol Surge",
+                description: "Incorporate Z and / for symbol-rich drills.",
+                availableKeys: ["a", ";", "q", "p", "z", "/"],
+                targetWPM: 15,
+                enemySpeed: 60,
+                enemySpawnRate: 2800,
+                mobsToDefeat: 15, // Added
+                isBossLevel: false
+            },
+            {
+                id: "4-4",
+                name: "Pinky Mastery",
+                description: "Master pinky movements with advanced drills.",
+                availableKeys: ["a", ";", "q", "p", "z", "/"],
+                targetWPM: 20,
+                enemySpeed: 70,
+                enemySpawnRate: 2600,
+                mobsToDefeat: 18, // Added
+                isBossLevel: false
+            },
+            {
+                id: "4-5",
+                name: "Typing Conqueror",
+                description: "Conquer the typing field using all learned keys!",
+                availableKeys: ["a", ";", "q", "p", "z", "/"],
+                targetWPM: 30,
+                enemySpeed: 120,
+                enemySpawnRate: 1500,
+                mobsToDefeat: 30, // Added
                 isBossLevel: true
             }
         ]

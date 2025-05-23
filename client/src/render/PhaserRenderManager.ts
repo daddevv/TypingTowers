@@ -1,15 +1,17 @@
 import Phaser from 'phaser';
-import { IRenderManager } from './RenderManager';
 import { GameState } from '../state/gameState';
+import { IRenderManager } from './RenderManager';
 
 /**
  * PhaserRenderManager
  * Implements IRenderManager using Phaser for rendering.
  * All game logic/state is passed in via render(state).
+ *
+ * This implementation expects to be given a Phaser.Scene via setScene().
+ * It does NOT create its own Phaser.Game or scene.
  */
 export class PhaserRenderManager implements IRenderManager {
-    private phaserGame?: Phaser.Game;
-    private sceneKey = 'RenderManagerScene';
+    private scene?: Phaser.Scene;
     private container?: HTMLElement;
     private width: number = 800;
     private height: number = 600;
@@ -22,49 +24,65 @@ export class PhaserRenderManager implements IRenderManager {
     private scoreText?: Phaser.GameObjects.Text;
     private comboText?: Phaser.GameObjects.Text;
 
+    /**
+     * Set the Phaser.Scene to use for rendering.
+     */
+    setScene(scene: Phaser.Scene) {
+        this.scene = scene;
+        this.width = scene.scale.width;
+        this.height = scene.scale.height;
+        this.initialized = true;
+    }
+
+    /**
+     * Optionally store the container, but do not create a Phaser.Game or scene here.
+     */
     init(container: HTMLElement): void {
-        console.log('[PhaserRenderManager] init() called');
-        // Remove any previous Phaser canvas from the container
-        while (container.firstChild) container.removeChild(container.firstChild);
         this.container = container;
         this.width = container.offsetWidth || 800;
         this.height = container.offsetHeight || 600;
-        if (this.phaserGame) {
-            this.destroy();
+        // Try to get the Phaser.Scene from the container or global game
+        // @ts-ignore
+        if (container && (container as any).__phaserScene) {
+            // @ts-ignore
+            this.scene = (container as any).__phaserScene;
+        } else if (window && (window as any).Phaser && (window as any).Phaser.GAMES && (window as any).Phaser.GAMES.length > 0) {
+            // Try to get the active scene from the global Phaser game
+            const phaserGame = (window as any).Phaser.GAMES[0];
+            if (phaserGame && phaserGame.scene && phaserGame.scene.keys) {
+                // Pick the first running scene
+                const keys = Object.keys(phaserGame.scene.keys);
+                for (const key of keys) {
+                    const s = phaserGame.scene.keys[key];
+                    if (s && s.sys && s.sys.isActive()) {
+                        this.scene = s;
+                        break;
+                    }
+                }
+            }
         }
-        this.phaserGame = new Phaser.Game({
-            type: Phaser.CANVAS,
-            width: this.width,
-            height: this.height,
-            parent: container,
-            backgroundColor: '#222',
-            scene: {
-                key: this.sceneKey,
-                create: () => {},
-                update: () => {},
-            }
-        });
-        // Ensure the canvas is visible and not hidden by any CSS
-        setTimeout(() => {
-            const canvas = container.querySelector('canvas');
-            if (canvas) {
-                canvas.style.display = 'block';
-                canvas.style.position = 'absolute';
-                canvas.style.left = '0';
-                canvas.style.top = '0';
-                canvas.style.width = '100%';
-                canvas.style.height = '100%';
-                canvas.style.zIndex = '1'; // Lower z-index for canvas
-                canvas.style.background = '#222';
-            }
-        }, 0);
         this.initialized = true;
     }
 
     render(state: GameState): void {
-        console.log('[PhaserRenderManager] render() called with gameStatus:', state.gameStatus);
-        if (!this.phaserGame || !this.initialized) return;
-        const scene = this.phaserGame.scene.getScene(this.sceneKey);
+        // Always try to get a valid scene
+        if (!this.scene) {
+            // Try to get the scene from the global Phaser game
+            if (window && (window as any).Phaser && (window as any).Phaser.GAMES && (window as any).Phaser.GAMES.length > 0) {
+                const phaserGame = (window as any).Phaser.GAMES[0];
+                if (phaserGame && phaserGame.scene && phaserGame.scene.keys) {
+                    const keys = Object.keys(phaserGame.scene.keys);
+                    for (const key of keys) {
+                        const s = phaserGame.scene.keys[key];
+                        if (s && s.sys && s.sys.isActive()) {
+                            this.scene = s;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        const scene = this.scene;
         if (!scene) return;
 
         // Remove any previous HTML overlays
@@ -80,7 +98,7 @@ export class PhaserRenderManager implements IRenderManager {
 
             // --- Draw Phaser-based main menu ---
             // Title
-            const title = scene.add.text(this.width / 2, this.height / 2 - 80, 'TypeDefense', {
+            scene.add.text(this.width / 2, this.height / 2 - 80, 'TypeDefense', {
                 fontSize: '64px',
                 color: '#fff',
                 fontStyle: 'bold',
@@ -94,7 +112,7 @@ export class PhaserRenderManager implements IRenderManager {
             const startBtn = scene.add.rectangle(this.width / 2, this.height / 2 + 10, 320, 64, 0x007bff, 1)
                 .setStrokeStyle(4, 0xffffff)
                 .setInteractive({ useHandCursor: true });
-            const startText = scene.add.text(this.width / 2, this.height / 2 + 10, 'Start', {
+            scene.add.text(this.width / 2, this.height / 2 + 10, 'Start', {
                 fontSize: '36px',
                 color: '#fff',
                 fontFamily: 'sans-serif',
@@ -102,9 +120,23 @@ export class PhaserRenderManager implements IRenderManager {
             }).setOrigin(0.5);
 
             // Instructions
-            const instr = scene.add.text(this.width / 2, this.height / 2 + 90, 'Press Enter or click Start to begin', {
+            scene.add.text(this.width / 2, this.height / 2 + 90, 'Press Enter or click Start to begin', {
                 fontSize: '22px',
                 color: '#aaa',
+                fontFamily: 'sans-serif'
+            }).setOrigin(0.5);
+
+            // Version text
+            scene.add.text(this.width / 2, this.height / 2 + 160, 'Version 2.0', {
+                fontSize: '16px',
+                color: '#888',
+                fontFamily: 'sans-serif'
+            }).setOrigin(0.5);
+
+            // Credits text
+            scene.add.text(this.width / 2, this.height / 2 + 190, '© TypeDefense Team', {
+                fontSize: '14px',
+                color: '#666',
                 fontFamily: 'sans-serif'
             }).setOrigin(0.5);
 
@@ -208,23 +240,20 @@ export class PhaserRenderManager implements IRenderManager {
     }
 
     destroy(): void {
-        if (this.phaserGame) {
-            this.phaserGame.destroy(true);
-            this.phaserGame = undefined;
-        }
         this.mobSprites.clear();
         this.mobTexts.clear();
         this.playerSprite = undefined;
         this.scoreText = undefined;
         this.comboText = undefined;
         this.initialized = false;
+        this.scene = undefined;
     }
 
     resize(width: number, height: number): void {
         this.width = width;
         this.height = height;
-        if (this.phaserGame) {
-            this.phaserGame.scale.resize(width, height);
+        if (this.scene) {
+            this.scene.scale.resize(width, height);
         }
     }
 }

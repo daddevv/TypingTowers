@@ -1,3 +1,32 @@
+# CHANGELOG
+
+## Completed Tasks
+
+### Phase 1: Headless/Decoupled Game Logic
+
+- Audit all game logic to ensure no direct Phaser dependencies remain.
+- Refactor any remaining UI/rendering logic out of the engine.
+- Define a clear interface/contract for the engine’s state and events.
+- Add tests to verify engine runs in a pure Node.js environment.
+- Document the engine’s public API for different renderers (Phaser, Three.js, headless).
+
+### Render Manager Abstraction
+
+- Design and implement a `RenderManager` abstraction.
+- Refactor Phaser-specific rendering code to use the `RenderManager`.
+- Ensure all rendering is done via the `RenderManager`.
+- Add tests/mocks for `RenderManager`.
+- Document how to implement a new renderer (e.g., Three.js).
+
+### Multi-Renderer Support & Experimentation
+
+- Create a prototype for a Three.js-based `RenderManager`.
+- Add a build/runtime flag to select render backends (Phaser, Three.js).
+- Playtest both renderers.
+- Update documentation on switching/extending renderers.
+
+---
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
