@@ -2,6 +2,7 @@ package game
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 type InputState struct {
@@ -20,7 +21,7 @@ type InputState struct {
 }
 
 func NewUserInput() *InputState {
-	return &InputState{
+	input := &InputState{
 		MouseX:        0,
 		MouseY:        0,
 		MouseButton1:  false,
@@ -35,6 +36,30 @@ func NewUserInput() *InputState {
 		Escape:        false,
 		Space:         false,
 	}
+
+	// Get mouse position
+	input.MouseX, input.MouseY = ebiten.CursorPosition()
+
+	// Get mouse buttons
+	input.MouseButton1 = inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft)
+	input.MouseButton2 = inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight)
+	input.MouseButton3 = inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonMiddle)
+
+	// Get keyboard keys
+	for key := range input.KeyboardKeys {
+		input.KeyboardKeys[key] = ebiten.IsKeyPressed(key)
+	}
+
+	// Check specific keys
+	input.Up = ebiten.IsKeyPressed(ebiten.KeyArrowUp)
+	input.Down = ebiten.IsKeyPressed(ebiten.KeyArrowDown)
+	input.Left = ebiten.IsKeyPressed(ebiten.KeyArrowLeft)
+	input.Right = ebiten.IsKeyPressed(ebiten.KeyArrowRight)
+	input.Enter = ebiten.IsKeyPressed(ebiten.KeyEnter)
+	input.Escape = ebiten.IsKeyPressed(ebiten.KeyEscape)
+	input.Space = ebiten.IsKeyPressed(ebiten.KeySpace)
+
+	return input
 }
 
 func (ui *InputState) Update() {
@@ -42,16 +67,16 @@ func (ui *InputState) Update() {
 	ui.MouseX, ui.MouseY = ebiten.CursorPosition()
 
 	// Get mouse buttons
-	ui.MouseButton1 = ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft)
-	ui.MouseButton2 = ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight)
-	ui.MouseButton3 = ebiten.IsMouseButtonPressed(ebiten.MouseButtonMiddle)
+	ui.MouseButton1 = inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft)
+	ui.MouseButton2 = inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight)
+	ui.MouseButton3 = inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonMiddle)
 
 	// Get keyboard keys
 	for key := range ui.KeyboardKeys {
 		ui.KeyboardKeys[key] = ebiten.IsKeyPressed(key)
 	}
 
-	// Update specific keys
+	// Check specific keys
 	ui.Up = ebiten.IsKeyPressed(ebiten.KeyArrowUp)
 	ui.Down = ebiten.IsKeyPressed(ebiten.KeyArrowDown)
 	ui.Left = ebiten.IsKeyPressed(ebiten.KeyArrowLeft)
@@ -59,5 +84,4 @@ func (ui *InputState) Update() {
 	ui.Enter = ebiten.IsKeyPressed(ebiten.KeyEnter)
 	ui.Escape = ebiten.IsKeyPressed(ebiten.KeyEscape)
 	ui.Space = ebiten.IsKeyPressed(ebiten.KeySpace)
-	// Add more keys as needed
 }

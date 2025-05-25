@@ -1,6 +1,14 @@
 package game
 
-import "fmt"
+import (
+	"fmt"
+	"image/color"
+	"os"
+
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
+)
 
 type Menu struct {
 	Options  []string
@@ -14,36 +22,60 @@ func NewMenu() *Menu {
 	}
 }
 
-func (m *Menu) Update(input *InputState) {
-	if input.Up {
+func (m *Menu) Update() (string, error) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+		fmt.Println("Escape pressed, exiting...")
+		os.Exit(0)
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
 		m.Selected--
 		if m.Selected < 0 {
 			m.Selected = len(m.Options) - 1
 		}
-		fmt.Println("Selected:", m.Options[m.Selected])
 	}
-	if input.Down {
+	if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
 		m.Selected++
 		if m.Selected >= len(m.Options) {
 			m.Selected = 0
 		}
-		fmt.Println("Selected:", m.Options[m.Selected])
-
 	}
-	if input.Enter {
-		m.Select()
-		fmt.Println("Selected:", m.Options[m.Selected])
+	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		switch m.Selected {
+		case 0:
+			return "Start Game", nil
+		case 1:
+			return "Options", nil
+		case 2:
+			return "Quit", nil
+		}
 	}
-
+	return "", nil
 }
 
-func (m *Menu) Select() {
-	switch m.Selected {
-	case 0:
-		// Start Game
-	case 1:
-		// Open Options
-	case 2:
-		// Quit
+
+func (m *Menu) Draw(screen *ebiten.Image) {
+	screenWidth, _ := ebiten.WindowSize()
+	// Clear the screen
+	screen.Fill(color.RGBA{0, 0, 0, 255})
+	// Draw the menu title
+	title := "Main Menu"
+	titleWidth := len(title) * 10 // Assuming each character is 10 pixels wide
+	titleX := (screenWidth - titleWidth) / 2
+	titleY := 50
+	ebitenutil.DebugPrintAt(screen, title, titleX, titleY)
+
+	// Draw the menu options
+	optionY := 100
+	for i, option := range m.Options {
+		if i == m.Selected {
+			optionX := (screenWidth - len(option)*10 - 30) / 2
+			// Highlight the selected option
+			ebitenutil.DebugPrintAt(screen, "-> "+option, optionX, optionY)
+		} else {
+		optionX := (screenWidth - len(option)*10) / 2
+			ebitenutil.DebugPrintAt(screen, option, optionX, optionY)
+		}
+		optionY += 30 // Move down for the next option
 	}
 }

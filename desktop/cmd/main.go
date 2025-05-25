@@ -26,7 +26,6 @@ func init() {
 }
 
 func main() {
-	// get screen size
 	screenWidth, screenHeight := ebiten.Monitor().Size()
 	engine := game.NewEngine(screenWidth, screenHeight, UI_TITLE, VERSION)
 

@@ -22,17 +22,7 @@ func NewGame() *Game {
 func (e *Game) Update() error {
 	// Update the game state here
 	// For example, handle input, update game objects, etc.
-	e.Input.Update()
-	switch e.State.CurrentScreen {
-	case "main-menu":
-		e.Menu.Update(e.Input)
-	case "game":
-		// Handle game logic
-	case "game-over":
-		// Handle game over logic
-	default:
-		// Handle default logic
-	}
+	
 	return nil
 }
 
