@@ -33,7 +33,7 @@ func NewGame() *Game {
 	}
 
 	// Read the .ttf file into a byte slice.
-    data, err := os.ReadFile("assets/OpenDyslexicNerdFontPropo-Bold.otf")
+    data, err := os.ReadFile("assets/OpenDyslexicNerdFont-Bold.otf")
     if err != nil {
         log.Fatal("unable to read font file:", err)
     }
