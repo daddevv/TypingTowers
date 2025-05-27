@@ -12,7 +12,6 @@ import (
 type Engine struct {
 	Width   int
 	Height  int
-	Title   string
 	Version string
 	State   EngineState
 	Screen  *ebiten.Image
@@ -21,12 +20,11 @@ type Engine struct {
 	Game    *game.Game
 }
 
-func NewGame(width, height int, title, version string) *Engine {
+func NewGame(width, height int, version string) *Engine {
 	return &Engine{
 		Version: version,
 		Height:  height,
 		Width:   width,
-		Title:   title,
 		Screen:  ebiten.NewImage(width, height),
 		State:   MAIN_MENU,
 		Menu:    menu.InitializeMainMenu(),
