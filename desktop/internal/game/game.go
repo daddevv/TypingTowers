@@ -1,15 +1,11 @@
 package game
 
 import (
-	"bytes"
 	"errors"
-	"fmt"
-	"image/color"
-	"log"
-	"os"
+	"td/internal/entity"
+	"td/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
@@ -17,77 +13,55 @@ import (
 var fontSource *text.GoTextFaceSource
 
 type Game struct {
-	Background *ebiten.Image
-	Width      int
-	Height     int
-	Score      int
-	Player     Entity
-	Mobs	   []Entity
+	Width  int
+	Height int
+	Level  world.Level
+	Player entity.Entity
+	Mobs []entity.Entity
 }
 
-func NewGame() *Game {
-	// Initialize the game with a background image and player
-	background, _, err := ebitenutil.NewImageFromFile("assets/bg_beach.png")
-	if err != nil {
-		panic(err)
-	}
-
-	// Read the .ttf file into a byte slice.
-    data, err := os.ReadFile("assets/OpenDyslexicNerdFont-Bold.otf")
-    if err != nil {
-        log.Fatal("unable to read font file:", err)
-    }
-    // Create the font source for text/v2.
-    fontSource, err = text.NewGoTextFaceSource(bytes.NewReader(data))
-    if err != nil {
-        log.Fatal("failed to parse font:", err)
-    }
-	
+func NewGame(opts GameOptions) *Game {
 	return &Game{
-		Background: background,
-		Width:      1920,
-		Height:     1080,
-		Score:      0,
-		Player:     NewPlayer(),
-		Mobs:       []Entity{},
+		Width:      opts.Width,
+		Height:     opts.Height,
+		Level:      opts.Level,
+		Player:     entity.NewPlayer(),
+		Mobs: entity.EmptyList(),
 	}
 }
 
-func (e *Game) Update() error {
-	// 
+func (g *Game) Update() error {
+	// Handle pause
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		return errors.New("pause")
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		// Spawn a new beachball mob when space is pressed
-		mob := NewBeachballMob()
+		mob := entity.NewBeachballMob()
 		if mob != nil {
-			e.Mobs = append(e.Mobs, mob)
+			g.Mobs = append(g.Mobs, mob)
 		} else {
 			return errors.New("failed to create new beachball mob")
 		}
 	}
 
-	for m := range e.Mobs {
-		if err := e.Mobs[m].Update(); err != nil {
+	for m := range g.Mobs {
+		if err := g.Mobs[m].Update(); err != nil {
 			return err
 		}
 	}
 
 	// --- Collision and despawn logic ---
 	// Example: Remove mobs that go off-screen (X < -100)
-	activeMobs := e.Mobs[:0]
-	for _, mob := range e.Mobs {
+	activeMobs := g.Mobs[:0]
+	for _, mob := range g.Mobs {
 		pos := mob.GetPosition()
 		if pos.X > 200 {
 			activeMobs = append(activeMobs, mob)
-		} else {
-			mob.StartDeath()
-			// Optionally: increase score, play sound, etc.
 		}
 	}
-	e.Mobs = activeMobs
+	g.Mobs = activeMobs
 
 	// TODO: Add collision checks between mobs, player, projectiles, etc.
 	// If collision detected:
@@ -98,24 +72,16 @@ func (e *Game) Update() error {
 	return nil
 }
 
-func (e *Game) Draw(screen *ebiten.Image) {
-	screen.DrawImage(e.Background, nil)
+func (g *Game) Draw(screen *ebiten.Image) {
+	g.Level.DrawBackground(screen)
+    // scoreStr := fmt.Sprintf("Score: %d", g.Score)
+    // opts := &text.DrawOptions{}
+    // opts.GeoM.Translate(10, 30)                  // position on screen
+    // opts.ColorScale.ScaleWithColor(color.White)  // text color
+    // font := ui.Font("Game-Bold", 48)			 // use the font source to get the font
+    // text.Draw(screen, scoreStr, font, opts)
 
-	// Prepare the string (e.g., with fmt.Sprintf or message.Printer)
-    scoreStr := fmt.Sprintf("Score: %d", e.Score)
-
-    // Configure draw options
-    opts := &text.DrawOptions{}
-    opts.GeoM.Translate(10, 30)                  // position on screen
-    opts.ColorScale.ScaleWithColor(color.White)  // text color
-
-    // Choose a text.Face implementation
-    face := &text.GoTextFace{Source: fontSource, Size: 48} // Use the font source created earlier
-
-    // Draw the score
-    text.Draw(screen, scoreStr, face, opts)
-
-	entities := append(e.Mobs, e.Player)
+	entities := append(g.Mobs, g.Player)
 	// TODO: Sort entities by Z-index (smallest Y first) if needed
 	for _, entity := range entities {
 		entity.Draw(screen)

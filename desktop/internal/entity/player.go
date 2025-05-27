@@ -1,12 +1,14 @@
-package game
+package entity
 
 import (
+	"td/internal/ui"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 type Player struct {
-	Pos   Location
+	Pos   ui.Location
 	Image *ebiten.Image
 }
 
@@ -16,7 +18,7 @@ func NewPlayer() *Player {
 		panic(err)
 	}
 	return &Player{
-		Pos:   Location{X: 100, Y: 860},
+		Pos:   ui.Location{X: 100, Y: 860},
 		Image: image,
 	}
 }
@@ -34,7 +36,7 @@ func (p *Player) Update() error {
 	return nil
 }
 
-func (p *Player) GetPosition() Location {
+func (p *Player) GetPosition() ui.Location {
 	return p.Pos
 }
 

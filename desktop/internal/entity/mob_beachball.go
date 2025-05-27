@@ -1,15 +1,16 @@
-package game
+package entity
 
 import (
 	"image"
 	"math/rand"
+	"td/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 type BeachballMob struct {
-	Pos            Location
+	Pos            ui.Location
 	Speed          float64
 	CurrentFrame   int
 	MoveAnimation  []*ebiten.Image
@@ -29,7 +30,7 @@ func NewBeachballMob() *BeachballMob {
 	size := 48
 
 	mob := &BeachballMob{
-		Pos:            Location{X: 1920, Y: float64(initialY)},
+		Pos:            ui.Location{X: 1920, Y: float64(initialY)},
 		Speed:          2,
 		MoveAnimation:  make([]*ebiten.Image, frames),
 		CurrentFrame:   0,
@@ -74,7 +75,7 @@ func (mob *BeachballMob) Update() error {
 	return nil
 }
 
-func (mob *BeachballMob) GetPosition() Location {
+func (mob *BeachballMob) GetPosition() ui.Location {
 	return mob.Pos
 }
 

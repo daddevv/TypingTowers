@@ -1,4 +1,4 @@
-package game
+package menu
 
 import (
 	"fmt"
@@ -10,19 +10,19 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-type Menu struct {
+type MainMenu struct {
 	Options  []string
 	Selected int
 }
 
-func NewMenu() *Menu {
-	return &Menu{
+func InitializeMainMenu() *MainMenu {
+	return &MainMenu{
 		Options:  []string{"Start Game", "Options", "Quit"},
 		Selected: 0,
 	}
 }
 
-func (m *Menu) Update() (string, error) {
+func (m *MainMenu) Update() (string, error) {
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		fmt.Println("Escape pressed, exiting...")
 		os.Exit(0)
@@ -53,8 +53,7 @@ func (m *Menu) Update() (string, error) {
 	return "", nil
 }
 
-
-func (m *Menu) Draw(screen *ebiten.Image) {
+func (m *MainMenu) Draw(screen *ebiten.Image) {
 	screenWidth, _ := ebiten.WindowSize()
 	// Clear the screen
 	screen.Fill(color.RGBA{0, 0, 0, 255})
@@ -73,7 +72,7 @@ func (m *Menu) Draw(screen *ebiten.Image) {
 			// Highlight the selected option
 			ebitenutil.DebugPrintAt(screen, "-> "+option, optionX, optionY)
 		} else {
-		optionX := (screenWidth - len(option)*10) / 2
+			optionX := (screenWidth - len(option)*10) / 2
 			ebitenutil.DebugPrintAt(screen, option, optionX, optionY)
 		}
 		optionY += 30 // Move down for the next option

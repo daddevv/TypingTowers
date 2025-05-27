@@ -1,4 +1,4 @@
-package game
+package ui
 
 type Location struct {
 	X float64
