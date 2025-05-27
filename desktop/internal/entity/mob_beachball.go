@@ -1,56 +1,45 @@
 package entity
 
 import (
-	"image"
+	"fmt"
 	"math/rand"
 	"td/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 type BeachballMob struct {
 	Pos            ui.Location
 	Speed          float64
-	CurrentFrame   int
-	MoveAnimation  []*ebiten.Image
-	AnimationDelay int           // Delay between frames (in ticks)
-	animationTick  int           // Internal counter for animation
 	Sprite         *ebiten.Image // Current frame to draw
+	MoveAnimation  *ui.Animation
+	TargetY float64 // Target Y position for the mob
 }
 
 func NewBeachballMob() *BeachballMob {
-	spritesheet, _, err := ebitenutil.NewImageFromFile("assets/mob_beachball_sheet.png")
+	moveAnimation, err := ui.NewAnimation("assets/images/mob/mob_beachball_sheet.png", 1, 7, 48, 48, 6)
 	if err != nil {
 		return nil
 	}
-
-	initialY := rand.Intn(200) + 700
-	frames := 7
-	size := 48
-
+	initialY := rand.Float64() * 0.3 + 0.6
 	mob := &BeachballMob{
-		Pos:            ui.Location{X: 1920, Y: float64(initialY)},
-		Speed:          2,
-		MoveAnimation:  make([]*ebiten.Image, frames),
-		CurrentFrame:   0,
-		AnimationDelay: 10, // 120 TPS / 7 frames ≈ 17 ticks per frame
-		animationTick:  0,
+		Pos:            ui.Location{X: 1, Y: float64(initialY)},
+		Speed:          0.001,
+		MoveAnimation:  moveAnimation,
+		TargetY:        0.85,
 	}
-
-	for i := range frames {
-		rect := image.Rect(i*size, 0, (i+1)*size, size)
-		frame := spritesheet.SubImage(rect).(*ebiten.Image)
-		mob.MoveAnimation[i] = frame
-	}
-	mob.Sprite = mob.MoveAnimation[0]
+	mob.Sprite = mob.MoveAnimation.Update()
+	fmt.Println("Beachball mob created at position:", mob.Pos.X, mob.Pos.Y)
 	return mob
 }
 
 func (mob *BeachballMob) Draw(screen *ebiten.Image) {
 	opts := ebiten.DrawImageOptions{}
-	opts.GeoM.Scale(3, 3)
-	opts.GeoM.Translate(mob.Pos.X, mob.Pos.Y)
+	opts.GeoM.Scale(3*float64(screen.Bounds().Dx())/1920, 3*float64(screen.Bounds().Dy())/1080) // Scale the mob image
+	opts.GeoM.Translate(
+		mob.Pos.X* float64(screen.Bounds().Dx()),
+		mob.Pos.Y* float64(screen.Bounds().Dy()),
+	) // Position based on screen size
 	screen.DrawImage(mob.Sprite, &opts)
 }
 
@@ -58,20 +47,14 @@ func (mob *BeachballMob) Update() error {
 	// Update the position of the beachball mob
 	// For now, we just move it downwards at a constant speed
 	mob.Pos.X -= mob.Speed // Move left
-	if mob.Pos.Y < 910 {
-		mob.Pos.Y += (910 - mob.Pos.Y) * 3 / mob.Pos.X // Move towards the ground
-	} else if mob.Pos.Y > 910 {
-		mob.Pos.Y -= (mob.Pos.Y - 910) * 3 / mob.Pos.X // Move towards the ground
+	if mob.Pos.Y < mob.TargetY {
+		mob.Pos.Y += (mob.TargetY - mob.Pos.Y)*0.005 * mob.Pos.X // Move towards the ground
+	} else if mob.Pos.Y > mob.TargetY {
+		mob.Pos.Y -= (mob.Pos.Y - mob.TargetY) * 0.005 * mob.Pos.X // Move towards the ground
 	}
 
-	// Animate: advance frame every AnimationDelay ticks
-	mob.animationTick++
-	if mob.animationTick >= mob.AnimationDelay {
-		mob.CurrentFrame = (mob.CurrentFrame + 1) % len(mob.MoveAnimation)
-		mob.Sprite = mob.MoveAnimation[mob.CurrentFrame]
-		mob.animationTick = 0
-	}
-
+	mob.Sprite = mob.MoveAnimation.Update()
+	fmt.Println("Beachball mob updated to position:", mob.Pos.X, mob.Pos.Y)
 	return nil
 }
 
@@ -82,8 +65,4 @@ func (mob *BeachballMob) GetPosition() ui.Location {
 func (mob *BeachballMob) SetPosition(x, y float64) {
 	mob.Pos.X = x
 	mob.Pos.Y = y
-}
-
-func (mob *BeachballMob) StartDeath() {
-	// TODO: Implement mob death logic (animation, removal, etc)
 }

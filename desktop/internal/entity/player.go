@@ -7,18 +7,22 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
+const (
+	PLAYER_Y = 0.8
+)
+
 type Player struct {
 	Pos   ui.Location
 	Image *ebiten.Image
 }
 
 func NewPlayer() *Player {
-	image, _, err := ebitenutil.NewImageFromFile("assets/player.png")
+	image, _, err := ebitenutil.NewImageFromFile("assets/images/player/idle.png")
 	if err != nil {
 		panic(err)
 	}
 	return &Player{
-		Pos:   ui.Location{X: 100, Y: 860},
+		Pos:   ui.Location{X: 0.1, Y: PLAYER_Y},
 		Image: image,
 	}
 }
@@ -26,8 +30,11 @@ func NewPlayer() *Player {
 func (p *Player) Draw(screen *ebiten.Image) {
 	// Draw the player on the screen
 	opts := &ebiten.DrawImageOptions{}
-	opts.GeoM.Scale(4, 4) // Scale the player image
-	opts.GeoM.Translate(p.Pos.X, p.Pos.Y)
+	opts.GeoM.Scale(4*float64(screen.Bounds().Dx())/1920, 4*float64(screen.Bounds().Dy())/1080) // Scale the player image
+	opts.GeoM.Translate(
+		p.Pos.X * float64(screen.Bounds().Dx()),
+		p.Pos.Y * float64(screen.Bounds().Dy()),
+	) // Position based on screen size
 	screen.DrawImage(p.Image, opts)
 }
 

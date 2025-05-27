@@ -40,9 +40,15 @@ func NewLevel(name, difficulty string, possibleLetters []string) *Level {
 	}
 }
 
+// DrawBackground draws the level's background on the provided screen.
+// It scales the background image to fill the screen dimensions.
 func (l *Level) DrawBackground(screen *ebiten.Image) {
+	width := float64(screen.Bounds().Dx())/float64(l.Background.Bounds().Dx())
+	height := float64(screen.Bounds().Dy())/float64(l.Background.Bounds().Dy())
+	opts := &ebiten.DrawImageOptions{}
+	opts.GeoM.Scale(width, height) // Adjust scale as needed
 	if l.Background != nil {
-		screen.DrawImage(l.Background, nil)
+		screen.DrawImage(l.Background, opts)
 	}
 	// Drawing logic for the level can be implemented here.
 	// This could include drawing the background, entities, etc.

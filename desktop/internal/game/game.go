@@ -57,7 +57,7 @@ func (g *Game) Update() error {
 	activeMobs := g.Mobs[:0]
 	for _, mob := range g.Mobs {
 		pos := mob.GetPosition()
-		if pos.X > 200 {
+		if pos.X > -0.1 {
 			activeMobs = append(activeMobs, mob)
 		}
 	}

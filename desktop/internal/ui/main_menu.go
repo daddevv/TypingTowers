@@ -1,4 +1,4 @@
-package menu
+package ui
 
 import (
 	"fmt"
@@ -10,14 +10,22 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
+type MainMenuOption string
+
+const (
+	StartGameOption MainMenuOption = "Start Game"
+	OptionsOption   MainMenuOption = "Options"
+	QuitOption      MainMenuOption = "Quit"
+)
+
 type MainMenu struct {
-	Options  []string
+	Options  []MainMenuOption
 	Selected int
 }
 
 func InitializeMainMenu() *MainMenu {
 	return &MainMenu{
-		Options:  []string{"Start Game", "Options", "Quit"},
+		Options:  []MainMenuOption{StartGameOption, OptionsOption, QuitOption},
 		Selected: 0,
 	}
 }
@@ -27,7 +35,6 @@ func (m *MainMenu) Update() (string, error) {
 		fmt.Println("Escape pressed, exiting...")
 		os.Exit(0)
 	}
-
 	if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
 		m.Selected--
 		if m.Selected < 0 {
@@ -50,17 +57,24 @@ func (m *MainMenu) Update() (string, error) {
 			return "Quit", nil
 		}
 	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyF) {
+		if ebiten.IsFullscreen() {
+			ebiten.SetFullscreen(false)
+		} else {
+			ebiten.SetFullscreen(true)
+		}
+	}
 	return "", nil
 }
 
 func (m *MainMenu) Draw(screen *ebiten.Image) {
-	screenWidth, _ := ebiten.WindowSize()
+	canvasWidth, _ := ebiten.WindowSize()
 	// Clear the screen
 	screen.Fill(color.RGBA{0, 0, 0, 255})
 	// Draw the menu title
 	title := "Main Menu"
 	titleWidth := len(title) * 10 // Assuming each character is 10 pixels wide
-	titleX := (screenWidth - titleWidth) / 2
+	titleX := (canvasWidth - titleWidth) / 2
 	titleY := 50
 	ebitenutil.DebugPrintAt(screen, title, titleX, titleY)
 
@@ -68,12 +82,12 @@ func (m *MainMenu) Draw(screen *ebiten.Image) {
 	optionY := 100
 	for i, option := range m.Options {
 		if i == m.Selected {
-			optionX := (screenWidth - len(option)*10 - 30) / 2
+			optionX := (canvasWidth - len(string(option))*10 - 30) / 2
 			// Highlight the selected option
-			ebitenutil.DebugPrintAt(screen, "-> "+option, optionX, optionY)
+			ebitenutil.DebugPrintAt(screen, "->"+string(option), optionX, optionY)
 		} else {
-			optionX := (screenWidth - len(option)*10) / 2
-			ebitenutil.DebugPrintAt(screen, option, optionX, optionY)
+			optionX := (canvasWidth - len(string(option))*10) / 2
+			ebitenutil.DebugPrintAt(screen, string(option), optionX, optionY)
 		}
 		optionY += 30 // Move down for the next option
 	}

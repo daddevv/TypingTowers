@@ -3,7 +3,7 @@ package engine
 import (
 	"os"
 	"td/internal/game"
-	"td/internal/menu"
+	"td/internal/ui"
 	"td/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -15,19 +15,19 @@ type Engine struct {
 	Version string
 	State   EngineState
 	Screen  *ebiten.Image
-	Menu    *menu.MainMenu
-	Lobby   *menu.LobbyMenu
+	Menu    *ui.MainMenu
+	Lobby   *ui.LobbyMenu
 	Game    *game.Game
 }
 
-func NewGame(width, height int, version string) *Engine {
+func NewEngine(width, height int, version string) *Engine {
 	return &Engine{
 		Version: version,
 		Height:  height,
 		Width:   width,
 		Screen:  ebiten.NewImage(width, height),
 		State:   MAIN_MENU,
-		Menu:    menu.InitializeMainMenu(),
+		Menu:    ui.InitializeMainMenu(),
 		Lobby:   nil,
 		Game:    nil,
 	}
@@ -45,7 +45,6 @@ func (e *Engine) Update() error {
 			case "Start Game":
 				if e.Game == nil {
 					e.Game = game.NewGame(game.GameOptions{
-						PossibleLetters: []string{"A", "B", "C", "D"},
 						Width:           e.Width,
 						Height:          e.Height,
 						Level:           *world.NewLevel("World 1", "normal", []string{"f", "g", "h", "j"}),
@@ -89,5 +88,23 @@ func (g *Engine) Draw(screen *ebiten.Image) {
 }
 
 func (g *Engine) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
+	// Maintain 16:9 aspect ratio
+	aspectRatio := 16.0 / 9.0
+	g.Width = outsideWidth
+	g.Height = outsideHeight
+
+	if g.Width < 1024 {
+		g.Width = 1024
+	}
+	if g.Width > 1920 {
+		g.Width = 1920
+	}
+	if float64(g.Width)/float64(g.Height) > aspectRatio {
+		g.Height = int(float64(g.Width) / aspectRatio)
+	} else {
+		g.Width = int(float64(g.Height) * aspectRatio)
+	}
+	// Set the window size to match the game dimensions
+	ebiten.SetWindowSize(g.Width, g.Height)
 	return g.Width, g.Height
 }

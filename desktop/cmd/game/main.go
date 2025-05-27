@@ -18,12 +18,15 @@ func init() {
 }
 
 func main() {
-	screenWidth, screenHeight := ebiten.Monitor().Size()
-	engine := engine.NewGame(screenWidth, screenHeight, VERSION)
+	canvasWidth, canvasHeight := 1920/8, 1080/8
+	// screenWidth, screenHeight := ebiten.Monitor().Size()
+	engine := engine.NewEngine(canvasWidth, canvasHeight, VERSION)
 
-	ebiten.SetWindowSize(screenWidth, screenHeight)
-	ebiten.SetFullscreen(true)
+	ebiten.SetWindowSize(canvasWidth, canvasHeight)
+	// ebiten.SetFullscreen(true)
 	ebiten.SetWindowTitle("Type Defense")
+	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
+	// ebiten.SetWindowDecorated(false)
 
 	if err := ebiten.RunGame(engine); err != nil {
 		log.Fatal(err)
