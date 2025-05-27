@@ -7,7 +7,6 @@ const (
 	MAINMENU CurrentScene = iota
 	GAME
 	OPTIONS
-	GAMEOVER
 )
 
 func NewCurrentScene() CurrentScene {

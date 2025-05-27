@@ -50,7 +50,11 @@ func (e *Engine) Update() error {
 	case GAME:
 		err := e.Game.Update()
 		if err != nil {
-			return err
+			if err.Error() == "pause" {
+				e.Scene = MAINMENU
+			} else {
+				return err
+			}
 		}
 		return nil
 	default:
@@ -66,8 +70,6 @@ func (g *Engine) Draw(screen *ebiten.Image) {
 		g.Menu.Draw(screen)
 	case GAME:
 		g.Game.Draw(screen)
-	case GAMEOVER:
-		// Handle game over drawing
 	default:
 		// Handle default drawing
 	}

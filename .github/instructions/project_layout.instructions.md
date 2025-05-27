@@ -1,5 +1,5 @@
 ---
-applyTo: "**"
+applyTo: "client/**"
 ---
 
 # Project Layout Documentation
