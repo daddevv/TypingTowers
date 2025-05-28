@@ -31,8 +31,8 @@ func NewPreviewer(imagePath string, rows, cols, height, width int) *Previewer {
 		log.Fatalf("failed to load image: %v", err)
 	}
 	frames := []*ebiten.Image{}
-	for r := range rows {
-		for c := range cols {
+	for r := 0; r < rows; r++ {
+		for c := 0; c < cols; c++ {
 			x0 := c * width
 			y0 := r * height
 			rect := image.Rect(x0, y0, x0+width, y0+height)

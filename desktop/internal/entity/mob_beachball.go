@@ -1,11 +1,13 @@
 package entity
 
 import (
-	"fmt"
+	"image/color"
 	"math/rand"
 	"td/internal/ui"
+	"td/internal/utils"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
 type BeachballMob struct {
@@ -14,9 +16,12 @@ type BeachballMob struct {
 	Sprite         *ebiten.Image // Current frame to draw
 	MoveAnimation  *ui.Animation
 	TargetY float64 // Target Y position for the mob
+	Letters	   []string // Letters to display above the mob for player to type
+	LetterCount int // Number of letters to type
+	LetterIndex int // Index of the current letter to type
 }
 
-func NewBeachballMob() *BeachballMob {
+func NewBeachballMob(count int, possible []string) *BeachballMob {
 	moveAnimation, err := ui.NewAnimation("assets/images/mob/mob_beachball_sheet.png", 1, 7, 48, 48, 6)
 	if err != nil {
 		return nil
@@ -27,19 +32,49 @@ func NewBeachballMob() *BeachballMob {
 		Speed:          0.001,
 		MoveAnimation:  moveAnimation,
 		TargetY:        0.85,
+		Letters:        utils.GenerateRandomLetters(count, possible),
+		LetterCount:    count,
+		LetterIndex:    0,
 	}
 	mob.Sprite = mob.MoveAnimation.Update()
-	fmt.Println("Beachball mob created at position:", mob.Pos.X, mob.Pos.Y)
 	return mob
 }
 
 func (mob *BeachballMob) Draw(screen *ebiten.Image) {
 	opts := ebiten.DrawImageOptions{}
-	opts.GeoM.Scale(3*float64(screen.Bounds().Dx())/1920, 3*float64(screen.Bounds().Dy())/1080) // Scale the mob image
+	opts.GeoM.Scale(3*float64(screen.Bounds().Dx())/1920, 3*float64(screen.Bounds().Dy())/1080)
 	opts.GeoM.Translate(
-		mob.Pos.X* float64(screen.Bounds().Dx()),
-		mob.Pos.Y* float64(screen.Bounds().Dy()),
-	) // Position based on screen size
+		mob.Pos.X*float64(screen.Bounds().Dx()),
+		mob.Pos.Y*float64(screen.Bounds().Dy()),
+	)
+
+	// --- Draw the target word above the mob, centered and proportional ---
+	// Avoid per-frame string concatenation
+	word := ""
+	for _, letter := range mob.Letters {
+		word += letter
+	}
+	font := ui.Font("Mob", 48*float64(screen.Bounds().Dx())/1920)
+	letterSpacing := 0.015
+
+	baseX := mob.Pos.X + float64(mob.LetterIndex)*letterSpacing
+	baseY := mob.Pos.Y - 0.05
+
+	for i := 0; i < mob.LetterCount; i++ {
+		letter := mob.Letters[i]
+		letterX := (baseX + float64(i)*letterSpacing) * float64(screen.Bounds().Dx())
+		letterY := baseY * float64(screen.Bounds().Dy())
+
+		optsText := &text.DrawOptions{}
+		optsText.GeoM.Translate(letterX, letterY)
+		if i == mob.LetterIndex {
+			optsText.ColorScale.ScaleWithColor(color.RGBA{255, 0, 0, 255})
+		} else {
+			optsText.ColorScale.ScaleWithColor(color.White)
+		}
+		text.Draw(screen, letter, font, optsText)
+	}
+
 	screen.DrawImage(mob.Sprite, &opts)
 }
 
@@ -54,7 +89,6 @@ func (mob *BeachballMob) Update() error {
 	}
 
 	mob.Sprite = mob.MoveAnimation.Update()
-	fmt.Println("Beachball mob updated to position:", mob.Pos.X, mob.Pos.Y)
 	return nil
 }
 

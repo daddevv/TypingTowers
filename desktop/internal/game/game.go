@@ -2,6 +2,7 @@ package game
 
 import (
 	"errors"
+	"sync"
 	"td/internal/entity"
 	"td/internal/world"
 
@@ -38,7 +39,7 @@ func (g *Game) Update() error {
 
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		// Spawn a new beachball mob when space is pressed
-		mob := entity.NewBeachballMob()
+		mob := entity.NewBeachballMob(3, g.Level.PossibleLetters)
 		if mob != nil {
 			g.Mobs = append(g.Mobs, mob)
 		} else {
@@ -46,8 +47,22 @@ func (g *Game) Update() error {
 		}
 	}
 
+	// --- Parallel mob updates ---
+	var wg sync.WaitGroup
+	errCh := make(chan error, len(g.Mobs))
 	for m := range g.Mobs {
-		if err := g.Mobs[m].Update(); err != nil {
+		wg.Add(1)
+		go func(mob entity.Entity) {
+			defer wg.Done()
+			if err := mob.Update(); err != nil {
+				errCh <- err
+			}
+		}(g.Mobs[m])
+	}
+	wg.Wait()
+	close(errCh)
+	for err := range errCh {
+		if err != nil {
 			return err
 		}
 	}

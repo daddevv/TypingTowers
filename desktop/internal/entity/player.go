@@ -28,13 +28,12 @@ func NewPlayer() *Player {
 }
 
 func (p *Player) Draw(screen *ebiten.Image) {
-	// Draw the player on the screen
 	opts := &ebiten.DrawImageOptions{}
-	opts.GeoM.Scale(4*float64(screen.Bounds().Dx())/1920, 4*float64(screen.Bounds().Dy())/1080) // Scale the player image
+	opts.GeoM.Scale(4*float64(screen.Bounds().Dx())/1920, 4*float64(screen.Bounds().Dy())/1080)
 	opts.GeoM.Translate(
-		p.Pos.X * float64(screen.Bounds().Dx()),
-		p.Pos.Y * float64(screen.Bounds().Dy()),
-	) // Position based on screen size
+		p.Pos.X*float64(screen.Bounds().Dx()),
+		p.Pos.Y*float64(screen.Bounds().Dy()),
+	)
 	screen.DrawImage(p.Image, opts)
 }
 

@@ -27,8 +27,8 @@ func NewAnimation(imagePath string, rows, cols, frameWidth, frameHeight, delay i
 	}
 
 	frames := make([]*ebiten.Image, 0, rows*cols)
-	for r := range rows {
-		for c := range cols {
+	for r := 0; r < rows; r++ {
+		for c := 0; c < cols; c++ {
 			x0 := c * frameWidth
 			y0 := r * frameHeight
 			rect := image.Rect(x0, y0, x0+frameWidth, y0+frameHeight)

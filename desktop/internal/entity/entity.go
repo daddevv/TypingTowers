@@ -13,17 +13,6 @@ type Entity interface {
 	GetPosition() ui.Location
 }
 
-func NewMobList(biome string) []Entity {
-	var mobs []Entity
-	switch biome {
-	case "beach":
-		mobs = append(mobs, NewBeachballMob())
-	default:
-		panic("Unknown biome: " + biome)
-	}
-	return mobs
-}
-
 func EmptyList() []Entity {
 	return make([]Entity, 0)
 }
