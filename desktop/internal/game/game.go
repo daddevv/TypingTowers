@@ -16,17 +16,18 @@ import (
 )
 
 type Game struct {
-	Level        world.Level
-	Player       entity.Entity
-	Mobs         []entity.Entity
-	Projectiles  []*entity.Projectile
-	InputHandler *InputHandler
-	MobSpawner   *entity.MobSpawner
-	LastUpdate   time.Time
-	Score        int // Number of mobs defeated
-	LevelComplete bool // True if level is complete
-	CurrentWave   int // Current wave index (0-based)
-	WaveEnemyDefeated int // Number of enemies defeated in current wave
+	Level             world.Level
+	Player            entity.Entity
+	Mobs              []entity.Entity
+	Projectiles       []*entity.Projectile
+	InputHandler      *InputHandler
+	MobSpawner        *entity.MobSpawner
+	LastUpdate        time.Time
+	LevelComplete     bool // True if level is complete
+	CurrentWave       int  // Current wave index (0-based)
+	WaveEnemyDefeated int  // Number of enemies defeated in current wave
+	ShowWaveToast     bool
+	WaveToastTimer    float64
 }
 
 func NewGame(opts GameOptions) *Game {
@@ -41,17 +42,18 @@ func NewGame(opts GameOptions) *Game {
 		mobSpawner = entity.NewMobSpawner(letterPool)
 	}
 	return &Game{
-		Level:        opts.Level,
-		Player:       player,
-		Mobs:         entity.EmptyList(),
-		Projectiles:  make([]*entity.Projectile, 0),
-		InputHandler: inputHandler,
-		MobSpawner:   mobSpawner,
-		LastUpdate:   time.Now(),
-		Score:        0,
-		LevelComplete: false,
-		CurrentWave:   0,
+		Level:             opts.Level,
+		Player:            player,
+		Mobs:              entity.EmptyList(),
+		Projectiles:       make([]*entity.Projectile, 0),
+		InputHandler:      inputHandler,
+		MobSpawner:        mobSpawner,
+		LastUpdate:        time.Now(),
+		LevelComplete:     false,
+		CurrentWave:       0,
 		WaveEnemyDefeated: 0,
+		ShowWaveToast:     true,
+		WaveToastTimer:    2.5, // seconds
 	}
 }
 
@@ -77,7 +79,7 @@ func (g *Game) Update() error {
 	}
 
 	// Update mob spawner and potentially spawn new mobs
-	newMob := g.MobSpawner.Update(deltaTime, g.Score)
+	newMob := g.MobSpawner.Update(deltaTime, g.WaveEnemyDefeated)
 	if newMob != nil {
 		g.Mobs = append(g.Mobs, newMob)
 	}
@@ -126,11 +128,10 @@ func (g *Game) Update() error {
 		if pos.X > 200 {
 			activeMobs = append(activeMobs, mob)
 		} else {
-			// Check if mob was defeated (all letters typed) vs just went off screen
-			if beachballMob, ok := mob.(*entity.BeachballMob); ok && beachballMob.Dead {
-				g.Score++
+			if beachballMob, ok := mob.(*entity.BeachballMob); ok && (beachballMob.Dead || allLettersInactive(beachballMob)) {
+				beachballMob.Dead = true
 				g.WaveEnemyDefeated++
-				g.MobSpawner.SpeedUpOverTime(g.Score)
+				g.MobSpawner.SpeedUpOverTime(g.WaveEnemyDefeated)
 			}
 		}
 	}
@@ -142,13 +143,29 @@ func (g *Game) Update() error {
 		if g.WaveEnemyDefeated >= wave.EnemyCount {
 			g.CurrentWave++
 			g.WaveEnemyDefeated = 0
-			// Optionally: update possible letters for next wave, etc.
+			g.ShowWaveToast = true
+			g.WaveToastTimer = 2.5
 		}
 	}
-	if g.Score >= g.Level.LevelCompleteScore {
+	if g.CurrentWave >= len(g.Level.Waves) {
 		g.LevelComplete = true
 	}
+	if g.ShowWaveToast {
+		g.WaveToastTimer -= 1.0 / 60.0 // assuming 60 FPS
+		if g.WaveToastTimer <= 0 {
+			g.ShowWaveToast = false
+		}
+	}
 	return nil
+}
+
+func allLettersInactive(mob *entity.BeachballMob) bool {
+	for _, l := range mob.Letters {
+		if l.State != entity.LetterInactive {
+			return false
+		}
+	}
+	return true
 }
 
 // checkProjectileCollisions checks for collisions between projectiles and mobs
@@ -190,42 +207,42 @@ func (g *Game) checkProjectileCollisions() {
 	}
 }
 
+func textWidth(face *text.GoTextFace, s string) float64 {
+	// Fallback: estimate width as len(s) * size * 0.6 (approximate for monospace)
+	return float64(len(s)) * face.Size * 0.6
+}
+
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.Level.DrawBackground(screen)
 
-	// Draw level name at top center
+	// Draw level name at top center (centered)
 	levelName := g.Level.Name
-	font := ui.Font("Game-Bold", 48)
+	fontFace := ui.Font("Game-Bold", 48)
+	nameWidth := textWidth(fontFace, levelName)
 	nameOpts := &text.DrawOptions{}
-	nameOpts.GeoM.Translate(1920/2-300, 60)
+	nameOpts.GeoM.Translate(1920/2-nameWidth/2, 60)
 	nameOpts.ColorScale.ScaleWithColor(color.RGBA{255, 255, 0, 255})
-	text.Draw(screen, levelName, font, nameOpts)
+	text.Draw(screen, levelName, fontFace, nameOpts)
 
 	// Draw world/level number
 	levelNumStr := fmt.Sprintf("World %d - Level %d", g.Level.WorldNumber, g.Level.LevelNumber)
-	levelNumFont := ui.Font("Game-Bold", 32)
+	levelNumFace := ui.Font("Game-Bold", 32)
+	levelNumWidth := textWidth(levelNumFace, levelNumStr)
 	levelNumOpts := &text.DrawOptions{}
-	levelNumOpts.GeoM.Translate(1920/2-200, 120)
+	levelNumOpts.GeoM.Translate(1920/2-levelNumWidth/2, 120)
 	levelNumOpts.ColorScale.ScaleWithColor(color.White)
-	text.Draw(screen, levelNumStr, levelNumFont, levelNumOpts)
-
-	// Draw score in top left corner
-	scoreStr := fmt.Sprintf("Score: %d", g.Score)
-	scoreOpts := &text.DrawOptions{}
-	scoreOpts.GeoM.Translate(20, 50)
-	scoreOpts.ColorScale.ScaleWithColor(color.White)
-	fontSmall := ui.Font("Game-Bold", 32)
-	text.Draw(screen, scoreStr, fontSmall, scoreOpts)
+	text.Draw(screen, levelNumStr, levelNumFace, levelNumOpts)
 
 	// Draw wave info
 	if g.CurrentWave < len(g.Level.Waves) {
 		wave := g.Level.Waves[g.CurrentWave]
 		waveStr := fmt.Sprintf("Wave %d: %d/%d enemies defeated", wave.WaveNumber, g.WaveEnemyDefeated, wave.EnemyCount)
-		waveFont := ui.Font("Game-Bold", 32)
+		waveFace := ui.Font("Game-Bold", 32)
+		waveWidth := textWidth(waveFace, waveStr)
 		waveOpts := &text.DrawOptions{}
-		waveOpts.GeoM.Translate(20, 100)
+		waveOpts.GeoM.Translate(1920/2-waveWidth/2, 180)
 		waveOpts.ColorScale.ScaleWithColor(color.White)
-		text.Draw(screen, waveStr, waveFont, waveOpts)
+		text.Draw(screen, waveStr, waveFace, waveOpts)
 	}
 
 	entities := append(g.Mobs, g.Player)
@@ -242,10 +259,49 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// Draw level complete message if needed
 	if g.LevelComplete {
 		msg := "Level Complete!"
-		msgFont := ui.Font("Game-Bold", 64)
+		msgFace := ui.Font("Game-Bold", 64)
+		msgWidth := textWidth(msgFace, msg)
 		msgOpts := &text.DrawOptions{}
-		msgOpts.GeoM.Translate(1920/2-320, 540)
-		msgOpts.ColorScale.ScaleWithColor(color.RGBA{0,255,0,255})
-		text.Draw(screen, msg, msgFont, msgOpts)
+		msgOpts.GeoM.Translate(1920/2-msgWidth/2, 540)
+		msgOpts.ColorScale.ScaleWithColor(color.RGBA{0, 255, 0, 255})
+		text.Draw(screen, msg, msgFace, msgOpts)
+	}
+
+	// Toast for new wave
+	if g.ShowWaveToast && g.CurrentWave < len(g.Level.Waves) {
+		wave := g.Level.Waves[g.CurrentWave]
+		toastTitle := fmt.Sprintf("Wave %d", wave.WaveNumber)
+		lettersStr := fmt.Sprintf("Letters: %v", wave.PossibleLetters)
+		toastFont := ui.Font("Game-Bold", 48)
+		lettersFont := ui.Font("Game-Bold", 36)
+		// Estimate width/height for both lines
+		titleWidth := textWidth(toastFont, toastTitle)
+		lettersWidth := textWidth(lettersFont, lettersStr)
+		toastWidth := titleWidth
+		if lettersWidth > toastWidth {
+			toastWidth = lettersWidth
+		}
+		paddingX := 60.0
+		paddingY := 40.0
+		boxWidth := toastWidth + paddingX*2
+		boxHeight := 120.0 + paddingY*2
+		boxX := 1920/2 - boxWidth/2
+		boxY := 400
+		// Draw background quad (rounded rectangle look)
+		quad := ebiten.NewImage(int(boxWidth), int(boxHeight))
+		quad.Fill(color.RGBA{30, 30, 30, 220})
+		quadOpts := &ebiten.DrawImageOptions{}
+		quadOpts.GeoM.Translate(boxX, float64(boxY))
+		screen.DrawImage(quad, quadOpts)
+		// Draw title
+		titleOpts := &text.DrawOptions{}
+		titleOpts.GeoM.Translate(1920/2-titleWidth/2, float64(boxY)+paddingY)
+		titleOpts.ColorScale.ScaleWithColor(color.RGBA{255, 255, 0, 255})
+		text.Draw(screen, toastTitle, toastFont, titleOpts)
+		// Draw letters line
+		lettersOpts := &text.DrawOptions{}
+		lettersOpts.GeoM.Translate(1920/2-lettersWidth/2, float64(boxY)+paddingY+60)
+		lettersOpts.ColorScale.ScaleWithColor(color.White)
+		text.Draw(screen, lettersStr, lettersFont, lettersOpts)
 	}
 }

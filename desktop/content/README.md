@@ -6,7 +6,7 @@ This document explains how to add or edit game content (levels, mobs, worlds) us
 
 All content configuration files are located in:
 
-```
+```md
 desktop/content/
     levels.json   # Level definitions
     mobs.json     # Mob (enemy) definitions
