@@ -63,7 +63,13 @@ func (ih *InputHandler) ProcessInput(mobs []entity.Entity, projectiles []*entity
 			// Find the closest mob/letter that is not reserved
 			targetMob, letterIdx := ih.findClosestUnreservedTargetMob(mobs, char, reserved)
 			if targetMob != nil && letterIdx >= 0 {
-				projectile := entity.NewProjectile(ih.playerPosition, targetMob.GetPosition(), targetMob)
+				// Aim at the center of the mob sprite (sprite is 48x48, scaled by 3)
+				mobPos := targetMob.GetPosition()
+				centeredTarget := ui.Location{
+					X: mobPos.X + 48.0*3.0/2.0,
+					Y: mobPos.Y + 48.0*3.0, // Aim 10px lower than center
+				}
+				projectile := entity.NewProjectile(ih.playerPosition, centeredTarget, targetMob)
 				projectile.TargetChar = char
 				newProjectiles = append(newProjectiles, projectile)
 				// Mark this letter as reserved for subsequent keys in this frame

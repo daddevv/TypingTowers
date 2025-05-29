@@ -25,13 +25,13 @@ type Projectile struct {
 // NewProjectile creates a new projectile from start position to target position.
 func NewProjectile(start ui.Location, target ui.Location, mob Entity) *Projectile {
 	// Create a simple white circle sprite for the projectile
-	sprite := ebiten.NewImage(8, 8)
+	sprite := ebiten.NewImage(32, 32)
 	sprite.Fill(color.RGBA{255, 255, 255, 255})
 	
 	return &Projectile{
 		Position:    start,
 		Target:      target,
-		Speed:       30.0, // pixels per frame
+		Speed:       50.0, // pixels per frame
 		Sprite:      sprite,
 		Active:      true,
 		DamageDealt: false,
@@ -53,7 +53,7 @@ func (p *Projectile) Update() error {
 
 	// Calculate direction vector from position to target
 	dx := p.Target.X - p.Position.X
-	dy := p.Target.Y - p.Position.Y
+	dy := p.Target.Y - p.Position.Y + 48
 
 	// Calculate distance to target
 	distance := math.Sqrt(dx*dx + dy*dy)

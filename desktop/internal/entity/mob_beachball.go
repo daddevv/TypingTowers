@@ -79,7 +79,7 @@ func (m *BeachballMob) Draw(screen *ebiten.Image) {
 	// Draw the target word above the mob, using cached images
 	letterSpacing := 24.0 // px
 	baseX := m.Position.X + float64(m.Sprite.Bounds().Dx())*1.5 - m.WordWidth/2.0
-	baseY := m.Position.Y - 60.0 // 60px above mob
+	baseY := m.Position.Y - 40.0 // 40px above mob (was 50px, moved down 10px)
 
 	for i := 0; i < len(m.Letters); i++ {
 		img := m.Letters[i].Sprite
