@@ -1,13 +1,20 @@
 // Package content provides types for content configuration (levels, mobs, worlds).
 package content
 
+// LevelWaveConfig defines a wave in a level.
+type LevelWaveConfig struct {
+	ScoreThreshold int      `json:"scoreThreshold"` // Score required to complete this wave
+	PossibleLetters []string `json:"possibleLetters,omitempty"` // Letters available in this wave (optional, overrides level)
+}
+
 // LevelConfig defines the structure for a level configuration.
 type LevelConfig struct {
-	Name            string   `json:"name"`
-	Difficulty      string   `json:"difficulty"`
-	Biome           string   `json:"biome"`
-	PossibleLetters []string `json:"possibleLetters"`
-	Background      string   `json:"background"`
+	Name            string            `json:"name"`
+	Difficulty      string            `json:"difficulty"`
+	World           string            `json:"world"` // Reference to WorldConfig.Name
+	StartingLetters []string          `json:"startingLetters"`
+	PossibleLetters []string          `json:"possibleLetters"`
+	Waves           []LevelWaveConfig `json:"waves"`
 }
 
 // MobConfig defines the structure for a mob configuration.

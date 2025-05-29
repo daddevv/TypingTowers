@@ -47,15 +47,32 @@ desktop/content/
 
 ```json
 {
-  "name": "Tutorial",
-  "difficulty": "easy",
-  "biome": "Beach",
-  "possibleLetters": ["a", "e", "i", "o", "u"],
-  "background": "assets/images/background/beach.png"
+  "name": "World 1",
+  "difficulty": "Easy",
+  "world": "BEACH",
+  "startingLetters": ["a", "e", "i", "o", "u"],
+  "possibleLetters": ["a", "e", "i", "o", "u", "f", "g", "h", "j"],
+  "waves": [
+    {
+      "scoreThreshold": 5,
+      "possibleLetters": ["a", "e", "i", "o", "u"]
+    },
+    {
+      "scoreThreshold": 10,
+      "possibleLetters": ["a", "e", "i", "o", "u", "f", "g"]
+    },
+    {
+      "scoreThreshold": 15,
+      "possibleLetters": ["a", "e", "i", "o", "u", "f", "g", "h", "j"]
+    }
+  ]
 }
 ```
 
-- Add or edit levels as needed. Use the `possibleLetters` array to control which letters appear.
+- `world`: Reference to a world/biome defined in `worlds.json`.
+- `startingLetters`: Letters available at the start of the level.
+- `possibleLetters`: All letters that can be unlocked in this level.
+- `waves`: Each wave has a `scoreThreshold` (score required to complete the wave) and can optionally override `possibleLetters` for that wave.
 
 ### 3. Editing or Adding Worlds
 
@@ -64,7 +81,7 @@ desktop/content/
 
 ```json
 {
-  "name": "Beach",
+  "name": "BEACH",
   "background": "assets/images/background/beach.png"
 }
 ```

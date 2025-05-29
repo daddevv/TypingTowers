@@ -2,14 +2,62 @@
     {
         "name": "World 1",
         "difficulty": "Easy",
-        "biome": "BEACH",
-        "possibleLetters": [
+        "world": "BEACH",
+        "startingLetters": [
             "a",
             "e",
             "i",
             "o",
             "u"
         ],
-        "background": "assets/images/background/beach.png"
+        "possibleLetters": [
+            "a",
+            "e",
+            "i",
+            "o",
+            "u",
+            "f",
+            "g",
+            "h",
+            "j"
+        ],
+        "waves": [
+            {
+                "scoreThreshold": 5,
+                "possibleLetters": [
+                    "a",
+                    "e",
+                    "i",
+                    "o",
+                    "u"
+                ]
+            },
+            {
+                "scoreThreshold": 10,
+                "possibleLetters": [
+                    "a",
+                    "e",
+                    "i",
+                    "o",
+                    "u",
+                    "f",
+                    "g"
+                ]
+            },
+            {
+                "scoreThreshold": 15,
+                "possibleLetters": [
+                    "a",
+                    "e",
+                    "i",
+                    "o",
+                    "u",
+                    "f",
+                    "g",
+                    "h",
+                    "j"
+                ]
+            }
+        ]
     }
 ]
