@@ -43,7 +43,7 @@ func GetLetterImage(r rune, state LetterState, font *text.GoTextFace) *ebiten.Im
 	if img, ok := letterImageCache[state][r]; ok {
 		return img
 	}
-	img := ebiten.NewImage(48, 48)
+	img := ebiten.NewImage(32, 48)
 	opts := &text.DrawOptions{}
 	opts.ColorScale.ScaleWithColor(getLetterColor(state))
 	text.Draw(img, string(r), font, opts)

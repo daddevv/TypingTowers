@@ -83,7 +83,7 @@ func NewBeachballMobWithLetters(letters []string) *BeachballMob {
 			PendingProjectiles: 0,
 		},
 	}
-	font := ui.Font("Mob", 32)
+	font := ui.Font("Mob", 48)
 	for i := range m.MobBase.Letters {
 		char := []rune(letters[i])[0]
 		if i == 0 {
@@ -110,7 +110,7 @@ func (m *BeachballMob) Draw(screen *ebiten.Image) {
 	screen.DrawImage(m.Sprite, &opts)
 
 	// Draw the target word above the mob, using cached images
-	letterSpacing := 24.0 // px
+	letterSpacing := 10.0 // px
 	baseX := m.Position.X + float64(m.Sprite.Bounds().Dx())*1.5 - m.WordWidth/2.0
 	baseY := m.Position.Y - 40.0 // 40px above mob (was 50px, moved down 10px)
 
@@ -190,7 +190,7 @@ func (m *BeachballMob) AdvanceLetterState(char rune) {
 	for i, letter := range m.Letters {
 		if letter.State == LetterTarget && letter.Character == char {
 			m.Letters[i].State = LetterInactive
-			m.Letters[i].Sprite = GetLetterImage(letter.Character, LetterInactive, ui.Font("Mob", 32))
+			m.Letters[i].Sprite = GetLetterImage(letter.Character, LetterInactive, ui.Font("Mob", 48))
 			targetIndex = i
 			break
 		}
@@ -198,6 +198,6 @@ func (m *BeachballMob) AdvanceLetterState(char rune) {
 	if targetIndex >= 0 && targetIndex+1 < len(m.Letters) {
 		nextIndex := targetIndex + 1
 		m.Letters[nextIndex].State = LetterTarget
-		m.Letters[nextIndex].Sprite = GetLetterImage(m.Letters[nextIndex].Character, LetterTarget, ui.Font("Mob", 32))
+		m.Letters[nextIndex].Sprite = GetLetterImage(m.Letters[nextIndex].Character, LetterTarget, ui.Font("Mob", 48))
 	}
 }

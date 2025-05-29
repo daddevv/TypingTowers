@@ -111,7 +111,7 @@ func (g *Game) Update() error {
 	activeMobs := g.Mobs[:0]
 	for _, mob := range g.Mobs {
 		pos := mob.GetPosition()
-		if pos.X > -100 {
+		if pos.X > 200 {
 			activeMobs = append(activeMobs, mob)
 		} else {
 			// Check if mob was defeated (all letters typed) vs just went off screen
@@ -154,31 +154,33 @@ func (g *Game) checkProjectileCollisions() {
 		if !projectile.IsActive() || projectile.DamageDealt {
 			continue
 		}
-		
-		for _, mob := range g.Mobs {
-			mobPos := mob.GetPosition()
-			projPos := projectile.GetPosition()
+
+		// Only check collision with the projectile's intended target mob
+		if projectile.TargetMob == nil {
+			continue
+		}
+		mob := projectile.TargetMob
+		mobPos := mob.GetPosition()
+		projPos := projectile.GetPosition()
+
+		// Simple collision detection - check if projectile is within mob bounds
+		// Assuming mob is roughly 48x48 pixels (sprite size * scale)
+		mobSize := 48.0 * 3.0 // sprite size * scale factor
+		if projPos.X >= mobPos.X && projPos.X <= mobPos.X+mobSize &&
+			projPos.Y >= mobPos.Y && projPos.Y <= mobPos.Y+mobSize {
 			
-			// Simple collision detection - check if projectile is within mob bounds
-			// Assuming mob is roughly 48x48 pixels (sprite size * scale)
-			mobSize := 48.0 * 3.0 // sprite size * scale factor
-			if projPos.X >= mobPos.X && projPos.X <= mobPos.X+mobSize &&
-				projPos.Y >= mobPos.Y && projPos.Y <= mobPos.Y+mobSize {
+			// Collision detected - deactivate projectile (letter states already advanced)
+			projectile.Deactivate()
+			projectile.DamageDealt = true
+			
+			// Decrement pending projectiles counter for this mob
+			if beachballMob, ok := mob.(*entity.BeachballMob); ok {
+				beachballMob.PendingProjectiles--
 				
-				// Collision detected - deactivate projectile (letter states already advanced)
-				projectile.Deactivate()
-				projectile.DamageDealt = true
-				
-				// Decrement pending projectiles counter for this mob
-				if beachballMob, ok := mob.(*entity.BeachballMob); ok {
-					beachballMob.PendingProjectiles--
-					
-					// If this mob is pending death and has no more pending projectiles, start death animation
-					if beachballMob.PendingDeath && beachballMob.PendingProjectiles <= 0 {
-						beachballMob.StartDeath()
-					}
+				// If this mob is pending death and has no more pending projectiles, start death animation
+				if beachballMob.PendingDeath && beachballMob.PendingProjectiles <= 0 {
+					beachballMob.StartDeath()
 				}
-				break
 			}
 		}
 	}

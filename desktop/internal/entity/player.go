@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	PLAYER_Y = 900.0 // px
+	PLAYER_Y = 850.0 // px
 )
 
 type Player struct {
