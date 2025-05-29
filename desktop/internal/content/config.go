@@ -1,11 +1,18 @@
 // Package content provides types for content configuration (levels, mobs, worlds).
 package content
 
+// MobSpawnChance defines the spawn chance for a specific mob type.
+type MobSpawnChance struct {
+	Type   string  `json:"type"`
+	Chance float64 `json:"chance"` // 0.0-1.0, e.g. 1.0 = 100%
+}
+
 // LevelWaveConfig defines a wave in a level.
 type LevelWaveConfig struct {
 	WaveNumber      int      `json:"waveNumber"`
 	PossibleLetters []string `json:"possibleLetters"`
 	EnemyCount      int      `json:"enemyCount"` // Number of enemies to defeat in this wave
+	MobChances      []MobSpawnChance `json:"mobChances"` // Mob spawn % for this wave
 }
 
 // LevelConfig defines the structure for a level configuration.

@@ -22,7 +22,13 @@
                     "o",
                     "u"
                 ],
-                "enemyCount": 5
+                "enemyCount": 5,
+                "mobChances": [
+                    {
+                        "type": "BeachballMob",
+                        "chance": 1.0
+                    }
+                ]
             },
             {
                 "waveNumber": 2,
@@ -35,7 +41,13 @@
                     "f",
                     "g"
                 ],
-                "enemyCount": 5
+                "enemyCount": 5,
+                "mobChances": [
+                    {
+                        "type": "BeachballMob",
+                        "chance": 1.0
+                    }
+                ]
             },
             {
                 "waveNumber": 3,
@@ -50,7 +62,13 @@
                     "h",
                     "j"
                 ],
-                "enemyCount": 5
+                "enemyCount": 5,
+                "mobChances": [
+                    {
+                        "type": "BeachballMob",
+                        "chance": 1.0
+                    }
+                ]
             }
         ]
     }

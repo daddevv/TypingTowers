@@ -14,6 +14,7 @@ type Level struct {
 		WaveNumber      int
 		PossibleLetters []string
 		EnemyCount      int
+		MobChances      []struct{Type string; Chance float64}
 	}
 	LevelCompleteScore int
 	Background         *ebiten.Image
@@ -23,6 +24,7 @@ func NewLevel(name string, worldNumber, levelNumber int, world string, startingL
 	WaveNumber      int
 	PossibleLetters []string
 	EnemyCount      int
+	MobChances      []struct{Type string; Chance float64}
 }, levelCompleteScore int, background *ebiten.Image) *Level {
 	return &Level{
 		Name:               name,

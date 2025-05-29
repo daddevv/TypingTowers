@@ -66,16 +66,35 @@ func (e *Engine) Update() error {
 					WaveNumber      int
 					PossibleLetters []string
 					EnemyCount      int
+					MobChances      []struct {
+						Type   string
+						Chance float64
+					}
 				}, len(levelCfg.Waves))
 				for i, w := range levelCfg.Waves {
+					mobChances := make([]struct {
+						Type   string
+						Chance float64
+					}, len(w.MobChances))
+					for j, m := range w.MobChances {
+						mobChances[j] = struct {
+							Type   string
+							Chance float64
+						}{m.Type, m.Chance}
+					}
 					waves[i] = struct {
 						WaveNumber      int
 						PossibleLetters []string
 						EnemyCount      int
+						MobChances      []struct {
+							Type   string
+							Chance float64
+						}
 					}{
 						WaveNumber:      w.WaveNumber,
 						PossibleLetters: w.PossibleLetters,
 						EnemyCount:      w.EnemyCount,
+						MobChances:      mobChances,
 					}
 				}
 				level := world.Level{
@@ -89,8 +108,8 @@ func (e *Engine) Update() error {
 					Background:         bgImg,
 				}
 				e.Game = game.NewGame(game.GameOptions{
-					Level:     level,
-					GameMode:  game.ENDLESS,
+					Level:      level,
+					GameMode:   game.ENDLESS,
 					MobConfigs: LoadedMobs,
 				})
 			}

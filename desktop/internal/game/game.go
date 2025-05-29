@@ -53,7 +53,8 @@ func NewGame(opts GameOptions) *Game {
 		CurrentWave:       0,
 		WaveEnemyDefeated: 0,
 		ShowWaveToast:     true,
-		WaveToastTimer:    2.5, // seconds
+		WaveToastTimer:    3.5, // longer toast duration
+		// Ensure no mobs spawn at level start
 	}
 }
 
@@ -144,7 +145,8 @@ func (g *Game) Update() error {
 			g.CurrentWave++
 			g.WaveEnemyDefeated = 0
 			g.ShowWaveToast = true
-			g.WaveToastTimer = 2.5
+			g.WaveToastTimer = 3.5
+			return nil // Pause wave progression until toast is gone
 		}
 	}
 	if g.CurrentWave >= len(g.Level.Waves) {
@@ -154,7 +156,14 @@ func (g *Game) Update() error {
 		g.WaveToastTimer -= 1.0 / 60.0 // assuming 60 FPS
 		if g.WaveToastTimer <= 0 {
 			g.ShowWaveToast = false
+			// Only allow mob spawning after toast disappears
+			g.MobSpawner.NextSpawnTime = 0.5 // small delay after toast
 		}
+		return nil // Prevent wave from progressing/spawning while toast is up
+	}
+	// Prevent mob spawning if toast is up
+	if g.ShowWaveToast {
+		return nil
 	}
 	return nil
 }
@@ -212,37 +221,153 @@ func textWidth(face *text.GoTextFace, s string) float64 {
 	return float64(len(s)) * face.Size * 0.6
 }
 
+func drawLetterIndicators(screen *ebiten.Image, possible map[string]bool) {
+	// Stacked left-to-right, 13 per row, top left, with background quad
+	font := ui.Font("Game-Bold", 28)
+	startX := 18.0
+	startY := 18.0
+	rowStep := 32.0
+	colStep := 38.0 // slightly tighter
+	letters := []string{}
+	// A-Z
+	for i := 0; i < 26; i++ {
+		letters = append(letters, fmt.Sprintf("%c", 'A'+i))
+	}
+	// a-z
+	for i := 0; i < 26; i++ {
+		letters = append(letters, fmt.Sprintf("%c", 'a'+i))
+	}
+	// 0-9 and symbols
+	symbols := "0123456789!@#$%^&*()-_=+[]{};:'\",.<>/?|`~"
+	for _, r := range symbols {
+		letters = append(letters, string(r))
+	}
+	// Calculate grid size
+	total := len(letters)
+	cols := 13
+	rows := (total + cols - 1) / cols
+	quadWidth := float64(cols)*colStep + 18.0
+	quadHeight := float64(rows)*rowStep + 18.0
+	quad := ebiten.NewImage(int(quadWidth), int(quadHeight))
+	quad.Fill(color.RGBA{30, 30, 30, 220})
+	quadOpts := &ebiten.DrawImageOptions{}
+	quadOpts.GeoM.Translate(startX-9, startY-9)
+	screen.DrawImage(quad, quadOpts)
+	for idx, ch := range letters {
+		row := idx / cols
+		col := idx % cols
+		x := startX + float64(col)*colStep
+		y := startY + float64(row)*rowStep
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(x, y)
+		if possible[ch] {
+			opts.ColorScale.ScaleWithColor(color.White)
+		} else {
+			opts.ColorScale.ScaleWithColor(color.RGBA{120, 120, 120, 255})
+		}
+		text.Draw(screen, ch, font, opts)
+	}
+}
+
+func drawMobChances(screen *ebiten.Image, mobChances []struct {
+	Type   string
+	Chance float64
+}) {
+	font := ui.Font("Game-Bold", 28)
+	rowStep := 40.0
+	paddingX := 24.0
+	paddingY := 18.0
+	maxLabelWidth := 0.0
+	labels := make([]string, len(mobChances))
+	for i, mob := range mobChances {
+		labels[i] = fmt.Sprintf("%s: %d%%", mob.Type, int(mob.Chance*100))
+		w := textWidth(font, labels[i])
+		if w > maxLabelWidth {
+			maxLabelWidth = w
+		}
+	}
+	boxWidth := maxLabelWidth + paddingX*2
+	boxHeight := float64(len(mobChances))*rowStep + paddingY*2
+	boxX := 1920.0 - boxWidth - 18.0
+	boxY := 30.0 // move closer to top
+	quad := ebiten.NewImage(int(boxWidth), int(boxHeight))
+	quad.Fill(color.RGBA{30, 30, 30, 220})
+	quadOpts := &ebiten.DrawImageOptions{}
+	quadOpts.GeoM.Translate(boxX, boxY)
+	screen.DrawImage(quad, quadOpts)
+	for i, label := range labels {
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(boxX+paddingX, boxY+paddingY+float64(i)*rowStep)
+		opts.ColorScale.ScaleWithColor(color.White)
+		text.Draw(screen, label, font, opts)
+	}
+}
+
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.Level.DrawBackground(screen)
 
-	// Draw level name at top center (centered)
+	// --- Draw header background quad (skinnier for just the text) ---
+	headerWidth := 600.0
+	headerHeight := 150.0
+	headerX := 1920.0/2 - headerWidth/2
+	headerY := 20.0
+	headerQuad := ebiten.NewImage(int(headerWidth), int(headerHeight))
+	headerQuad.Fill(color.RGBA{30, 30, 30, 220})
+	headerQuadOpts := &ebiten.DrawImageOptions{}
+	headerQuadOpts.GeoM.Translate(headerX, headerY)
+	screen.DrawImage(headerQuad, headerQuadOpts)
+
+	// Draw level name at top center (move yellow title higher)
 	levelName := g.Level.Name
-	fontFace := ui.Font("Game-Bold", 48)
-	nameWidth := textWidth(fontFace, levelName)
+	fontTitle := ui.Font("Game-Bold", 48)
+	nameWidth := textWidth(fontTitle, levelName)
 	nameOpts := &text.DrawOptions{}
-	nameOpts.GeoM.Translate(1920/2-nameWidth/2, 60)
+	nameOpts.GeoM.Translate(1920/2-nameWidth/2, headerY+8) // move up
 	nameOpts.ColorScale.ScaleWithColor(color.RGBA{255, 255, 0, 255})
-	text.Draw(screen, levelName, fontFace, nameOpts)
+	text.Draw(screen, levelName, fontTitle, nameOpts)
 
-	// Draw world/level number
+	// Draw world/level number and wave info below title
 	levelNumStr := fmt.Sprintf("World %d - Level %d", g.Level.WorldNumber, g.Level.LevelNumber)
-	levelNumFace := ui.Font("Game-Bold", 32)
-	levelNumWidth := textWidth(levelNumFace, levelNumStr)
+	levelNumFont := ui.Font("Game-Bold", 32)
+	levelNumWidth := textWidth(levelNumFont, levelNumStr)
 	levelNumOpts := &text.DrawOptions{}
-	levelNumOpts.GeoM.Translate(1920/2-levelNumWidth/2, 120)
+	levelNumOpts.GeoM.Translate(1920/2-levelNumWidth/2, headerY+60)
 	levelNumOpts.ColorScale.ScaleWithColor(color.White)
-	text.Draw(screen, levelNumStr, levelNumFace, levelNumOpts)
+	text.Draw(screen, levelNumStr, levelNumFont, levelNumOpts)
 
-	// Draw wave info
 	if g.CurrentWave < len(g.Level.Waves) {
 		wave := g.Level.Waves[g.CurrentWave]
 		waveStr := fmt.Sprintf("Wave %d: %d/%d enemies defeated", wave.WaveNumber, g.WaveEnemyDefeated, wave.EnemyCount)
-		waveFace := ui.Font("Game-Bold", 32)
-		waveWidth := textWidth(waveFace, waveStr)
+		waveFont := ui.Font("Game-Bold", 32)
+		waveWidth := textWidth(waveFont, waveStr)
 		waveOpts := &text.DrawOptions{}
-		waveOpts.GeoM.Translate(1920/2-waveWidth/2, 180)
+		waveOpts.GeoM.Translate(1920/2-waveWidth/2, headerY+100)
 		waveOpts.ColorScale.ScaleWithColor(color.White)
-		text.Draw(screen, waveStr, waveFace, waveOpts)
+		text.Draw(screen, waveStr, waveFont, waveOpts)
+	}
+
+	// Draw left-side letter indicators
+	possible := map[string]bool{}
+	if g.CurrentWave < len(g.Level.Waves) {
+		for _, l := range g.Level.Waves[g.CurrentWave].PossibleLetters {
+			possible[l] = true
+		}
+	}
+	drawLetterIndicators(screen, possible)
+	// Draw right-side mob chances with background
+	if g.CurrentWave < len(g.Level.Waves) {
+		wave := g.Level.Waves[g.CurrentWave]
+		mobChances := make([]struct {
+			Type   string
+			Chance float64
+		}, len(wave.MobChances))
+		for i, m := range wave.MobChances {
+			mobChances[i] = struct {
+				Type   string
+				Chance float64
+			}{m.Type, m.Chance}
+		}
+		drawMobChances(screen, mobChances)
 	}
 
 	entities := append(g.Mobs, g.Player)
@@ -256,25 +381,33 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		projectile.Draw(screen)
 	}
 
-	// Draw level complete message if needed
+	// --- Level Complete Toast ---
 	if g.LevelComplete {
 		msg := "Level Complete!"
-		msgFace := ui.Font("Game-Bold", 64)
-		msgWidth := textWidth(msgFace, msg)
+		msgFont := ui.Font("Game-Bold", 64)
+		msgWidth := textWidth(msgFont, msg)
+		msgBoxWidth := msgWidth + 120
+		msgBoxHeight := 120.0
+		msgBoxX := 1920.0/2 - msgBoxWidth/2
+		msgBoxY := 540.0
+		msgQuad := ebiten.NewImage(int(msgBoxWidth), int(msgBoxHeight))
+		msgQuad.Fill(color.RGBA{30, 30, 30, 220})
+		msgQuadOpts := &ebiten.DrawImageOptions{}
+		msgQuadOpts.GeoM.Translate(msgBoxX, msgBoxY)
+		screen.DrawImage(msgQuad, msgQuadOpts)
 		msgOpts := &text.DrawOptions{}
-		msgOpts.GeoM.Translate(1920/2-msgWidth/2, 540)
+		msgOpts.GeoM.Translate(1920/2-msgWidth/2, msgBoxY+msgBoxHeight/2-10) // center vertically
 		msgOpts.ColorScale.ScaleWithColor(color.RGBA{0, 255, 0, 255})
-		text.Draw(screen, msg, msgFace, msgOpts)
+		text.Draw(screen, msg, msgFont, msgOpts)
 	}
 
-	// Toast for new wave
+	// --- Wave Toast ---
 	if g.ShowWaveToast && g.CurrentWave < len(g.Level.Waves) {
 		wave := g.Level.Waves[g.CurrentWave]
 		toastTitle := fmt.Sprintf("Wave %d", wave.WaveNumber)
 		lettersStr := fmt.Sprintf("Letters: %v", wave.PossibleLetters)
 		toastFont := ui.Font("Game-Bold", 48)
 		lettersFont := ui.Font("Game-Bold", 36)
-		// Estimate width/height for both lines
 		titleWidth := textWidth(toastFont, toastTitle)
 		lettersWidth := textWidth(lettersFont, lettersStr)
 		toastWidth := titleWidth
@@ -287,18 +420,15 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		boxHeight := 120.0 + paddingY*2
 		boxX := 1920/2 - boxWidth/2
 		boxY := 400
-		// Draw background quad (rounded rectangle look)
 		quad := ebiten.NewImage(int(boxWidth), int(boxHeight))
 		quad.Fill(color.RGBA{30, 30, 30, 220})
 		quadOpts := &ebiten.DrawImageOptions{}
 		quadOpts.GeoM.Translate(boxX, float64(boxY))
 		screen.DrawImage(quad, quadOpts)
-		// Draw title
 		titleOpts := &text.DrawOptions{}
 		titleOpts.GeoM.Translate(1920/2-titleWidth/2, float64(boxY)+paddingY)
 		titleOpts.ColorScale.ScaleWithColor(color.RGBA{255, 255, 0, 255})
 		text.Draw(screen, toastTitle, toastFont, titleOpts)
-		// Draw letters line
 		lettersOpts := &text.DrawOptions{}
 		lettersOpts.GeoM.Translate(1920/2-lettersWidth/2, float64(boxY)+paddingY+60)
 		lettersOpts.ColorScale.ScaleWithColor(color.White)
