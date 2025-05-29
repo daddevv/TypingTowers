@@ -1,7 +1,6 @@
 package game
 
 import (
-	"math"
 	"td/internal/entity"
 	"td/internal/ui"
 
@@ -28,59 +27,87 @@ func (ih *InputHandler) SetPlayerPosition(pos ui.Location) {
 
 // ProcessInput handles keyboard input and checks for letter matches with mobs.
 // Returns a slice of projectiles to add to the game.
-// Now takes projectiles as argument to allow reservation logic.
+// Now immediately advances letter states for rapid typing, firing projectiles for visual feedback.
 func (ih *InputHandler) ProcessInput(mobs []entity.Entity, projectiles []*entity.Projectile) []*entity.Projectile {
 	var newProjectiles []*entity.Projectile
 
-	// Build a map of reserved (mob, letter index) pairs for all projectiles in flight
-	reserved := make(map[*entity.BeachballMob]map[int]struct{})
-	for _, p := range projectiles {
-		if !p.IsActive() {
+	// Track mobs already targeted this frame to avoid double-firing
+	targeted := make(map[*entity.BeachballMob]bool)
+
+	// Get all keys pressed this frame, in order
+	keys := inpututil.AppendJustPressedKeys(nil)
+	for _, key := range keys {
+		char := ih.keyToChar(key)
+		if char == 0 {
 			continue
 		}
-		// Only consider projectiles with a valid mob and target char
-		if mob, ok := p.TargetMob.(*entity.BeachballMob); ok && p.TargetChar != 0 {
-			if reserved[mob] == nil {
-				reserved[mob] = make(map[int]struct{})
+		// Find the closest mob whose current target letter matches this char and hasn't been targeted yet
+		var closestMob *entity.BeachballMob
+		var closestX float64 = 1e9
+		for _, mob := range mobs {
+			beachballMob, ok := mob.(*entity.BeachballMob)
+			if !ok || targeted[beachballMob] {
+				continue
 			}
-			// Find which letter index this projectile is for
-			for i, letter := range mob.Letters {
-				if letter.State == entity.LetterTarget && letter.Character == p.TargetChar {
-					reserved[mob][i] = struct{}{}
+			for _, letter := range beachballMob.Letters {
+				if letter.State == entity.LetterTarget && letter.Character == char {
+					mobPos := beachballMob.GetPosition()
+					if mobPos.X < closestX {
+						closestX = mobPos.X
+						closestMob = beachballMob
+					}
 					break
 				}
 			}
 		}
-	}
-
-	// Check for any key presses
-	for key := ebiten.Key(0); key <= ebiten.KeyMax; key++ {
-		if inpututil.IsKeyJustPressed(key) {
-			char := ih.keyToChar(key)
-			if char == 0 {
-				continue
+		if closestMob != nil {
+			// IMMEDIATELY advance letter state for rapid typing
+			ih.advanceLetterState(closestMob, char)
+			
+			// Fire projectile for visual feedback
+			mobPos := closestMob.GetPosition()
+			centeredTarget := ui.Location{
+				X: mobPos.X + 48.0*3.0/2.0,
+				Y: mobPos.Y + 48.0*3.0,
 			}
-			// Find the closest mob/letter that is not reserved
-			targetMob, letterIdx := ih.findClosestUnreservedTargetMob(mobs, char, reserved)
-			if targetMob != nil && letterIdx >= 0 {
-				// Aim at the center of the mob sprite (sprite is 48x48, scaled by 3)
-				mobPos := targetMob.GetPosition()
-				centeredTarget := ui.Location{
-					X: mobPos.X + 48.0*3.0/2.0,
-					Y: mobPos.Y + 48.0*3.0, // Aim 10px lower than center
-				}
-				projectile := entity.NewProjectile(ih.playerPosition, centeredTarget, targetMob)
-				projectile.TargetChar = char
-				newProjectiles = append(newProjectiles, projectile)
-				// Mark this letter as reserved for subsequent keys in this frame
-				if reserved[targetMob] == nil {
-					reserved[targetMob] = make(map[int]struct{})
-				}
-				reserved[targetMob][letterIdx] = struct{}{}
-			}
+			projectile := entity.NewProjectile(ih.playerPosition, centeredTarget, closestMob)
+			projectile.TargetChar = char
+			newProjectiles = append(newProjectiles, projectile)
+			targeted[closestMob] = true
 		}
 	}
 	return newProjectiles
+}
+
+// advanceLetterState immediately advances the letter state for the given mob and character.
+// This allows rapid typing without waiting for projectile collisions.
+func (ih *InputHandler) advanceLetterState(mob *entity.BeachballMob, char rune) {
+	// Find the target letter and mark it as inactive
+	targetIndex := -1
+	for i, letter := range mob.Letters {
+		if letter.State == entity.LetterTarget && letter.Character == char {
+			// Mark this letter as inactive
+			mob.Letters[i].State = entity.LetterInactive
+			mob.Letters[i].Sprite = entity.GetLetterImage(
+				letter.Character, 
+				entity.LetterInactive, 
+				ui.Font("Mob", 32),
+			)
+			targetIndex = i
+			break
+		}
+	}
+	
+	// Set next letter as target if available
+	if targetIndex >= 0 && targetIndex+1 < len(mob.Letters) {
+		nextIndex := targetIndex + 1
+		mob.Letters[nextIndex].State = entity.LetterTarget
+		mob.Letters[nextIndex].Sprite = entity.GetLetterImage(
+			mob.Letters[nextIndex].Character, 
+			entity.LetterTarget, 
+			ui.Font("Mob", 32),
+		)
+	}
 }
 
 // keyToChar converts an ebiten key to a lowercase character.
@@ -141,39 +168,4 @@ func (ih *InputHandler) keyToChar(key ebiten.Key) rune {
 	default:
 		return 0 // Invalid key
 	}
-}
-
-// findClosestUnreservedTargetMob finds the closest mob and letter index for the given char that is not reserved.
-func (ih *InputHandler) findClosestUnreservedTargetMob(mobs []entity.Entity, char rune, reserved map[*entity.BeachballMob]map[int]struct{}) (*entity.BeachballMob, int) {
-	var closestMob *entity.BeachballMob
-	closestIdx := -1
-	closestDistance := math.Inf(1)
-
-	for _, mob := range mobs {
-		beachballMob, ok := mob.(*entity.BeachballMob)
-		if !ok {
-			continue
-		}
-		for i, letter := range beachballMob.Letters {
-			if letter.State == entity.LetterTarget && letter.Character == char {
-				// Skip if reserved
-				if reserved[beachballMob] != nil {
-					if _, taken := reserved[beachballMob][i]; taken {
-						continue
-					}
-				}
-				// Calculate distance from player to mob
-				mobPos := beachballMob.GetPosition()
-				dx := mobPos.X - ih.playerPosition.X
-				dy := mobPos.Y - ih.playerPosition.Y
-				distance := math.Sqrt(dx*dx + dy*dy)
-				if distance < closestDistance {
-					closestDistance = distance
-					closestMob = beachballMob
-					closestIdx = i
-				}
-			}
-		}
-	}
-	return closestMob, closestIdx
 }

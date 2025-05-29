@@ -58,9 +58,7 @@ func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		// Force spawn a new beachball mob when space is pressed
 		mob := g.MobSpawner.ForceSpawn()
-		if mob != nil {
-			g.Mobs = append(g.Mobs, mob)
-		}
+		g.Mobs = append(g.Mobs, mob)
 	}
 
 	// Update mob spawner and potentially spawn new mobs
@@ -136,6 +134,7 @@ func (g *Game) Update() error {
 }
 
 // checkProjectileCollisions checks for collisions between projectiles and mobs
+// Projectiles now only provide visual feedback - letter states are advanced immediately in input handler
 func (g *Game) checkProjectileCollisions() {
 	for _, projectile := range g.Projectiles {
 		if !projectile.IsActive() || projectile.DamageDealt {
@@ -152,36 +151,7 @@ func (g *Game) checkProjectileCollisions() {
 			if projPos.X >= mobPos.X && projPos.X <= mobPos.X+mobSize &&
 				projPos.Y >= mobPos.Y && projPos.Y <= mobPos.Y+mobSize {
 				
-				// 100% hit rate: if projectile is for the current target letter, always hit
-				// (Future: add miss chance or more complex logic here)
-				if beachballMob, ok := mob.(*entity.BeachballMob); ok {
-					targetIndex := -1
-					for i, letter := range beachballMob.Letters {
-						if letter.State == entity.LetterTarget && letter.Character == projectile.TargetChar {
-							// Mark this letter as inactive
-							beachballMob.Letters[i].State = entity.LetterInactive
-							beachballMob.Letters[i].Sprite = entity.GetLetterImage(
-								letter.Character, 
-								entity.LetterInactive, 
-								ui.Font("Mob", 32),
-							)
-							targetIndex = i
-							break
-						}
-					}
-					// Set next letter as target if available
-					if targetIndex >= 0 && targetIndex+1 < len(beachballMob.Letters) {
-						nextIndex := targetIndex + 1
-						beachballMob.Letters[nextIndex].State = entity.LetterTarget
-						beachballMob.Letters[nextIndex].Sprite = entity.GetLetterImage(
-							beachballMob.Letters[nextIndex].Character, 
-							entity.LetterTarget, 
-							ui.Font("Mob", 32),
-						)
-					}
-				}
-
-				// Collision detected - deactivate projectile
+				// Collision detected - deactivate projectile (letter states already advanced)
 				projectile.Deactivate()
 				projectile.DamageDealt = true
 				break
