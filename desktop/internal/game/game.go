@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"image/color"
+	"os"
+	"path/filepath"
 	"sync"
 	"td/internal/entity"
 	"td/internal/ui"
@@ -13,6 +15,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
+	lua "github.com/yuin/gopher-lua"
 )
 
 type Game struct {
@@ -35,6 +38,7 @@ type Game struct {
 	CurrentStreak     int
 	LuckyHits         int // Secondary mob hit instead of front
 	GameOver          bool
+	L                 *lua.LState // Lua VM for scripting
 }
 
 func NewGame(opts GameOptions) *Game {
@@ -48,7 +52,8 @@ func NewGame(opts GameOptions) *Game {
 	} else {
 		mobSpawner = entity.NewMobSpawner(letterPool)
 	}
-	return &Game{
+	L := lua.NewState()
+	game := &Game{
 		Level:             opts.Level,
 		Player:            player,
 		Mobs:              entity.EmptyList(),
@@ -65,7 +70,11 @@ func NewGame(opts GameOptions) *Game {
 		HighestStreak:     0,
 		CurrentStreak:     0,
 		LuckyHits:         0,
+		L:                 L,
 	}
+	RegisterGameAPI(L, game)
+	game.loadLuaPlugins("lua") // <-- changed from "plugins" to "lua"
+	return game
 }
 
 func (g *Game) Update() error {
@@ -558,25 +567,82 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		text.Draw(screen, lettersStr, lettersFont, lettersOpts)
 	}
 
-	// Draw player health
-	healthFont := ui.Font("Game-Bold", 32)
-	healthStr := fmt.Sprintf("Health: %d", g.Player.Health)
-	healthOpts := &text.DrawOptions{}
-	healthOpts.GeoM.Translate(30, 900)
-	healthOpts.ColorScale.ScaleWithColor(color.RGBA{255, 80, 80, 255})
-	text.Draw(screen, healthStr, healthFont, healthOpts)
-	// Draw stats near player (bottom left)
-	statsFont := ui.Font("Game-Bold", 24)
-	statsY := 940.0
-	missesOpts := &text.DrawOptions{}
-	missesOpts.GeoM.Translate(30, statsY)
-	text.Draw(screen, fmt.Sprintf("Misses: %d", g.Misses), statsFont, missesOpts)
-	streakOpts := &text.DrawOptions{}
-	streakOpts.GeoM.Translate(30, statsY+30)
-	text.Draw(screen, fmt.Sprintf("Highest Streak: %d", g.HighestStreak), statsFont, streakOpts)
-	luckyOpts := &text.DrawOptions{}
-	luckyOpts.GeoM.Translate(30, statsY+60)
-	text.Draw(screen, fmt.Sprintf("Lucky Hits: %d", g.LuckyHits), statsFont, luckyOpts)
+	// --- Table-driven HUD via Lua ---
+	hudTable := g.L.GetGlobal("HUD")
+	if tbl, ok := hudTable.(*lua.LTable); ok {
+		// Health
+		if health := tbl.RawGetString("health"); health.Type() == lua.LTTable {
+			h := health.(*lua.LTable)
+			x := int(getLuaNumber(h, "x", 30))
+			y := int(getLuaNumber(h, "y", 900))
+			fontName := getLuaString(h, "font", "Game-Bold")
+			fontSize := getLuaNumber(h, "fontSize", 32)
+			colorArr := getLuaColor(h, "color", color.RGBA{255, 80, 80, 255})
+			format := getLuaString(h, "format", "Health: %d")
+			healthStr := fmt.Sprintf(format, g.Player.Health)
+			healthFont := ui.Font(fontName, fontSize)
+			healthOpts := &text.DrawOptions{}
+			healthOpts.GeoM.Translate(float64(x), float64(y))
+			healthOpts.ColorScale.ScaleWithColor(colorArr)
+			text.Draw(screen, healthStr, healthFont, healthOpts)
+		}
+		// Stats
+		if stats := tbl.RawGetString("stats"); stats.Type() == lua.LTTable {
+			s := stats.(*lua.LTable)
+			x := int(getLuaNumber(s, "x", 30))
+			y := int(getLuaNumber(s, "y", 940))
+			fontName := getLuaString(s, "font", "Game-Bold")
+			fontSize := getLuaNumber(s, "fontSize", 24)
+			colorArr := getLuaColor(s, "color", color.White)
+			fields := s.RawGetString("fields")
+			if fieldsTbl, ok := fields.(*lua.LTable); ok {
+				statsFont := ui.Font(fontName, fontSize)
+				row := 0
+				fieldsTbl.ForEach(func(_, v lua.LValue) {
+					if field, ok := v.(*lua.LTable); ok {
+						name := getLuaString(field, "name", "")
+						key := getLuaString(field, "key", "")
+						val := 0
+						switch key {
+						case "Misses":
+							val = g.Misses
+						case "HighestStreak":
+							val = g.HighestStreak
+						case "LuckyHits":
+							val = g.LuckyHits
+						}
+						label := fmt.Sprintf("%s: %d", name, val)
+						opts := &text.DrawOptions{}
+						opts.GeoM.Translate(float64(x), float64(y+row*30))
+						opts.ColorScale.ScaleWithColor(colorArr)
+						text.Draw(screen, label, statsFont, opts)
+						row++
+					}
+				})
+			}
+		}
+	} else {
+		// fallback to hardcoded HUD if no HUD table
+		// Draw player health
+		healthFont := ui.Font("Game-Bold", 32)
+		healthStr := fmt.Sprintf("Health: %d", g.Player.Health)
+		healthOpts := &text.DrawOptions{}
+		healthOpts.GeoM.Translate(30, 900)
+		healthOpts.ColorScale.ScaleWithColor(color.RGBA{255, 80, 80, 255})
+		text.Draw(screen, healthStr, healthFont, healthOpts)
+		// Draw stats near player (bottom left)
+		statsFont := ui.Font("Game-Bold", 24)
+		statsY := 940.0
+		missesOpts := &text.DrawOptions{}
+		missesOpts.GeoM.Translate(30, statsY)
+		text.Draw(screen, fmt.Sprintf("Misses: %d", g.Misses), statsFont, missesOpts)
+		streakOpts := &text.DrawOptions{}
+		streakOpts.GeoM.Translate(30, statsY+30)
+		text.Draw(screen, fmt.Sprintf("Highest Streak: %d", g.HighestStreak), statsFont, streakOpts)
+		luckyOpts := &text.DrawOptions{}
+		luckyOpts.GeoM.Translate(30, statsY+60)
+		text.Draw(screen, fmt.Sprintf("Lucky Hits: %d", g.LuckyHits), statsFont, luckyOpts)
+	}
 
 	// Game Over overlay
 	if g.GameOver {
@@ -611,4 +677,67 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		btn2Opts.ColorScale.ScaleWithColor(color.White)
 		text.Draw(screen, btn2, btnFont, btn2Opts)
 	}
+}
+
+func (g *Game) loadLuaPlugins(dir string) {
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		return
+	}
+	for _, f := range files {
+		if filepath.Ext(f.Name()) == ".lua" {
+			script, err := os.ReadFile(filepath.Join(dir, f.Name()))
+			if err == nil {
+				g.L.DoString(string(script))
+			}
+		}
+	}
+}
+
+func (g *Game) CallLuaFunction(funcName string, args ...lua.LValue) (lua.LValue, error) {
+	fn := g.L.GetGlobal(funcName)
+	if fn.Type() == lua.LTFunction {
+		err := g.L.CallByParam(lua.P{
+			Fn:      fn,
+			NRet:    1,
+			Protect: true,
+		}, args...)
+		if err != nil {
+			return lua.LNil, err
+		}
+		ret := g.L.Get(-1)
+		g.L.Pop(1)
+		return ret, nil
+	}
+	return lua.LNil, fmt.Errorf("function %s not found", funcName)
+}
+
+// Helper functions for extracting Lua table fields
+func getLuaString(tbl *lua.LTable, key, def string) string {
+	v := tbl.RawGetString(key)
+	if str, ok := v.(lua.LString); ok {
+		return string(str)
+	}
+	return def
+}
+func getLuaNumber(tbl *lua.LTable, key string, def float64) float64 {
+	v := tbl.RawGetString(key)
+	if num, ok := v.(lua.LNumber); ok {
+		return float64(num)
+	}
+	return def
+}
+func getLuaColor(tbl *lua.LTable, key string, def color.Color) color.Color {
+	v := tbl.RawGetString(key)
+	if arr, ok := v.(*lua.LTable); ok {
+		var rgba [4]uint8
+		for i := 1; i <= 4; i++ {
+			val := arr.RawGetInt(i)
+			if num, ok := val.(lua.LNumber); ok {
+				rgba[i-1] = uint8(num)
+			}
+		}
+		return color.RGBA{rgba[0], rgba[1], rgba[2], rgba[3]}
+	}
+	return def
 }

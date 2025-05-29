@@ -1,4 +1,4 @@
-package engine
+package state
 
 type State interface {
 	EngineState

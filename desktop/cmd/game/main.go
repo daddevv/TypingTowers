@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"td/internal/engine"
 
@@ -19,6 +20,8 @@ func init() {
 
 func main() {
 	canvasWidth, canvasHeight := 1920, 1080
+	// Ensure plugins directory exists
+	os.MkdirAll("plugins", 0755)
 	engine := engine.NewEngine(canvasWidth, canvasHeight, VERSION)
 
 	ebiten.SetWindowSize(canvasWidth, canvasHeight)

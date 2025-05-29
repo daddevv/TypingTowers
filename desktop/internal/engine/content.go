@@ -10,7 +10,7 @@ var (
 	LoadedWorlds []content.WorldConfig
 )
 
-func LoadAllContent() error {
+func LoadContentConfigs() error {
 	var err error
 	LoadedLevels, err = LoadJSONConfig[content.LevelConfig]("content/levels.json")
 	if err != nil {

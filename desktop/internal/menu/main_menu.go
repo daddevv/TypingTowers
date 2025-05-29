@@ -1,4 +1,4 @@
-package ui
+package menu
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	lua "github.com/yuin/gopher-lua"
 )
 
 type MainMenuOption string
@@ -21,13 +22,29 @@ const (
 type MainMenu struct {
 	Options  []MainMenuOption
 	Selected int
+	L        *lua.LState
 }
 
-func InitializeMainMenu() *MainMenu {
-	return &MainMenu{
+func NewMainMenu(L *lua.LState) *MainMenu {
+	menu := &MainMenu{
 		Options:  []MainMenuOption{StartGameOption, OptionsOption, QuitOption},
 		Selected: 0,
+		L:        L,
 	}
+	// If Lua table MainMenu exists, override options
+	if tbl := L.GetGlobal("MainMenu"); tbl.Type() == lua.LTTable {
+		options := tbl.(*lua.LTable).RawGetString("options")
+		if optTbl, ok := options.(*lua.LTable); ok {
+			menu.Options = nil
+			optTbl.ForEach(func(_, v lua.LValue) {
+				if entry, ok := v.(*lua.LTable); ok {
+					label := entry.RawGetString("label").String()
+					menu.Options = append(menu.Options, MainMenuOption(label))
+				}
+			})
+		}
+	}
+	return menu
 }
 
 func (m *MainMenu) Update() (string, error) {
