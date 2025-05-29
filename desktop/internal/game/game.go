@@ -29,7 +29,9 @@ type Game struct {
 func NewGame(opts GameOptions) *Game {
 	player := entity.NewPlayer()
 	inputHandler := NewInputHandler(player.GetPosition())
-	mobSpawner := entity.NewMobSpawner(opts.Level.PossibleLetters)
+	// Use a LetterPool for endless mode (letters expand over time)
+	letterPool := entity.NewDefaultLetterPool()
+	mobSpawner := entity.NewMobSpawner(letterPool)
 	
 	return &Game{
 		Level:        opts.Level,
@@ -62,7 +64,7 @@ func (g *Game) Update() error {
 	}
 
 	// Update mob spawner and potentially spawn new mobs
-	newMob := g.MobSpawner.Update(deltaTime)
+	newMob := g.MobSpawner.Update(deltaTime, g.Score)
 	if newMob != nil {
 		g.Mobs = append(g.Mobs, newMob)
 	}

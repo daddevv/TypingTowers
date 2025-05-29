@@ -13,7 +13,38 @@ import (
 // BeachballMob represents a mobile entity that moves across the screen,
 // displaying letters that the player must type.
 type BeachballMob struct {
-	Mob
+	MobBase
+}
+
+// Ensure BeachballMob implements Mob interface
+var _ Mob = (*BeachballMob)(nil)
+
+func (m *BeachballMob) GetLetters() []Letter {
+	return m.Letters
+}
+
+func (m *BeachballMob) IsDead() bool {
+	return m.Dead
+}
+
+func (m *BeachballMob) IsPendingDeath() bool {
+	return m.PendingDeath
+}
+
+func (m *BeachballMob) StartDeath() {
+	if m.PendingDeath && !m.Dead {
+		m.Dead = true
+		m.PendingDeath = false
+		m.DeathTimer = 60
+	}
+}
+
+func (m *BeachballMob) IncrementPendingProjectiles() {
+	m.PendingProjectiles++
+}
+
+func (m *BeachballMob) GetPendingProjectiles() int {
+	return m.PendingProjectiles
 }
 
 // NewBeachballMob creates a new BeachballMob with random letters from possible choices.
@@ -38,7 +69,7 @@ func NewBeachballMobWithLetters(letters []string) *BeachballMob {
 	}
 	initialY := rand.Float64()*300 + 600 // Y in px, between 600 and 900
 	m := &BeachballMob{
-		Mob: Mob{
+		MobBase: MobBase{
 			Position:       ui.Location{X: 1920, Y: initialY}, // start off right edge
 			Speed:          2.0, // px per frame
 			MoveAnimation:  moveAnimation,
@@ -53,19 +84,19 @@ func NewBeachballMobWithLetters(letters []string) *BeachballMob {
 		},
 	}
 	font := ui.Font("Mob", 32)
-	for i := range m.Mob.Letters {
+	for i := range m.MobBase.Letters {
 		char := []rune(letters[i])[0]
 		if i == 0 {
-			m.Mob.Letters[i] = NewLetter(GetLetterImage(char, LetterTarget, font), LetterTarget, char)
+			m.MobBase.Letters[i] = NewLetter(GetLetterImage(char, LetterTarget, font), LetterTarget, char)
 		} else {
-			m.Mob.Letters[i] = NewLetter(GetLetterImage(char, LetterActive, font), LetterActive, char)
+			m.MobBase.Letters[i] = NewLetter(GetLetterImage(char, LetterActive, font), LetterActive, char)
 		}
 	}
 	// Calculate the total width of the word formed by the letters (in px)
-	for _, letter := range m.Mob.Letters {
+	for _, letter := range m.MobBase.Letters {
 		m.WordWidth += float64(letter.Sprite.Bounds().Dx())
 	}
-	m.WordWidth += float64(len(m.Mob.Letters)-1) * 24 // 24px spacing
+	m.WordWidth += float64(len(m.MobBase.Letters)-1) * 24 // 24px spacing
 	m.Sprite = m.MoveAnimation.Update()
 	return m
 }
@@ -143,15 +174,6 @@ func (mob *BeachballMob) Update() error {
 	return nil
 }
 
-// StartDeath begins the death animation if the mob is pending death
-func (mob *BeachballMob) StartDeath() {
-	if mob.PendingDeath && !mob.Dead {
-		mob.Dead = true
-		mob.PendingDeath = false
-		mob.DeathTimer = 60
-	}
-}
-
 // GetPosition returns the current position of the BeachballMob.
 func (mob *BeachballMob) GetPosition() ui.Location {
 	return mob.Position
@@ -161,4 +183,21 @@ func (mob *BeachballMob) GetPosition() ui.Location {
 func (mob *BeachballMob) SetPosition(x, y float64) {
 	mob.Position.X = x
 	mob.Position.Y = y
+}
+
+func (m *BeachballMob) AdvanceLetterState(char rune) {
+	targetIndex := -1
+	for i, letter := range m.Letters {
+		if letter.State == LetterTarget && letter.Character == char {
+			m.Letters[i].State = LetterInactive
+			m.Letters[i].Sprite = GetLetterImage(letter.Character, LetterInactive, ui.Font("Mob", 32))
+			targetIndex = i
+			break
+		}
+	}
+	if targetIndex >= 0 && targetIndex+1 < len(m.Letters) {
+		nextIndex := targetIndex + 1
+		m.Letters[nextIndex].State = LetterTarget
+		m.Letters[nextIndex].Sprite = GetLetterImage(m.Letters[nextIndex].Character, LetterTarget, ui.Font("Mob", 32))
+	}
 }

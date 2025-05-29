@@ -32,7 +32,7 @@ func (ih *InputHandler) ProcessInput(mobs []entity.Entity, projectiles []*entity
 	var newProjectiles []*entity.Projectile
 
 	// Track mobs already targeted this frame to avoid double-firing
-	targeted := make(map[*entity.BeachballMob]bool)
+	targeted := make(map[entity.Mob]bool)
 
 	// Get all keys pressed this frame, in order
 	keys := inpututil.AppendJustPressedKeys(nil)
@@ -42,19 +42,20 @@ func (ih *InputHandler) ProcessInput(mobs []entity.Entity, projectiles []*entity
 			continue
 		}
 		// Find the closest mob whose current target letter matches this char and hasn't been targeted yet
-		var closestMob *entity.BeachballMob
+		var closestMob entity.Mob
 		var closestX float64 = 1e9
-		for _, mob := range mobs {
-			beachballMob, ok := mob.(*entity.BeachballMob)
-			if !ok || targeted[beachballMob] {
+		for _, mobEntity := range mobs {
+			mob, ok := mobEntity.(entity.Mob)
+			if !ok || targeted[mob] {
 				continue
 			}
-			for _, letter := range beachballMob.Letters {
+			letters := mob.GetLetters()
+			for _, letter := range letters {
 				if letter.State == entity.LetterTarget && letter.Character == char {
-					mobPos := beachballMob.GetPosition()
+					mobPos := mob.GetPosition()
 					if mobPos.X < closestX {
 						closestX = mobPos.X
-						closestMob = beachballMob
+						closestMob = mob
 					}
 					break
 				}
@@ -62,11 +63,11 @@ func (ih *InputHandler) ProcessInput(mobs []entity.Entity, projectiles []*entity
 		}
 		if closestMob != nil {
 			// IMMEDIATELY advance letter state for rapid typing
-			ih.advanceLetterState(closestMob, char)
-			
+			if controller, ok := closestMob.(entity.MobLetterController); ok {
+				controller.AdvanceLetterState(char)
+			}
 			// Increment pending projectiles counter
-			closestMob.PendingProjectiles++
-			
+			closestMob.IncrementPendingProjectiles()
 			// Fire projectile for visual feedback
 			mobPos := closestMob.GetPosition()
 			centeredTarget := ui.Location{
@@ -80,37 +81,6 @@ func (ih *InputHandler) ProcessInput(mobs []entity.Entity, projectiles []*entity
 		}
 	}
 	return newProjectiles
-}
-
-// advanceLetterState immediately advances the letter state for the given mob and character.
-// This allows rapid typing without waiting for projectile collisions.
-func (ih *InputHandler) advanceLetterState(mob *entity.BeachballMob, char rune) {
-	// Find the target letter and mark it as inactive
-	targetIndex := -1
-	for i, letter := range mob.Letters {
-		if letter.State == entity.LetterTarget && letter.Character == char {
-			// Mark this letter as inactive
-			mob.Letters[i].State = entity.LetterInactive
-			mob.Letters[i].Sprite = entity.GetLetterImage(
-				letter.Character, 
-				entity.LetterInactive, 
-				ui.Font("Mob", 32),
-			)
-			targetIndex = i
-			break
-		}
-	}
-	
-	// Set next letter as target if available
-	if targetIndex >= 0 && targetIndex+1 < len(mob.Letters) {
-		nextIndex := targetIndex + 1
-		mob.Letters[nextIndex].State = entity.LetterTarget
-		mob.Letters[nextIndex].Sprite = entity.GetLetterImage(
-			mob.Letters[nextIndex].Character, 
-			entity.LetterTarget, 
-			ui.Font("Mob", 32),
-		)
-	}
 }
 
 // keyToChar converts an ebiten key to a lowercase character.

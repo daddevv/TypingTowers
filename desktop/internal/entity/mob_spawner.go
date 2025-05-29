@@ -2,6 +2,7 @@ package entity
 
 import (
 	"math/rand"
+	"td/internal/utils"
 )
 
 // MobSpawner handles the periodic spawning of mobs with configurable timing and randomization.
@@ -13,47 +14,46 @@ type MobSpawner struct {
 	ElapsedTime      float64 // Total elapsed time since spawner creation
 
 	// Spawn configuration
-	PossibleLetters []string // Available letters for random mobs
-	WordPool        []string // Pool of specific words that can be spawned
-	RandomWeight    float64  // Weight for spawning random letter mobs (0.0-1.0)
-	WordWeight      float64  // Weight for spawning word mobs (0.0-1.0)
+	LetterPool   LetterPool // LetterPool for dynamic letter sets
+	WordPool     []string   // Pool of specific words that can be spawned
+	RandomWeight float64    // Weight for spawning random letter mobs (0.0-1.0)
+	WordWeight   float64    // Weight for spawning word mobs (0.0-1.0)
 	
 	// Letter count for random mobs
 	MinLetterCount int // Minimum letters for random mobs
 	MaxLetterCount int // Maximum letters for random mobs
+
+	// Mob factories for extensibility
+	MobFactories []func([]string) Mob
 }
 
-// NewMobSpawner creates a new MobSpawner with default settings.
-func NewMobSpawner(possibleLetters []string) *MobSpawner {
+// NewMobSpawner creates a new MobSpawner with default settings and a LetterPool.
+func NewMobSpawner(letterPool LetterPool) *MobSpawner {
 	spawner := &MobSpawner{
-		MinSpawnInterval: 3.0,  // 3 seconds minimum (slower start)
-		MaxSpawnInterval: 5.0,  // 5 seconds maximum (slower start)
-		PossibleLetters:  possibleLetters,
-		RandomWeight:     1.0,  // 100% chance for random letters
-		WordWeight:       0.0,  // 0% chance for words
-		MinLetterCount:   2,    // Minimum 2 letters
-		MaxLetterCount:   4,    // Maximum 4 letters (reduced from 5)
-		WordPool:        []string{}, // Empty word pool
+		MinSpawnInterval: 3.0,
+		MaxSpawnInterval: 5.0,
+		LetterPool:       letterPool,
+		RandomWeight:     1.0,
+		WordWeight:       0.0,
+		MinLetterCount:   2,
+		MaxLetterCount:   4,
+		WordPool:         []string{},
+		MobFactories:     []func([]string) Mob{func(letters []string) Mob { return NewBeachballMobWithLetters(letters) }},
 	}
-	
-	// Initialize the next spawn time
 	spawner.resetSpawnTimer()
-	
 	return spawner
 }
 
 // Update advances the spawner's timer and returns a new mob if it's time to spawn one.
 // deltaTime should be provided in seconds.
-func (ms *MobSpawner) Update(deltaTime float64) Entity {
+func (ms *MobSpawner) Update(deltaTime float64, score int) Mob {
 	ms.ElapsedTime += deltaTime
 	ms.NextSpawnTime -= deltaTime
-	
+	ms.LetterPool.Update(score)
 	if ms.NextSpawnTime <= 0 {
-		// Time to spawn a new mob
 		ms.resetSpawnTimer()
 		return ms.spawnMob()
 	}
-	
 	return nil
 }
 
@@ -64,23 +64,31 @@ func (ms *MobSpawner) resetSpawnTimer() {
 }
 
 // spawnMob creates and returns a new mob based on the spawner's configuration.
-func (ms *MobSpawner) spawnMob() Entity {
-	// Determine whether to spawn a random letter mob or a word mob
+func (ms *MobSpawner) spawnMob() Mob {
 	choice := rand.Float64()
-	
+	possibleLetters := ms.LetterPool.GetPossibleLetters()
 	if choice < ms.RandomWeight {
-		// Spawn random letter mob
 		letterCount := ms.MinLetterCount + rand.Intn(ms.MaxLetterCount-ms.MinLetterCount+1)
-		return NewBeachballMob(letterCount, ms.PossibleLetters)
+		letters := utils.GenerateRandomLetters(letterCount, possibleLetters)
+		// Use first registered mob factory
+		return ms.MobFactories[0](letters)
 	} else if len(ms.WordPool) > 0 {
-		// Spawn word mob
 		word := ms.WordPool[rand.Intn(len(ms.WordPool))]
-		return NewBeachballMobWithWord(word)
+		letters := make([]string, len(word))
+		for i, char := range word {
+			letters[i] = string(char)
+		}
+		return ms.MobFactories[0](letters)
 	} else {
-		// Fallback to random letters if no words available
 		letterCount := ms.MinLetterCount + rand.Intn(ms.MaxLetterCount-ms.MinLetterCount+1)
-		return NewBeachballMob(letterCount, ms.PossibleLetters)
+		letters := utils.GenerateRandomLetters(letterCount, possibleLetters)
+		return ms.MobFactories[0](letters)
 	}
+}
+
+// RegisterMobFactory allows adding new mob types for spawning.
+func (ms *MobSpawner) RegisterMobFactory(factory func([]string) Mob) {
+	ms.MobFactories = append(ms.MobFactories, factory)
 }
 
 // SetSpawnInterval configures the spawn timing range.
@@ -124,7 +132,7 @@ func (ms *MobSpawner) GetTimeUntilNextSpawn() float64 {
 }
 
 // ForceSpawn immediately spawns a mob and resets the spawn timer.
-func (ms *MobSpawner) ForceSpawn() Entity {
+func (ms *MobSpawner) ForceSpawn() Mob {
 	ms.resetSpawnTimer()
 	return ms.spawnMob()
 }
