@@ -31,8 +31,12 @@ func NewGame(opts GameOptions) *Game {
 	inputHandler := NewInputHandler(player.GetPosition())
 	// Use a LetterPool for endless mode (letters expand over time)
 	letterPool := entity.NewDefaultLetterPool()
-	mobSpawner := entity.NewMobSpawner(letterPool)
-	
+	var mobSpawner *entity.MobSpawner
+	if opts.MobConfigs != nil && len(opts.MobConfigs) > 0 {
+		mobSpawner = entity.NewMobSpawnerWithConfigs(letterPool, opts.MobConfigs)
+	} else {
+		mobSpawner = entity.NewMobSpawner(letterPool)
+	}
 	return &Game{
 		Level:        opts.Level,
 		Player:       player,
@@ -133,7 +137,7 @@ func (g *Game) Update() error {
 			if !projectile.DamageDealt {
 				if beachballMob, ok := projectile.TargetMob.(*entity.BeachballMob); ok {
 					beachballMob.PendingProjectiles--
-					
+
 					// If this mob is pending death and has no more pending projectiles, start death animation
 					if beachballMob.PendingDeath && beachballMob.PendingProjectiles <= 0 {
 						beachballMob.StartDeath()
@@ -168,15 +172,15 @@ func (g *Game) checkProjectileCollisions() {
 		mobSize := 48.0 * 3.0 // sprite size * scale factor
 		if projPos.X >= mobPos.X && projPos.X <= mobPos.X+mobSize &&
 			projPos.Y >= mobPos.Y && projPos.Y <= mobPos.Y+mobSize {
-			
+
 			// Collision detected - deactivate projectile (letter states already advanced)
 			projectile.Deactivate()
 			projectile.DamageDealt = true
-			
+
 			// Decrement pending projectiles counter for this mob
 			if beachballMob, ok := mob.(*entity.BeachballMob); ok {
 				beachballMob.PendingProjectiles--
-				
+
 				// If this mob is pending death and has no more pending projectiles, start death animation
 				if beachballMob.PendingDeath && beachballMob.PendingProjectiles <= 0 {
 					beachballMob.StartDeath()
@@ -188,13 +192,13 @@ func (g *Game) checkProjectileCollisions() {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.Level.DrawBackground(screen)
-	
+
 	// Draw score in top left corner
 	scoreStr := fmt.Sprintf("Score: %d", g.Score)
 	opts := &text.DrawOptions{}
-	opts.GeoM.Translate(20, 50)                    // position on screen
-	opts.ColorScale.ScaleWithColor(color.White)    // text color
-	font := ui.Font("Game-Bold", 32)               // use the font source to get the font
+	opts.GeoM.Translate(20, 50)                 // position on screen
+	opts.ColorScale.ScaleWithColor(color.White) // text color
+	font := ui.Font("Game-Bold", 32)            // use the font source to get the font
 	text.Draw(screen, scoreStr, font, opts)
 
 	entities := append(g.Mobs, g.Player)
@@ -202,7 +206,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	for _, entity := range entities {
 		entity.Draw(screen)
 	}
-	
+
 	// Draw projectiles
 	for _, projectile := range g.Projectiles {
 		projectile.Draw(screen)

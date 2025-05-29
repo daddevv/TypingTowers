@@ -2,8 +2,15 @@ package entity
 
 import (
 	"math/rand"
+	"td/internal/content"
 	"td/internal/utils"
 )
+
+// MobTypeConfig holds per-mob-type config for letter count
+type MobTypeConfig struct {
+	MinLetters int
+	MaxLetters int
+}
 
 // MobSpawner handles the periodic spawning of mobs with configurable timing and randomization.
 type MobSpawner struct {
@@ -25,10 +32,20 @@ type MobSpawner struct {
 
 	// Mob factories for extensibility
 	MobFactories []func([]string) Mob
+
+	// Per-mob-type letter count config
+	MobTypeConfigs map[string]MobTypeConfig
 }
 
 // NewMobSpawner creates a new MobSpawner with default settings and a LetterPool.
-func NewMobSpawner(letterPool LetterPool) *MobSpawner {
+func NewMobSpawnerWithConfigs(letterPool LetterPool, mobConfigs []content.MobConfig) *MobSpawner {
+	mobTypeConfigs := make(map[string]MobTypeConfig)
+	for _, cfg := range mobConfigs {
+		mobTypeConfigs[cfg.Type] = MobTypeConfig{
+			MinLetters: cfg.MinLetters,
+			MaxLetters: cfg.MaxLetters,
+		}
+	}
 	spawner := &MobSpawner{
 		MinSpawnInterval: 3.0,
 		MaxSpawnInterval: 5.0,
@@ -39,9 +56,14 @@ func NewMobSpawner(letterPool LetterPool) *MobSpawner {
 		MaxLetterCount:   4,
 		WordPool:         []string{},
 		MobFactories:     []func([]string) Mob{func(letters []string) Mob { return NewBeachballMobWithLetters(letters) }},
+		MobTypeConfigs:   mobTypeConfigs,
 	}
-	spawner.resetSpawnTimer()
 	return spawner
+}
+
+// Legacy fallback for old code
+func NewMobSpawner(letterPool LetterPool) *MobSpawner {
+	return NewMobSpawnerWithConfigs(letterPool, nil)
 }
 
 // Update advances the spawner's timer and returns a new mob if it's time to spawn one.
@@ -67,8 +89,9 @@ func (ms *MobSpawner) resetSpawnTimer() {
 func (ms *MobSpawner) spawnMob() Mob {
 	choice := rand.Float64()
 	possibleLetters := ms.LetterPool.GetPossibleLetters()
+	var letterCount int
 	if choice < ms.RandomWeight {
-		letterCount := ms.MinLetterCount + rand.Intn(ms.MaxLetterCount-ms.MinLetterCount+1)
+		letterCount = ms.getLetterCountForType("random")
 		letters := utils.GenerateRandomLetters(letterCount, possibleLetters)
 		// Use first registered mob factory
 		return ms.MobFactories[0](letters)
@@ -80,10 +103,26 @@ func (ms *MobSpawner) spawnMob() Mob {
 		}
 		return ms.MobFactories[0](letters)
 	} else {
-		letterCount := ms.MinLetterCount + rand.Intn(ms.MaxLetterCount-ms.MinLetterCount+1)
+		letterCount = ms.getLetterCountForType("default")
 		letters := utils.GenerateRandomLetters(letterCount, possibleLetters)
 		return ms.MobFactories[0](letters)
 	}
+}
+
+// getLetterCountForType returns the letter count for a given mob type, using per-type config if available.
+func (ms *MobSpawner) getLetterCountForType(mobType string) int {
+	cfg, ok := ms.MobTypeConfigs[mobType]
+	if ok {
+		if cfg.MinLetters == cfg.MaxLetters {
+			return cfg.MinLetters
+		}
+		return rand.Intn(cfg.MaxLetters-cfg.MinLetters+1) + cfg.MinLetters
+	}
+	// fallback to global
+	if ms.MinLetterCount == ms.MaxLetterCount {
+		return ms.MinLetterCount
+	}
+	return rand.Intn(ms.MaxLetterCount-ms.MinLetterCount+1) + ms.MinLetterCount
 }
 
 // RegisterMobFactory allows adding new mob types for spawning.

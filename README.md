@@ -15,23 +15,27 @@ When you type a letter correctly, a projectile fires from the player position to
 ## Current Features
 
 ### Core Mechanics
+
 - **Projectile Combat System**: Visual projectiles fire when letters are typed correctly
 - **Immediate Input Response**: Letter states update instantly for responsive typing feel
 - **Collision Detection**: Projectiles track and hit their intended targets
 - **Rapid Typing Support**: Can type multiple letters quickly without missing inputs
 
 ### Game Modes
+
 - **Endless Mode**: Continuous waves with increasing difficulty and expanding letter sets
 - **Dynamic Letter Pool**: Starts with vowels (a,e,i,o,u) and unlocks consonants based on score
 - **Progressive Difficulty**: Spawn rates increase as score grows (faster mob spawning)
 
 ### Mob System
+
 - **BeachballMob**: Animated beach ball enemies with customizable letter sequences
 - **Smart Spawning**: MobSpawner handles timing, letter generation, and difficulty scaling
 - **Visual States**: Each letter has distinct visual states (target/active/inactive)
 - **Death Animations**: Mobs play death animations when defeated
 
 ### Technical Features
+
 - **Performance Optimization**: Global letter image cache prevents per-frame text rendering
 - **Fixed Canvas**: 1920x1080 internal resolution with automatic scaling to window size
 - **Parallel Processing**: Mob updates run in parallel for better performance
@@ -40,19 +44,23 @@ When you type a letter correctly, a projectile fires from the player position to
 ## Architecture Overview
 
 ### Rendering System
+
 TypeDefense uses a fixed 1920x1080 internal canvas for all gameplay, UI, and entity rendering. All coordinates are specified in this space, and the engine automatically scales the canvas to fit any window size while maintaining aspect ratio. This ensures pixel-perfect consistency across devices.
 
 ### Entity System
+
 - **Entity Interface**: Common interface for all game objects (Player, Mobs, Projectiles)
 - **Mob Interface**: Specialized interface for enemy types with letter management
 - **Component-Based**: Entities have position, sprites, animations, and behavior components
 
 ### Letter Management
+
 - **Letter States**: TARGET (red), ACTIVE (white), INACTIVE (gray)
 - **Image Caching**: Pre-rendered letter images cached globally for performance
 - **State Transitions**: Immediate letter state updates with visual projectile feedback
 
 ### Input System
+
 - **InputHandler**: Processes keyboard input and manages projectile creation
 - **Target Prioritization**: Automatically targets closest mob with matching letter
 - **Rapid Typing**: Supports fast consecutive inputs without dropping keypresses
@@ -68,6 +76,7 @@ TypeDefense uses a fixed 1920x1080 internal canvas for all gameplay, UI, and ent
 ## Game Progression
 
 The game uses a score-based progression system:
+
 - **Score**: Increases by 1 for each mob defeated
 - **Letter Unlocks**: New letters unlock at specific score thresholds (every 10 points)
 - **Spawn Rate**: Mob spawn intervals decrease as score increases
@@ -76,6 +85,7 @@ The game uses a score-based progression system:
 ## Current Development Status
 
 TypeDefense has a fully functional core game loop with:
+
 - ✅ Complete typing mechanics with visual feedback
 - ✅ Projectile system with collision detection  
 - ✅ Dynamic mob spawning and difficulty scaling
@@ -84,6 +94,7 @@ TypeDefense has a fully functional core game loop with:
 - ✅ Responsive input handling for rapid typing
 
 ### Immediate Development Areas
+
 - Enhanced visual effects and animations
 - Additional mob types and behaviors
 - Level progression and win/lose conditions
@@ -97,6 +108,7 @@ See `TODO.md` for detailed development roadmap and priorities.
 We welcome contributions! Whether you want to add new mob types, create worlds and biomes, implement game modes, or help with features, there are many ways to contribute.
 
 **📖 [Read the Developer Contribution Guide](CONTRIBUTING.md)** - Comprehensive guide covering:
+
 - How to add new mob types with custom behaviors
 - Creating new worlds, biomes, and levels
 - Implementing new game modes and features  
@@ -118,7 +130,7 @@ go run ./cmd/preview/main.go <image_path> <rows> <cols> <height> <width>
 
 ## Project Structure
 
-```
+```text
 desktop/
 ├── cmd/
 │   ├── game/main.go          # Main game entry point

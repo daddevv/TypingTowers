@@ -1,0 +1,15 @@
+[
+    {
+        "name": "World 1",
+        "difficulty": "Easy",
+        "biome": "BEACH",
+        "possibleLetters": [
+            "a",
+            "e",
+            "i",
+            "o",
+            "u"
+        ],
+        "background": "assets/images/background/beach.png"
+    }
+]

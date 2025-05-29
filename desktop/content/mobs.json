@@ -1,0 +1,16 @@
+[
+    {
+        "type": "BeachballMob",
+        "spriteSheet": "assets/images/mob/mob_beachball_sheet.png",
+        "frameRows": 1,
+        "frameCols": 7,
+        "frameWidth": 48,
+        "frameHeight": 48,
+        "frameDuration": 6,
+        "defaultSpeed": 2.0,
+        "letterFont": "Mob",
+        "letterFontSize": 48,
+        "minLetters": 3,
+        "maxLetters": 7
+    }
+]

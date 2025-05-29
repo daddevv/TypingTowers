@@ -18,11 +18,13 @@ Welcome to TypeDefense! This guide will help new developers understand how to co
 ## Getting Started
 
 ### Prerequisites
+
 - Go 1.21 or later
 - Basic understanding of the Ebiten game engine
 - Familiarity with Go interfaces and struct embedding
 
 ### Development Setup
+
 ```bash
 # Clone the repository
 git clone <repository-url>
@@ -36,6 +38,7 @@ go run ./cmd/preview/main.go <image_path> <rows> <cols> <height> <width>
 ```
 
 ### Code Style
+
 - Follow standard Go conventions (gofmt, golint)
 - Use meaningful variable and function names
 - Add comments for public interfaces and complex logic
@@ -44,7 +47,8 @@ go run ./cmd/preview/main.go <image_path> <rows> <cols> <height> <width>
 ## Project Architecture
 
 ### Directory Structure
-```
+
+```text
 desktop/
 ├── cmd/
 │   ├── game/           # Main game entry point
@@ -68,6 +72,7 @@ desktop/
 ### Key Interfaces
 
 **Entity Interface** - Base interface for all game objects:
+
 ```go
 type Entity interface {
     Draw(screen *ebiten.Image)
@@ -78,6 +83,7 @@ type Entity interface {
 ```
 
 **Mob Interface** - Specialized interface for enemies:
+
 ```go
 type Mob interface {
     Entity
@@ -247,6 +253,7 @@ spawner.RegisterMobFactory(func(letters []string) Mob {
 ### 4. Add Assets
 
 Create sprite sheets in `assets/images/mob/`:
+
 - Follow naming convention: `mob_[name]_sheet.png`
 - Use consistent frame sizes
 - Include animation frames for movement
@@ -268,6 +275,7 @@ Worlds provide different visual environments and can have unique mob types, back
 ### 1. Understanding the World System
 
 The world system is defined in `internal/world/` and consists of:
+
 - **Levels**: Individual game sessions with specific settings
 - **Biomes**: Visual themes with backgrounds and environmental effects
 - **World Definitions**: Collections of levels and progression
@@ -299,6 +307,7 @@ var biomeName = map[Biome]string{
 ### 3. Create Background Assets
 
 Add background images to `assets/images/world/`:
+
 - `ocean_background.png` - Main background image
 - `ocean_layer1.png` - Optional parallax layer
 - `ocean_layer2.png` - Optional parallax layer
@@ -360,6 +369,7 @@ Game modes provide different gameplay experiences while using the core typing me
 ### 1. Understanding Game States
 
 The game uses a state machine in `internal/engine/` with states like:
+
 - `StateMenu` - Main menu
 - `StateGame` - Core gameplay
 - `StatePause` - Paused game

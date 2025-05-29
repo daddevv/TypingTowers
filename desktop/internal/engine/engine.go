@@ -21,6 +21,11 @@ type Engine struct {
 }
 
 func NewEngine(width, height int, version string) *Engine {
+	// Load all content configs at engine startup
+	err := LoadAllContent()
+	if err != nil {
+		panic("Failed to load content configs: " + err.Error())
+	}
 	return &Engine{
 		Version: version,
 		Height:  1080, // Always use 1920x1080 for internal canvas
@@ -41,19 +46,20 @@ func (e *Engine) Update() error {
 			return err
 		}
 		switch state {
-			case "Start Game":
-				if e.Game == nil {
-					e.Game = game.NewGame(game.GameOptions{
-						Level:    *world.NewLevel("World 1", "normal", []string{"f", "g", "h", "j"}),
-						GameMode: game.ENDLESS,
-					})
-				}
-				e.State = GAME_PLAYING
-			case "Options":
-				e.State = GAME_SETTINGS_MENU
-			case "Quit":
-				os.Exit(0)
+		case "Start Game":
+			if e.Game == nil {
+				e.Game = game.NewGame(game.GameOptions{
+					Level:    *world.NewLevel("World 1", "normal", []string{"f", "g", "h", "j"}),
+					GameMode: game.ENDLESS,
+					MobConfigs: LoadedMobs, // Pass loaded mob configs
+				})
 			}
+			e.State = GAME_PLAYING
+		case "Options":
+			e.State = GAME_SETTINGS_MENU
+		case "Quit":
+			os.Exit(0)
+		}
 		return nil
 	case GAME_PLAYING:
 		err := e.Game.Update()
