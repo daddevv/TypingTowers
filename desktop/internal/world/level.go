@@ -40,10 +40,9 @@ func (l *Level) DrawBackground(screen *ebiten.Image) {
 	if l.Background == nil {
 		return
 	}
-	width := float64(screen.Bounds().Dx()) / float64(l.Background.Bounds().Dx())
-	height := float64(screen.Bounds().Dy()) / float64(l.Background.Bounds().Dy())
+	// Draw background at 1920x1080, no scaling to window size
 	opts := &ebiten.DrawImageOptions{}
-	opts.GeoM.Scale(width, height)
+	opts.GeoM.Scale(1920.0/float64(l.Background.Bounds().Dx()), 1080.0/float64(l.Background.Bounds().Dy()))
 	screen.DrawImage(l.Background, opts)
 	// Drawing logic for the level can be implemented here.
 	// This could include drawing the background, entities, etc.

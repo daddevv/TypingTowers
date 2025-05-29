@@ -23,9 +23,9 @@ type Engine struct {
 func NewEngine(width, height int, version string) *Engine {
 	return &Engine{
 		Version: version,
-		Height:  height,
-		Width:   width,
-		Screen:  ebiten.NewImage(width, height),
+		Height:  1080, // Always use 1920x1080 for internal canvas
+		Width:   1920,
+		Screen:  ebiten.NewImage(1920, 1080),
 		State:   MAIN_MENU,
 		Menu:    ui.InitializeMainMenu(),
 		Lobby:   nil,
@@ -73,34 +73,26 @@ func (e *Engine) Update() error {
 }
 
 func (g *Engine) Draw(screen *ebiten.Image) {
+	// Draw everything to the internal 1920x1080 screen
+	g.Screen.Clear()
 	switch g.State {
 	case MAIN_MENU:
-		g.Menu.Draw(screen)
+		g.Menu.Draw(g.Screen)
 	case GAME_PLAYING:
-		g.Game.Draw(screen)
+		g.Game.Draw(g.Screen)
 	default:
 		// Handle default drawing
 	}
+	// Now scale the internal screen to the window size
+	w, h := screen.Bounds().Dx(), screen.Bounds().Dy()
+	scaleX := float64(w) / 1920.0
+	scaleY := float64(h) / 1080.0
+	opts := &ebiten.DrawImageOptions{}
+	opts.GeoM.Scale(scaleX, scaleY)
+	screen.DrawImage(g.Screen, opts)
 }
 
 func (g *Engine) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	// Maintain 16:9 aspect ratio
-	aspectRatio := 16.0 / 9.0
-	g.Width = outsideWidth
-	g.Height = outsideHeight
-
-	if g.Width < 1024 {
-		g.Width = 1024
-	}
-	if g.Width > 1920 {
-		g.Width = 1920
-	}
-	if float64(g.Width)/float64(g.Height) > aspectRatio {
-		g.Height = int(float64(g.Width) / aspectRatio)
-	} else {
-		g.Width = int(float64(g.Height) * aspectRatio)
-	}
-	// Set the window size to match the game dimensions
-	ebiten.SetWindowSize(g.Width, g.Height)
-	return g.Width, g.Height
+	// Always use 1920x1080 for the internal canvas
+	return 1920, 1080
 }

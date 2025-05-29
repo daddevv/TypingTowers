@@ -18,8 +18,7 @@ func init() {
 }
 
 func main() {
-	canvasWidth, canvasHeight := 1920/8, 1080/8
-	// screenWidth, screenHeight := ebiten.Monitor().Size()
+	canvasWidth, canvasHeight := 1920, 1080
 	engine := engine.NewEngine(canvasWidth, canvasHeight, VERSION)
 
 	ebiten.SetWindowSize(canvasWidth, canvasHeight)

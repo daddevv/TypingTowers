@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	PLAYER_Y = 0.8
+	PLAYER_Y = 900.0 // px
 )
 
 type Player struct {
@@ -22,18 +22,15 @@ func NewPlayer() *Player {
 		panic(err)
 	}
 	return &Player{
-		Pos:   ui.Location{X: 0.1, Y: PLAYER_Y},
+		Pos:   ui.Location{X: 100, Y: PLAYER_Y}, // px
 		Image: image,
 	}
 }
 
 func (p *Player) Draw(screen *ebiten.Image) {
 	opts := &ebiten.DrawImageOptions{}
-	opts.GeoM.Scale(4*float64(screen.Bounds().Dx())/1920, 4*float64(screen.Bounds().Dy())/1080)
-	opts.GeoM.Translate(
-		p.Pos.X*float64(screen.Bounds().Dx()),
-		p.Pos.Y*float64(screen.Bounds().Dy()),
-	)
+	opts.GeoM.Scale(4, 4)
+	opts.GeoM.Translate(p.Pos.X, p.Pos.Y)
 	screen.DrawImage(p.Image, opts)
 }
 

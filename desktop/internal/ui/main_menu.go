@@ -68,7 +68,7 @@ func (m *MainMenu) Update() (string, error) {
 }
 
 func (m *MainMenu) Draw(screen *ebiten.Image) {
-	canvasWidth, _ := ebiten.WindowSize()
+	canvasWidth := 1920
 	// Clear the screen
 	screen.Fill(color.RGBA{0, 0, 0, 255})
 	// Draw the menu title
