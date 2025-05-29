@@ -1,92 +1,167 @@
-# TODO
+# TODO: TypeDefense Development Roadmap
 
-## Mob & Spawning System
+This document outlines the development roadmap for TypeDefense. The core game loop is now feature-complete and fun, with a robust typing mechanic, projectile system, and dynamic difficulty scaling. The focus has shifted to content expansion, polish, and additional game modes.
 
-- [x] Test and tune scaling parameters for smooth difficulty increase.
-- [x] Add waves to the mob spawner (discrete waves, notification, and delay between waves).
-- [ ] Playtest and balance spawn rate and speed for fun/challenge.
+## Current Status: Core Game Loop Complete ✅
 
-## Gameplay Loop & Feedback
+The single-mob iteration phase is complete with a fully functional typing-based tower defense game featuring:
+- ✅ Responsive typing mechanics with immediate visual feedback
+- ✅ Projectile system with collision detection and visual effects  
+- ✅ Dynamic mob spawning with difficulty scaling
+- ✅ Score-based progression with expanding letter pools
+- ✅ Performance-optimized rendering with letter image caching
+- ✅ Smooth 100 TPS game loop with parallel mob updates
 
-- [x] Add tweened UI transitions for score pop-ups and wave notifications.
-- [ ] Implement action-challenge-reward loop with instant visual/audio feedback on word defeat.
-  - [ ] Play an audio cue when a mob is defeated.
-  - [ ] Integrate the loop into the main game update cycle.
-- [ ] Add camera shake and screen flash effects for wave completion and boss defeat.
-- [ ] Integrate layered audio cues for typing, combos, and wave clearances.
-- [ ] Modularize game states into separate Phaser Scenes (preload, menu, waves, game over).
+## 1. Polish and Enhancement (High Priority)
 
-## Architecture & Curriculum
+### Visual and Audio Feedback
+- [ ] **Particle Effects**
+    - Add impact effects when projectiles hit mobs
+    - Sparks/explosions for successful letter hits
+    - Screen shake for dramatic effect
+- [ ] **Sound System**
+    - Implement audio manager and sound effects
+    - Typing sounds, projectile hits, mob deaths
+    - Background music for different game states
+    - Audio feedback for correct/incorrect typing
+- [ ] **Visual Polish**
+    - Improve projectile sprites (energy bolts, magic missiles, etc.)
+    - Enhanced mob death animations
+    - Background parallax scrolling
+    - Letter typing animations (glow, scale, etc.)
 
-- [x] Write unit tests for the `WordGenerator` class covering all methods and edge cases.
-- [x] Integrate the `WordGenerator` into the game logic where word generation is required.
-- [x] Update documentation (`README.md` and project layout) to describe the new class and its usage.
-- [x] Implement a difficulty scaling system that adjusts spawn rates and word complexity.
-  - [x] Add scaling logic to MobSpawner to adjust spawn rates based on progression (e.g., wave number or score).
-  - [x] Add scaling logic to WordGenerator to increase word length/complexity as difficulty increases.
-  - [x] Integrate scaling parameters into level/world config for per-level tuning.
-  - [x] Update or add tests to cover scaling behavior in MobSpawner and WordGenerator.
-  - [x] Update documentation (README.md and project layout) to describe the new scaling system.
+### UI/UX Improvements
+- [ ] **HUD Enhancements**
+    - Display current letter pool and unlock progress
+    - Show typing accuracy and words per minute
+    - Combo counter and streak indicators
+    - Health/lives system with visual representation
+- [ ] **Menu Polish**
+    - Animated menu transitions
+    - Better visual hierarchy and styling
+    - Settings menu for graphics, audio, controls
+    - Credits and about screens
 
-## Level & World Progression
+## 2. Content Expansion
 
-- [ ] Create Level 1-4: Add T/Y (top row) with more complex patterns.
-- [ ] Create Level 1-5: Add V/M (bottom row) with drills for downward reaches.
-- [ ] Create Level 1-6: Add B/N (completing bottom row) with all index letters.
-- [ ] Create Level 1-7: Boss level using all index finger letters in combination.
-- [ ] Update README.md to mention new levels and keys.
-- [ ] Update project layout documentation if new files/structure are added.
-- [ ] Ensure all new code is well-commented and tested.
-- [ ] Fix level progression so that completing a level unlocks and advances to the next.
-- [ ] Ensure that level 1-2 uses the correct word list and includes "g" and "h" in generated words.
-- [ ] Test and verify that after completing level 1-2, level 1-3 is unlocked and accessible.
-- [ ] Update documentation to reflect the fixes.
+### Additional Mob Types
+- [ ] **Mob Variety**
+    - Fast mobs with shorter words
+    - Armored mobs requiring multiple hits
+    - Boss mobs with longer words/phrases
+    - Special ability mobs (invisibility, splitting, etc.)
+- [ ] **Mob Behaviors**
+    - Different movement patterns (zigzag, curved paths)
+    - Formation flying (groups of mobs)
+    - Reactive behaviors (speed up when targeted)
 
-## Visual & Audio Feedback
+### World and Level System
+- [ ] **Multiple Worlds/Biomes**
+    - Implement the existing biome system (Forest, Desert, Mountain, etc.)
+    - Unique backgrounds and mob types per world
+    - World-specific vocabulary and themes
+- [ ] **Level Progression**
+    - Structured levels with clear win conditions
+    - Level selection screen with unlock progression
+    - Difficulty curves and learning ramps
+    - Star rating system based on performance
 
-- [ ] Create finger position guidance overlays for tutorials.
-- [ ] Implement letter highlighting system showing which finger should be used.
-- [ ] Design unique visual effects for each world/finger group.
-- [ ] Create thematic boss designs for each world.
-- [ ] Implement distinctive sound effects for different finger groups.
-- [ ] Create celebratory animations and sounds for level completion.
+### Game Modes
+- [ ] **Training Mode**
+    - Focused practice on specific letter combinations
+    - Customizable word lists and difficulty
+    - Performance analytics and progress tracking
+- [ ] **Challenge Mode**
+    - Daily/weekly typing challenges
+    - Leaderboards and competitive elements
+    - Special objectives (speed runs, accuracy challenges)
+- [ ] **Story Mode**
+    - Narrative-driven progression through worlds
+    - Character development and plot
+    - Cutscenes and world-building
 
-## Expansion Content (Future)
+## 3. Player Progression and Customization
 
-- [ ] Create Numbers & Symbols World with specialized levels.
-- [ ] Implement Programming/Coding Mode with syntax exercises.
-- [ ] Design advanced challenges combining all character types.
+### Progression Systems
+- [ ] **Player Leveling**
+    - Experience points for typing performance
+    - Unlock new abilities, upgrades, or cosmetics
+    - Skill trees for different playstyles
+- [ ] **Statistics Tracking**
+    - Detailed typing analytics (WPM, accuracy, improvement over time)
+    - Achievement system with meaningful rewards
+    - Personal best tracking across different metrics
 
-## Level Completion & Progression UX
+### Customization Options
+- [ ] **Visual Customization**
+    - Player avatar/character selection
+    - Projectile types and effects
+    - UI themes and color schemes
+- [ ] **Accessibility Features**
+    - Colorblind-friendly options
+    - Font size and contrast adjustments
+    - Alternative input methods
+    - Dyslexia-friendly font options (already partially implemented)
 
-- [ ] Implement logic in GameScene to detect when 50 enemies are defeated and trigger level completion.
-- [ ] Update LevelManager to unlock and move to level 1-2 upon winning.
-- [ ] Display a "Level Complete" message and transition to the next level.
-- [ ] Update README.md to document the new win/level progression feature.
-- [ ] Update README.md and project layout documentation to reflect the new menu and progression system.
-- [ ] Update `README.md` with testing instructions.
-- [ ] Update project layout documentation if new directories are added.
-- [ ] Ensure all new code is well-commented and tested.
+## 4. Advanced Features
 
-## Menu, World, and Level Selection
+### Multiplayer and Social
+- [ ] **Local Multiplayer**
+    - Split-screen cooperative mode
+    - Competitive typing races
+    - Shared screen with role specialization
+- [ ] **Online Features**
+    - Global leaderboards
+    - Online multiplayer matches
+    - Word list sharing and community content
 
-- [ ] Create a world chooser scene that displays all worlds, showing locked/unlocked/completed status.
-- [ ] When a player selects an unlocked world, show a level selector for that world, displaying all levels with their status.
-- [ ] Allow the player to select an unlocked level to start the game.
-- [ ] Integrate the new scenes into the game flow and update navigation logic.
-- [ ] Update documentation and mark tasks as complete.
-- [ ] Refactor MenuScene to display only worlds (no levels).
-- [ ] Implement LevelMenuScene to display levels for the selected world.
-- [ ] Make levels clickable in LevelMenuScene to start the game at the selected level.
-- [ ] Update README.md to document the new menu flow and particle effect.
-- [ ] Update project layout documentation if needed.
-- [ ] Add a Back button to the level complete UI in GameScene that returns to level selection.
-- [ ] Ensure the Continue button in GameScene advances to the next level, world, or menu as appropriate.
-- [ ] Add keyboard shortcuts: Enter for continue, Escape for back, in the level complete UI.
-- [ ] Ensure all navigation buttons and keyboard shortcuts work for progressing through the whole game.
-- [ ] Update README.md to document the new navigation and keyboard shortcuts.
-- [ ] Update project layout documentation if any new files or structure are added.
-- [ ] Ensure all new code is well-commented and tested.
+### Advanced Mechanics
+- [ ] **Power-ups and Abilities**
+    - Temporary bonuses (faster projectiles, auto-complete, etc.)
+    - Special weapons with unique effects
+    - Strategic decision-making elements
+- [ ] **Dynamic Content**
+    - Procedurally generated words and challenges
+    - Adaptive difficulty based on player performance
+    - Machine learning for personalized content
+
+## 5. Technical Improvements
+
+### Performance and Scalability
+- [ ] **Optimization**
+    - Profile performance with many mobs on screen
+    - Optimize rendering pipeline for complex effects
+    - Memory usage optimization
+- [ ] **Code Quality**
+    - Comprehensive unit testing
+    - Integration tests for game systems
+    - Performance benchmarking
+    - Documentation improvements
+
+### Platform Support
+- [ ] **Cross-Platform**
+    - Web deployment (WASM)
+    - Mobile adaptation (touch controls)
+    - Console controller support
+
+## 6. Community and Modding
+
+### User-Generated Content
+- [ ] **Custom Content Tools**
+    - Level editor for community levels
+    - Word list editor and sharing
+    - Mod support framework
+- [ ] **Community Features**
+    - In-game screenshot sharing
+    - Replay system for impressive performances
+    - Community challenges and events
 
 ---
-Contains AI-generated edits.
+
+**Current Priority:**
+Focus on polish and enhancement (visual effects, audio, UI improvements) to create a complete, polished gaming experience before expanding into additional content and features.
+
+**Development Philosophy:**
+Maintain the core strength of responsive, satisfying typing mechanics while adding depth and variety to keep players engaged long-term.
+
+This roadmap represents the evolution from a successful prototype to a full-featured typing game with broad appeal.

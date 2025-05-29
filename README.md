@@ -1,178 +1,134 @@
 # TypeDefense
 
-TypeDefense is a web-based typing game designed to help players improve their typing skills through engaging gameplay. Players control a static character on the left side of the screen, defending against waves of enemies that spawn from the right. To defeat enemies, players must quickly and accurately type the words or phrases displayed above each enemy before they reach the player.
+TypeDefense is a typing-based tower defense game built with Ebiten. Players defend against waves of enemies by typing the letters displayed above each mob. The game features dynamic difficulty scaling, projectile-based combat feedback, and an endless mode that progressively introduces new letters and increases challenge.
 
-## Features
+## Gameplay
 
-- Fast-paced wave-based mob defense gameplay
-- **New:** Enemies now spawn in discrete waves, with a notification and a short delay between waves. Each wave can have a configurable number of mobs, and the game displays a tweened "Wave X" notification at the start of each wave.
-- **New:** Score pop-ups now feature a tweened animation when the score updates, providing satisfying visual feedback for each correct keystroke.
-- Enemies spawn from the right and move toward the player
-- Defeat enemies by typing their associated words or letters
-- **Mobs now move faster by default for a more challenging experience.**
-- **Mobs spawn at random vertical positions, adding variety to each wave.**
-- **Each mob now displays a single letter. When the correct letter is typed, the mob disappears.**
-- **Mobs now respond instantly to correct key presses (bug fix):** Mobs are defeated when the player types the correct letter or word, and input is cleared after a mob is defeated.
-- **When a mob is defeated, an instant visual feedback effect (flash and particle burst) is triggered.**
-- **A particle burst effect is now triggered at the mob or letter location on every correct keystroke, providing instant visual feedback.**
-- **Mobs now always spawn fully off-screen on the right for a more polished experience.**
-- **Planned: Multiple mobs can spawn at once, and their base speed will increase for greater challenge.**
-- **Multiple mobs can now spawn at each interval:** The MobSpawner supports spawning more than one mob at a time for increased challenge. This is configurable per level or via code.
-- Designed to improve typing speed and accuracy
-- Built with TypeScript and Vite for a modern web experience
-- Addictive action-challenge-reward loop with instant visual and audio feedback
-- Real-time scores and combo multipliers are now displayed in the top-left corner of the game UI. The score updates on every correct keystroke, and the combo multiplier appears when greater than 1, rewarding consecutive correct inputs.
-- Particle effects are now displayed and updated on each keystroke. The score and combo UI appear in the top-left, and a particle burst is triggered at the mob location for every correct letter typed. The combo multiplier increases with consecutive correct keystrokes and resets on mistakes, rewarding accuracy and speed.
-- Tweened UI transitions and dramatic camera effects for key events
-- Layered audio cues for typing, combos, and wave clearances
-- Core game loop set up in `GameScene` with Player and InputHandler initialized and updated each frame
-- **Mob and MobSpawner integrated into GameScene:**
-  - `MobSpawner` handles spawning and management of enemy mobs (see `client/src/entities/MobSpawner.ts`).
-  - `Mob` represents individual enemy entities (see `client/src/entities/Mob.ts`).
-  - Both are now fully integrated and updated within the main game loop in `GameScene`.
-- Added initial design and documentation for the `FingerGroupManager` class, which will track player progress and statistics across finger groups for the typing curriculum.
-  - Implemented the `FingerGroupManager` class in `client/src/managers/fingerGroupManager.ts`.
-  - Tracks player progress, key usage, accuracy, and speed for each finger group.
-  - Provides methods to record key presses, retrieve stats, and determine mastery.
-  - Uses curriculum-defined finger/key mappings for robust tracking.
-- Integrated FingerGroupManager with the main game loop in `GameScene.ts`.
-- Each key press is now recorded and mapped to its finger group using the curriculum mapping (`getKeyInfo`).
-- This enables tracking of finger usage and progress for each finger group in real time.
-- **Mobs now walk toward the player:** Each mob moves toward the player character's position (left side of the screen) after spawning.
-- **Player health system:** The player has a visible health value above their sprite. When a mob reaches the player, the player loses health and the mob is removed. The game ends with a "Game Over" message if health reaches zero.
-- **Improved mob input targeting and combo logic:** When multiple mobs are on screen, the game now targets the closest mob that matches the player's keypress. If the keypress doesn't match any mob, all mobs' progress is reset, fixing the combo bug with multiple mobs.
-- Added collision detection and overlap prevention to mobs. Mobs now repel each other if they get too close, ensuring they do not overlap as they move toward the player. This improves gameplay clarity and visual polish.
-- **Dynamic difficulty:** As the game progresses, the spawn rate of enemies increases and their movement speed scales up, providing a smooth and challenging difficulty curve.
-- **Scaling system tested and tuned:** The MobSpawner's scaling logic for spawn interval and mob speed has been verified with unit tests for smooth progression. Parameters can be adjusted in `MobSpawner.ts` for further tuning.
-- **Word complexity scaling:** The WordGenerator dynamically increases word length and complexity as the game progresses, based on difficulty scaling parameters. This ensures that challenges become more demanding over time.
+In TypeDefense, you face waves of enemies (mobs) that move across the screen from right to left. Each mob displays a sequence of letters above it. You must type the letters in the correct order to defeat the mob:
 
-## Curriculum Design
+- **Red letters** indicate the current target letter you must type
+- **White letters** are upcoming letters in the sequence  
+- **Gray letters** have already been typed
 
-TypeDefense features a unique learning approach based on finger groups rather than random letters. The game is structured into four worlds, each focusing on a specific set of fingers:
+When you type a letter correctly, a projectile fires from the player position to the targeted mob, providing visual feedback. Once all letters in a mob's sequence are typed and all projectiles hit, the mob is defeated and your score increases.
 
-### World 1: Index Fingers
+## Current Features
 
-- Left Hand: F, G, R, T, V, B
-- Right Hand: J, H, Y, U, N, M
-- Progressive levels introduce these keys gradually, starting with home row (F/J)
+### Core Mechanics
+- **Projectile Combat System**: Visual projectiles fire when letters are typed correctly
+- **Immediate Input Response**: Letter states update instantly for responsive typing feel
+- **Collision Detection**: Projectiles track and hit their intended targets
+- **Rapid Typing Support**: Can type multiple letters quickly without missing inputs
 
-### World 2: Middle Fingers
+### Game Modes
+- **Endless Mode**: Continuous waves with increasing difficulty and expanding letter sets
+- **Dynamic Letter Pool**: Starts with vowels (a,e,i,o,u) and unlocks consonants based on score
+- **Progressive Difficulty**: Spawn rates increase as score grows (faster mob spawning)
 
-- Left Hand: D, E, C
-- Right Hand: K, I, comma
-- Builds on index finger skills while introducing middle finger positions
+### Mob System
+- **BeachballMob**: Animated beach ball enemies with customizable letter sequences
+- **Smart Spawning**: MobSpawner handles timing, letter generation, and difficulty scaling
+- **Visual States**: Each letter has distinct visual states (target/active/inactive)
+- **Death Animations**: Mobs play death animations when defeated
 
-### World 3: Ring Fingers
+### Technical Features
+- **Performance Optimization**: Global letter image cache prevents per-frame text rendering
+- **Fixed Canvas**: 1920x1080 internal resolution with automatic scaling to window size
+- **Parallel Processing**: Mob updates run in parallel for better performance
+- **State Management**: Clean separation between menu, game, and pause states
 
-- Left Hand: S, W, X
-- Right Hand: L, O, period
-- Focuses on training the typically weaker ring fingers
+## Architecture Overview
 
-### World 4: Pinky Fingers
+### Rendering System
+TypeDefense uses a fixed 1920x1080 internal canvas for all gameplay, UI, and entity rendering. All coordinates are specified in this space, and the engine automatically scales the canvas to fit any window size while maintaining aspect ratio. This ensures pixel-perfect consistency across devices.
 
-- Left Hand: A, Q, Z
-- Right Hand: semicolon, P, slash
-- Completes the alphabet and introduces Shift key for capitals
+### Entity System
+- **Entity Interface**: Common interface for all game objects (Player, Mobs, Projectiles)
+- **Mob Interface**: Specialized interface for enemy types with letter management
+- **Component-Based**: Entities have position, sprites, animations, and behavior components
 
-Each world contains multiple levels that introduce letters progressively, with boss battles that test mastery before advancing. This finger-group approach builds proper muscle memory and typing technique.
+### Letter Management
+- **Letter States**: TARGET (red), ACTIVE (white), INACTIVE (gray)
+- **Image Caching**: Pre-rendered letter images cached globally for performance
+- **State Transitions**: Immediate letter state updates with visual projectile feedback
 
-## Recent Changes
+### Input System
+- **InputHandler**: Processes keyboard input and manages projectile creation
+- **Target Prioritization**: Automatically targets closest mob with matching letter
+- **Rapid Typing**: Supports fast consecutive inputs without dropping keypresses
 
-- Added a `baseSpeed` property to `Mob` and updated the spawning system to allow setting mob speed per spawn. This enables more flexible and challenging gameplay tuning.
-- Improved mob input handling: The game now targets the closest matching mob for each keypress, checks others if not matched, and resets all mobs if no match. This fixes the combo bug with multiple mobs on screen.
-- **New mob targeting system:** If no mob is targeted, keypresses identify the closest matching mob. If a mob is targeted, the next keypress is aimed at them; if correct, the target advances, otherwise the system checks for other matches. The targeted mob is visually highlighted, and matched letters are animated to inactive so the player knows which letter is next.
-- **World & Level Selection Menu:**
-  - Added a new menu scene (`MenuScene.ts`) that allows players to select worlds and levels.
-  - Levels are locked/unlocked based on completion status, which is tracked and persisted in local storage.
-  - The menu UI displays locked, unlocked, and completed levels with appropriate visual cues.
-  - Progression is saved and loaded automatically, so players can continue where they left off.
-  - Selecting an unlocked level starts the game at that level.
-- **Level 1-3 ("Reaching Up"):** Adds R and U (top row) to the available keys, with a new word pack (`fjghruWords.json`) and more letter combinations. The curriculum and word loader have been updated to support this level.
-- Add a "Continue" button and Enter key handler to the level complete screen. When a level is completed, players can click the button or press Enter to advance to the next level (if available) or return to the level select menu.
-- Implemented a main menu scene (`MainMenuScene.ts`) with a "Play" button that navigates to the world chooser (MenuScene).
-- Registered the new scene in the Phaser game config and set it as the starting scene.
+## Controls
 
-### WordGenerator Utility
+- **A-Z Keys**: Type letters to target and defeat mobs
+- **Space**: Force spawn a new mob (for testing)
+- **Escape**: Pause game / Return to main menu
+- **F**: Toggle fullscreen
+- **Arrow Keys**: Navigate menus
 
-A new `WordGenerator` class is available in `client/src/utils/wordGenerator.ts`.
+## Game Progression
 
-- Generates words using only the available letters (for curriculum-based levels).
-- Supports random letter words, filtering valid words, and generating pronounceable pseudo-words (CVC pattern).
-- Methods:
-  - `generateWord(length)`: Generates a random word using available letters.
-  - `generateWordSet(count, minLength, maxLength)`: Generates a set of words for a level challenge.
-  - `canCreateWord(word)`: Checks if a word can be created from available letters.
-  - `filterValidWords(words)`: Filters a list of words to only those that can be made from available letters.
-  - `generatePseudoWord(length)`: Generates a pronounceable pseudo-word (CVC pattern) using available letters.
-  - `getWord(length)`: Returns a pseudo-word if enabled, otherwise a random word.
-- Used for creating level-appropriate word challenges and drills.
-- See `client/src/utils/__tests__/wordGenerator.test.ts` for usage examples and tests. All methods and edge cases are now covered by unit tests.
+The game uses a score-based progression system:
+- **Score**: Increases by 1 for each mob defeated
+- **Letter Unlocks**: New letters unlock at specific score thresholds (every 10 points)
+- **Spawn Rate**: Mob spawn intervals decrease as score increases
+- **Difficulty Scaling**: Maintains challenge while gradually introducing complexity
 
-**Usage Example:**
+## Current Development Status
 
-```ts
-import WordGenerator from './utils/wordGenerator';
-const gen = new WordGenerator(['f', 'j', 'g', 'h']);
-const word = gen.getWord(4); // e.g., 'fjgh', 'ghjf', etc.
-const pseudo = gen.generatePseudoWord(5); // e.g., 'gafih', 'hajig', etc.
-const valid = gen.filterValidWords(['fish', 'jag', 'hug']); // Only words using available letters
-```
+TypeDefense has a fully functional core game loop with:
+- ✅ Complete typing mechanics with visual feedback
+- ✅ Projectile system with collision detection  
+- ✅ Dynamic mob spawning and difficulty scaling
+- ✅ Score tracking and letter pool expansion
+- ✅ Performance-optimized rendering
+- ✅ Responsive input handling for rapid typing
 
-## Navigation and Keyboard Shortcuts
+### Immediate Development Areas
+- Enhanced visual effects and animations
+- Additional mob types and behaviors
+- Level progression and win/lose conditions
+- Improved UI and menu systems
+- Audio feedback and sound effects
 
-- The level completion screen now features both a Continue button (Enter) and a Back button (Esc).
-- Continue advances to the next level, next world, or returns to the main menu if all levels are complete.
-- Back returns to the level selection screen for the current world.
-- Both buttons are clickable and accessible via keyboard shortcuts (Enter/Esc).
-- This ensures smooth navigation through the entire game using either mouse or keyboard.
+See `TODO.md` for detailed development roadmap and priorities.
 
-## Testing
+## Contributing
 
-To run unit tests (using Vitest):
+We welcome contributions! Whether you want to add new mob types, create worlds and biomes, implement game modes, or help with features, there are many ways to contribute.
+
+**📖 [Read the Developer Contribution Guide](CONTRIBUTING.md)** - Comprehensive guide covering:
+- How to add new mob types with custom behaviors
+- Creating new worlds, biomes, and levels
+- Implementing new game modes and features  
+- Extending the letter and typing systems
+- UI development and menu creation
+- Testing guidelines and best practices
+
+The codebase is designed to be modular and extensible, making it easy to add content without modifying core systems. Perfect for developers who want to contribute while learning game development!
+
+## Building and Running
 
 ```bash
-cd client
-npm run test
+# Run the main game
+go run ./cmd/game/main.go
+
+# Preview sprite animations (development tool)
+go run ./cmd/preview/main.go <image_path> <rows> <cols> <height> <width>
 ```
 
-To run only the WordGenerator tests:
+## Project Structure
 
-```bash
-npm run test -- src/utils/__tests__/wordGenerator.test.ts
 ```
-
-- The project uses [Vitest](https://vitest.dev/) for unit and integration testing.
-- Test files are located in `client/src/**/__tests__/` and follow the `.test.ts` naming convention.
-- To run all tests:
-
-  ```bash
-  cd client
-  npm run test
-  ```
-
-- To run tests in watch/UI mode:
-
-  ```bash
-  cd client
-  npm run test:ui
-  ```
-
-- Sample unit tests are provided for core modules:
-  - `Mob`, `MobSpawner`, `InputHandler`, `FingerGroupManager`, `WordGenerator`, `LevelManager`, and `loadWordList` utility.
-  - **New:** Integration tests for `MobSpawner` and mob spawning logic are included in `client/src/entities/__tests__/MobSpawner.test.ts` and cover multi-interval spawning, overlap prevention, scaling, and mob removal.
-  - **New:** Comprehensive unit tests for `InputHandler` are located in `client/src/entities/__tests__/InputHandler.test.ts` and cover input accumulation, clearing, event registration, and cleanup.
-  - **New:** Unit and integration tests for the score/combo UI and particle burst effect are included:
-    - `client/src/entities/__tests__/ComboSystem.unit.test.ts` (combo/score logic and UI updates)
-    - `client/src/scenes/__tests__/GameScene.combo.integration.test.ts` (particle burst triggers on correct keystroke)
-- Unit tests for `FingerGroupManager` are located in `client/src/managers/__tests__/fingerGroupManager.test.ts` and cover:
-  - Initialization of stats for all finger types
-  - Recording key presses and updating stats
-  - Calculating average speed for a finger
-  - Retrieving correct keys for a finger
-  - Determining if a key is mastered (accuracy and speed criteria)
-- Unit tests for `LevelManager` are located in `client/src/managers/__tests__/levelManager.test.ts` and cover initialization, progress tracking, unlocking levels, and persistence via localStorage.
-- Added unit and integration tests for the combo multiplier and score system. See `client/src/entities/__tests__/ComboSystem.unit.test.ts` and `client/src/scenes/__tests__/GameScene.combo.integration.test.ts`.
-
-## Changelog
-
-- Added `MainMenuScene.ts` as the new main menu scene. The game now starts at the main menu, which features a "Play" button that takes the player to the world chooser (MenuScene).
+desktop/
+├── cmd/
+│   ├── game/main.go          # Main game entry point
+│   └── preview/main.go       # Sprite animation preview tool
+├── internal/
+│   ├── engine/               # Game engine and state management
+│   ├── game/                 # Core game logic and loop
+│   ├── entity/               # Game entities (Player, Mobs, Projectiles)
+│   ├── ui/                   # User interface components
+│   ├── world/                # Level and world definitions
+│   └── utils/                # Utility functions
+└── assets/                   # Game assets (images, fonts, sounds)
+```
