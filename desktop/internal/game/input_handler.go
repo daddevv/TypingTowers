@@ -64,6 +64,9 @@ func (ih *InputHandler) ProcessInput(mobs []entity.Entity, projectiles []*entity
 			// IMMEDIATELY advance letter state for rapid typing
 			ih.advanceLetterState(closestMob, char)
 			
+			// Increment pending projectiles counter
+			closestMob.PendingProjectiles++
+			
 			// Fire projectile for visual feedback
 			mobPos := closestMob.GetPosition()
 			centeredTarget := ui.Location{

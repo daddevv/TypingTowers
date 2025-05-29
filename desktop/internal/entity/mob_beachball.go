@@ -47,7 +47,9 @@ func NewBeachballMobWithLetters(letters []string) *BeachballMob {
 			WordWidth:      0.0,
 			IdleAnimation:  nil,
 			Dead:           false,
+			PendingDeath:   false,
 			DeathTimer:     0,
+			PendingProjectiles: 0,
 		},
 	}
 	font := ui.Font("Mob", 32)
@@ -133,11 +135,21 @@ func (mob *BeachballMob) Update() error {
 			break
 		}
 	}
-	if allInactive && !mob.Dead {
-		mob.Dead = true
-		mob.DeathTimer = 60
+	// When all letters are typed, mark as pending death but don't start death animation yet
+	// The game will start the death animation when the last projectile hits
+	if allInactive && !mob.Dead && !mob.PendingDeath {
+		mob.PendingDeath = true
 	}
 	return nil
+}
+
+// StartDeath begins the death animation if the mob is pending death
+func (mob *BeachballMob) StartDeath() {
+	if mob.PendingDeath && !mob.Dead {
+		mob.Dead = true
+		mob.PendingDeath = false
+		mob.DeathTimer = 60
+	}
 }
 
 // GetPosition returns the current position of the BeachballMob.

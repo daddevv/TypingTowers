@@ -121,11 +121,23 @@ func (g *Game) Update() error {
 	}
 	g.Mobs = activeMobs
 
-	// Remove inactive projectiles
+	// Remove inactive projectiles and decrement pending projectiles for missed shots
 	activeProjectiles := g.Projectiles[:0]
 	for _, projectile := range g.Projectiles {
 		if projectile.IsActive() {
 			activeProjectiles = append(activeProjectiles, projectile)
+		} else {
+			// If projectile became inactive but didn't deal damage, it missed
+			if !projectile.DamageDealt {
+				if beachballMob, ok := projectile.TargetMob.(*entity.BeachballMob); ok {
+					beachballMob.PendingProjectiles--
+					
+					// If this mob is pending death and has no more pending projectiles, start death animation
+					if beachballMob.PendingDeath && beachballMob.PendingProjectiles <= 0 {
+						beachballMob.StartDeath()
+					}
+				}
+			}
 		}
 	}
 	g.Projectiles = activeProjectiles
@@ -154,6 +166,16 @@ func (g *Game) checkProjectileCollisions() {
 				// Collision detected - deactivate projectile (letter states already advanced)
 				projectile.Deactivate()
 				projectile.DamageDealt = true
+				
+				// Decrement pending projectiles counter for this mob
+				if beachballMob, ok := mob.(*entity.BeachballMob); ok {
+					beachballMob.PendingProjectiles--
+					
+					// If this mob is pending death and has no more pending projectiles, start death animation
+					if beachballMob.PendingDeath && beachballMob.PendingProjectiles <= 0 {
+						beachballMob.StartDeath()
+					}
+				}
 				break
 			}
 		}
