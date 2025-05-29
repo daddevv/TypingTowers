@@ -32,4 +32,24 @@ For performance, the game uses a global cache of pre-rendered images for each le
 - **Mobs**: Each mob is an entity with a position, movement, and a sequence of letters. Letter states are tracked per-mob, and rendering uses the global letter image cache.
 - **Letter Image Cache**: A shared cache stores images for each rune in each state (TARGET, ACTIVE, INACTIVE), generated once per font/size.
 - **Game Loop**: Handles spawning, updating, and removing mobs, as well as player input and scoring.
-- **UI**: Uses Ebiten's text and image drawing APIs for efficient rendering.
+
+## Rendering and Canvas
+
+TypeDefense now uses a fixed 1920x1080 internal canvas for all gameplay, UI, and entity rendering. All coordinates and layout are specified in this space, and the engine automatically scales the entire canvas to fit the client window, maintaining aspect ratio. This approach simplifies layout and ensures pixel-perfect consistency across all devices and window sizes.
+
+- All entity and UI positions are in 1920x1080 space.
+- No per-object scaling or normalized coordinates are used.
+- The engine handles scaling the final frame to the window.
+
+## Current State and Next Steps
+
+The current focus is on iterating the core game loop with a single mob, ensuring the gameplay is fun and robust before expanding to more content and customization. Key areas for immediate and future development include:
+
+- Mob spawning logic and timing
+- Targeting and shooting mobs (player input, feedback, and effects)
+- Scoring system and feedback
+- Level win/lose conditions
+- UI/UX improvements, including menus and game lobby for mode selection and customization
+- Game loop polish and iteration for fun and engagement
+
+See `TODO.md` for a detailed breakdown of proposed development paths and priorities.
