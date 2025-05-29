@@ -4,6 +4,7 @@ import (
 	"td/internal/ui"
 
 	"image/color"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -27,7 +28,7 @@ func NewProjectile(start, target ui.Location) *Projectile {
 	return &Projectile{
 		Position:    start,
 		Target:      target,
-		Speed:       10.0, // pixels per frame
+		Speed:       23.0, // pixels per frame
 		Sprite:      sprite,
 		Active:      true,
 		DamageDealt: false,
@@ -43,26 +44,31 @@ func (p *Projectile) Update() error {
 	// Calculate direction vector from position to target
 	dx := p.Target.X - p.Position.X
 	dy := p.Target.Y - p.Position.Y
-	
+
 	// Calculate distance to target
-	distance := (dx*dx + dy*dy)
+	distance := math.Sqrt(dx*dx + dy*dy)
 	if distance < 1.0 { // Close enough to target
 		p.Active = false
 		return nil
 	}
-	
+
 	// Normalize direction and apply speed
-	length := (dx*dx + dy*dy)
-	if length > 0 {
-		length = 1.0 / (length * 0.5) // Fast inverse square root approximation
-		dx *= length * p.Speed
-		dy *= length * p.Speed
+	if distance > 0 {
+		moveX := (dx / distance) * p.Speed
+		moveY := (dy / distance) * p.Speed
+
+		// Clamp movement if we're closer than speed to the target
+		if math.Abs(moveX) > math.Abs(dx) {
+			moveX = dx
+		}
+		if math.Abs(moveY) > math.Abs(dy) {
+			moveY = dy
+		}
+
+		p.Position.X += moveX
+		p.Position.Y += moveY
 	}
-	
-	// Update position
-	p.Position.X += dx
-	p.Position.Y += dy
-	
+
 	return nil
 }
 

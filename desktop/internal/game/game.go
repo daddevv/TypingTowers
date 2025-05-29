@@ -2,12 +2,17 @@ package game
 
 import (
 	"errors"
+	"fmt"
+	"image/color"
 	"sync"
 	"td/internal/entity"
+	"td/internal/ui"
 	"td/internal/world"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
 type Game struct {
@@ -16,11 +21,15 @@ type Game struct {
 	Mobs         []entity.Entity
 	Projectiles  []*entity.Projectile
 	InputHandler *InputHandler
+	MobSpawner   *entity.MobSpawner
+	LastUpdate   time.Time
+	Score        int // Number of mobs defeated
 }
 
 func NewGame(opts GameOptions) *Game {
 	player := entity.NewPlayer()
 	inputHandler := NewInputHandler(player.GetPosition())
+	mobSpawner := entity.NewMobSpawner(opts.Level.PossibleLetters)
 	
 	return &Game{
 		Level:        opts.Level,
@@ -28,23 +37,36 @@ func NewGame(opts GameOptions) *Game {
 		Mobs:         entity.EmptyList(),
 		Projectiles:  make([]*entity.Projectile, 0),
 		InputHandler: inputHandler,
+		MobSpawner:   mobSpawner,
+		LastUpdate:   time.Now(),
+		Score:        0,
 	}
 }
 
 func (g *Game) Update() error {
+	// Calculate delta time for smooth timing
+	now := time.Now()
+	deltaTime := now.Sub(g.LastUpdate).Seconds()
+	g.LastUpdate = now
+
 	// Handle pause
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		return errors.New("pause")
 	}
 
+	// Optional: Allow manual spawning for testing (keep space bar functionality)
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-		// Spawn a new beachball mob when space is pressed
-		mob := entity.NewBeachballMob(3, g.Level.PossibleLetters)
+		// Force spawn a new beachball mob when space is pressed
+		mob := g.MobSpawner.ForceSpawn()
 		if mob != nil {
 			g.Mobs = append(g.Mobs, mob)
-		} else {
-			return errors.New("failed to create new beachball mob")
 		}
+	}
+
+	// Update mob spawner and potentially spawn new mobs
+	newMob := g.MobSpawner.Update(deltaTime)
+	if newMob != nil {
+		g.Mobs = append(g.Mobs, newMob)
 	}
 
 	// Update input handler with current player position
@@ -91,6 +113,12 @@ func (g *Game) Update() error {
 		pos := mob.GetPosition()
 		if pos.X > -100 {
 			activeMobs = append(activeMobs, mob)
+		} else {
+			// Check if mob was defeated (all letters typed) vs just went off screen
+			if beachballMob, ok := mob.(*entity.BeachballMob); ok && beachballMob.Dead {
+				g.Score++
+				g.MobSpawner.SpeedUpOverTime(g.Score)
+			}
 		}
 	}
 	g.Mobs = activeMobs
@@ -135,12 +163,14 @@ func (g *Game) checkProjectileCollisions() {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.Level.DrawBackground(screen)
-	// scoreStr := fmt.Sprintf("Score: %d", g.Score)
-	// opts := &text.DrawOptions{}
-	// opts.GeoM.Translate(10, 30)                  // position on screen
-	// opts.ColorScale.ScaleWithColor(color.White)  // text color
-	// font := ui.Font("Game-Bold", 48)			 // use the font source to get the font
-	// text.Draw(screen, scoreStr, font, opts)
+	
+	// Draw score in top left corner
+	scoreStr := fmt.Sprintf("Score: %d", g.Score)
+	opts := &text.DrawOptions{}
+	opts.GeoM.Translate(20, 50)                    // position on screen
+	opts.ColorScale.ScaleWithColor(color.White)    // text color
+	font := ui.Font("Game-Bold", 32)               // use the font source to get the font
+	text.Draw(screen, scoreStr, font, opts)
 
 	entities := append(g.Mobs, g.Player)
 	// TODO: Sort entities by Z-index (smallest Y first) if needed

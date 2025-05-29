@@ -3,6 +3,7 @@ package entity
 import (
 	"math/rand"
 	"td/internal/ui"
+	"td/internal/utils"
 
 	"image/color"
 
@@ -15,9 +16,22 @@ type BeachballMob struct {
 	Mob
 }
 
-// NewBeachballMob creates a new BeachballMob with the given letter count
-// and possible letters to choose from.
+// NewBeachballMob creates a new BeachballMob with random letters from possible choices.
 func NewBeachballMob(count int, possible []string) *BeachballMob {
+	return NewBeachballMobWithLetters(utils.GenerateRandomLetters(count, possible))
+}
+
+// NewBeachballMobWithWord creates a new BeachballMob with letters from a specific word.
+func NewBeachballMobWithWord(word string) *BeachballMob {
+	letters := make([]string, len(word))
+	for i, char := range word {
+		letters[i] = string(char)
+	}
+	return NewBeachballMobWithLetters(letters)
+}
+
+// NewBeachballMobWithLetters creates a new BeachballMob with the given letters.
+func NewBeachballMobWithLetters(letters []string) *BeachballMob {
 	moveAnimation, err := ui.NewAnimation("assets/images/mob/mob_beachball_sheet.png", 1, 7, 48, 48, 6)
 	if err != nil {
 		return nil
@@ -29,7 +43,7 @@ func NewBeachballMob(count int, possible []string) *BeachballMob {
 			Speed:          2.0, // px per frame
 			MoveAnimation:  moveAnimation,
 			MoveTarget:     ui.Location{X: 100, Y: 900}, // px
-			Letters:        make([]Letter, count),
+			Letters:        make([]Letter, len(letters)),
 			WordWidth:      0.0,
 			IdleAnimation:  nil,
 			Dead:           false,
@@ -38,7 +52,7 @@ func NewBeachballMob(count int, possible []string) *BeachballMob {
 	}
 	font := ui.Font("Mob", 32)
 	for i := range m.Mob.Letters {
-		char := []rune(possible[i])[0]
+		char := []rune(letters[i])[0]
 		if i == 0 {
 			m.Mob.Letters[i] = NewLetter(GetLetterImage(char, LetterTarget, font), LetterTarget, char)
 		} else {
