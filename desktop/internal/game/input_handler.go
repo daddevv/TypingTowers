@@ -28,32 +28,53 @@ func (ih *InputHandler) SetPlayerPosition(pos ui.Location) {
 
 // ProcessInput handles keyboard input and checks for letter matches with mobs.
 // Returns a slice of projectiles to add to the game.
-func (ih *InputHandler) ProcessInput(mobs []entity.Entity) []*entity.Projectile {
-	var projectiles []*entity.Projectile
-	
-	// Check for any key presses
-	for key := ebiten.Key(0); key <= ebiten.KeyMax; key++ {
-		if inpututil.IsKeyJustPressed(key) {
-			// Convert key to character
-			char := ih.keyToChar(key)
-			if char == 0 {
-				continue // Not a valid letter key
+// Now takes projectiles as argument to allow reservation logic.
+func (ih *InputHandler) ProcessInput(mobs []entity.Entity, projectiles []*entity.Projectile) []*entity.Projectile {
+	var newProjectiles []*entity.Projectile
+
+	// Build a map of reserved (mob, letter index) pairs for all projectiles in flight
+	reserved := make(map[*entity.BeachballMob]map[int]struct{})
+	for _, p := range projectiles {
+		if !p.IsActive() {
+			continue
+		}
+		// Only consider projectiles with a valid mob and target char
+		if mob, ok := p.TargetMob.(*entity.BeachballMob); ok && p.TargetChar != 0 {
+			if reserved[mob] == nil {
+				reserved[mob] = make(map[int]struct{})
 			}
-			
-			// Find the closest mob with a matching target letter
-			targetMob := ih.findClosestTargetMob(mobs, char)
-			if targetMob != nil {
-				// Create projectile aimed at the mob
-				projectile := entity.NewProjectile(ih.playerPosition, targetMob.GetPosition())
-				projectiles = append(projectiles, projectile)
-				
-				// Advance the mob's letter targeting
-				ih.advanceMobLetters(targetMob)
+			// Find which letter index this projectile is for
+			for i, letter := range mob.Letters {
+				if letter.State == entity.LetterTarget && letter.Character == p.TargetChar {
+					reserved[mob][i] = struct{}{}
+					break
+				}
 			}
 		}
 	}
-	
-	return projectiles
+
+	// Check for any key presses
+	for key := ebiten.Key(0); key <= ebiten.KeyMax; key++ {
+		if inpututil.IsKeyJustPressed(key) {
+			char := ih.keyToChar(key)
+			if char == 0 {
+				continue
+			}
+			// Find the closest mob/letter that is not reserved
+			targetMob, letterIdx := ih.findClosestUnreservedTargetMob(mobs, char, reserved)
+			if targetMob != nil && letterIdx >= 0 {
+				projectile := entity.NewProjectile(ih.playerPosition, targetMob.GetPosition(), targetMob)
+				projectile.TargetChar = char
+				newProjectiles = append(newProjectiles, projectile)
+				// Mark this letter as reserved for subsequent keys in this frame
+				if reserved[targetMob] == nil {
+					reserved[targetMob] = make(map[int]struct{})
+				}
+				reserved[targetMob][letterIdx] = struct{}{}
+			}
+		}
+	}
+	return newProjectiles
 }
 
 // keyToChar converts an ebiten key to a lowercase character.
@@ -116,72 +137,37 @@ func (ih *InputHandler) keyToChar(key ebiten.Key) rune {
 	}
 }
 
-// findClosestTargetMob finds the closest mob that has the specified character as its current target.
-func (ih *InputHandler) findClosestTargetMob(mobs []entity.Entity, char rune) entity.Entity {
-	var closestMob entity.Entity
+// findClosestUnreservedTargetMob finds the closest mob and letter index for the given char that is not reserved.
+func (ih *InputHandler) findClosestUnreservedTargetMob(mobs []entity.Entity, char rune, reserved map[*entity.BeachballMob]map[int]struct{}) (*entity.BeachballMob, int) {
+	var closestMob *entity.BeachballMob
+	closestIdx := -1
 	closestDistance := math.Inf(1)
-	
+
 	for _, mob := range mobs {
-		// Check if this mob has the target character
-		if ih.mobHasTargetChar(mob, char) {
-			// Calculate distance from player to mob
-			mobPos := mob.GetPosition()
-			dx := mobPos.X - ih.playerPosition.X
-			dy := mobPos.Y - ih.playerPosition.Y
-			distance := math.Sqrt(dx*dx + dy*dy)
-			
-			// Update closest if this is closer
-			if distance < closestDistance {
-				closestDistance = distance
-				closestMob = mob
-			}
+		beachballMob, ok := mob.(*entity.BeachballMob)
+		if !ok {
+			continue
 		}
-	}
-	
-	return closestMob
-}
-
-// mobHasTargetChar checks if the mob's current target letter matches the character.
-func (ih *InputHandler) mobHasTargetChar(mob entity.Entity, char rune) bool {
-	// We need to access the mob's letters. Since we're working with the interface,
-	// we need to type assert to BeachballMob to access the Letters field.
-	if beachballMob, ok := mob.(*entity.BeachballMob); ok {
-		for _, letter := range beachballMob.Letters {
-			if letter.State == entity.LetterTarget {
-				return letter.Character == char
-			}
-		}
-	}
-	return false
-}
-
-// advanceMobLetters advances the mob's letter targeting to the next letter.
-func (ih *InputHandler) advanceMobLetters(mob entity.Entity) {
-	if beachballMob, ok := mob.(*entity.BeachballMob); ok {
-		// Find current target letter and mark it as inactive
-		targetIndex := -1
 		for i, letter := range beachballMob.Letters {
-			if letter.State == entity.LetterTarget {
-				beachballMob.Letters[i].State = entity.LetterInactive
-				beachballMob.Letters[i].Sprite = entity.GetLetterImage(
-					letter.Character, 
-					entity.LetterInactive, 
-					ui.Font("Mob", 32),
-				)
-				targetIndex = i
-				break
+			if letter.State == entity.LetterTarget && letter.Character == char {
+				// Skip if reserved
+				if reserved[beachballMob] != nil {
+					if _, taken := reserved[beachballMob][i]; taken {
+						continue
+					}
+				}
+				// Calculate distance from player to mob
+				mobPos := beachballMob.GetPosition()
+				dx := mobPos.X - ih.playerPosition.X
+				dy := mobPos.Y - ih.playerPosition.Y
+				distance := math.Sqrt(dx*dx + dy*dy)
+				if distance < closestDistance {
+					closestDistance = distance
+					closestMob = beachballMob
+					closestIdx = i
+				}
 			}
 		}
-		
-		// Set next letter as target if available
-		if targetIndex >= 0 && targetIndex+1 < len(beachballMob.Letters) {
-			nextIndex := targetIndex + 1
-			beachballMob.Letters[nextIndex].State = entity.LetterTarget
-			beachballMob.Letters[nextIndex].Sprite = entity.GetLetterImage(
-				beachballMob.Letters[nextIndex].Character, 
-				entity.LetterTarget, 
-				ui.Font("Mob", 32),
-			)
-		}
 	}
+	return closestMob, closestIdx
 }

@@ -71,9 +71,9 @@ func (g *Game) Update() error {
 
 	// Update input handler with current player position
 	g.InputHandler.SetPlayerPosition(g.Player.GetPosition())
-	
-	// Process input and create projectiles
-	newProjectiles := g.InputHandler.ProcessInput(g.Mobs)
+
+	// Process input and create projectiles (pass current projectiles for reservation logic)
+	newProjectiles := g.InputHandler.ProcessInput(g.Mobs, g.Projectiles)
 	g.Projectiles = append(g.Projectiles, newProjectiles...)
 
 	// --- Parallel mob updates ---
@@ -152,6 +152,35 @@ func (g *Game) checkProjectileCollisions() {
 			if projPos.X >= mobPos.X && projPos.X <= mobPos.X+mobSize &&
 				projPos.Y >= mobPos.Y && projPos.Y <= mobPos.Y+mobSize {
 				
+				// 100% hit rate: if projectile is for the current target letter, always hit
+				// (Future: add miss chance or more complex logic here)
+				if beachballMob, ok := mob.(*entity.BeachballMob); ok {
+					targetIndex := -1
+					for i, letter := range beachballMob.Letters {
+						if letter.State == entity.LetterTarget && letter.Character == projectile.TargetChar {
+							// Mark this letter as inactive
+							beachballMob.Letters[i].State = entity.LetterInactive
+							beachballMob.Letters[i].Sprite = entity.GetLetterImage(
+								letter.Character, 
+								entity.LetterInactive, 
+								ui.Font("Mob", 32),
+							)
+							targetIndex = i
+							break
+						}
+					}
+					// Set next letter as target if available
+					if targetIndex >= 0 && targetIndex+1 < len(beachballMob.Letters) {
+						nextIndex := targetIndex + 1
+						beachballMob.Letters[nextIndex].State = entity.LetterTarget
+						beachballMob.Letters[nextIndex].Sprite = entity.GetLetterImage(
+							beachballMob.Letters[nextIndex].Character, 
+							entity.LetterTarget, 
+							ui.Font("Mob", 32),
+						)
+					}
+				}
+
 				// Collision detected - deactivate projectile
 				projectile.Deactivate()
 				projectile.DamageDealt = true
