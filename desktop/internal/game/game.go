@@ -17,7 +17,7 @@ import (
 
 type Game struct {
 	Level             world.Level
-	Player            entity.Entity
+	Player            *entity.Player // Use concrete type for health access
 	Mobs              []entity.Entity
 	Projectiles       []*entity.Projectile
 	InputHandler      *InputHandler
@@ -28,6 +28,13 @@ type Game struct {
 	WaveEnemyDefeated int  // Number of enemies defeated in current wave
 	ShowWaveToast     bool
 	WaveToastTimer    float64
+
+	// Stats
+	Misses            int
+	HighestStreak     int
+	CurrentStreak     int
+	LuckyHits         int // Secondary mob hit instead of front
+	GameOver          bool
 }
 
 func NewGame(opts GameOptions) *Game {
@@ -53,14 +60,31 @@ func NewGame(opts GameOptions) *Game {
 		CurrentWave:       0,
 		WaveEnemyDefeated: 0,
 		ShowWaveToast:     true,
-		WaveToastTimer:    3.5, // longer toast duration
-		// Ensure no mobs spawn at level start
+		WaveToastTimer:    3.5,
+		Misses:            0,
+		HighestStreak:     0,
+		CurrentStreak:     0,
+		LuckyHits:         0,
 	}
 }
 
 func (g *Game) Update() error {
+	if g.GameOver {
+		// Handle input for game over menu
+		if inpututil.IsKeyJustPressed(ebiten.KeyR) {
+			return errors.New("restart_level")
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeyM) {
+			return errors.New("return_to_menu")
+		}
+		return nil
+	}
 	if g.LevelComplete {
-		return nil // No updates if level is complete
+		// Allow returning to menu after level complete
+		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+			return errors.New("return_to_menu")
+		}
+		return nil
 	}
 	// Calculate delta time for smooth timing
 	now := time.Now()
@@ -129,11 +153,17 @@ func (g *Game) Update() error {
 		if pos.X > 200 {
 			activeMobs = append(activeMobs, mob)
 		} else {
-			if beachballMob, ok := mob.(*entity.BeachballMob); ok && (beachballMob.Dead || allLettersInactive(beachballMob)) {
-				beachballMob.Dead = true
-				g.WaveEnemyDefeated++
-				g.MobSpawner.SpeedUpOverTime(g.WaveEnemyDefeated)
+			// Mob reached left edge: decrement player health, do not increment score
+			g.Player.DecrementHealth()
+			if g.Player.Health <= 0 {
+				g.GameOver = true
 			}
+			// Optionally: mark mob as dead for animation
+		}
+		// Remove mobs with all inactive letters
+		if beachballMob, ok := mob.(*entity.BeachballMob); ok && allLettersInactive(beachballMob) {
+			// Remove mob, do not increment score here
+			continue
 		}
 	}
 	g.Mobs = activeMobs
@@ -142,11 +172,13 @@ func (g *Game) Update() error {
 	if g.CurrentWave < len(g.Level.Waves) {
 		wave := g.Level.Waves[g.CurrentWave]
 		if g.WaveEnemyDefeated >= wave.EnemyCount {
+			// Remove all mobs at wave end (no score)
+			g.Mobs = entity.EmptyList()
 			g.CurrentWave++
 			g.WaveEnemyDefeated = 0
 			g.ShowWaveToast = true
 			g.WaveToastTimer = 3.5
-			return nil // Pause wave progression until toast is gone
+			return nil
 		}
 	}
 	if g.CurrentWave >= len(g.Level.Waves) {
@@ -221,43 +253,48 @@ func textWidth(face *text.GoTextFace, s string) float64 {
 	return float64(len(s)) * face.Size * 0.6
 }
 
-func drawLetterIndicators(screen *ebiten.Image, possible map[string]bool) {
-	// Stacked left-to-right, 13 per row, top left, with background quad
-	font := ui.Font("Game-Bold", 28)
+// drawKeyboardIndicators draws a QWERTY keyboard layout (unshifted and shifted) with possible letters highlighted.
+func drawKeyboardIndicators(screen *ebiten.Image, possible map[string]bool) {
+	font := ui.Font("Game-Bold", 24)
 	startX := 18.0
 	startY := 18.0
-	rowStep := 32.0
-	colStep := 38.0 // slightly tighter
-	letters := []string{}
-	// A-Z
-	for i := 0; i < 26; i++ {
-		letters = append(letters, fmt.Sprintf("%c", 'A'+i))
+	rowStep := 38.0
+	colStep := 38.0
+
+	// QWERTY layout (unshifted)
+	rows := [][]string{
+		{"q", "w", "e", "r", "t", "y", "u", "i", "o", "p"},
+		{"a", "s", "d", "f", "g", "h", "j", "k", "l"},
+		{"z", "x", "c", "v", "b", "n", "m"},
 	}
-	// a-z
-	for i := 0; i < 26; i++ {
-		letters = append(letters, fmt.Sprintf("%c", 'a'+i))
+	rowOffsets := []float64{0, colStep * 0.6, colStep * 1.5} // offset 2nd and 3rd rows
+	// Shifted layout (uppercase and symbols)
+	shiftRows := [][]string{
+		{"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"},
+		{"A", "S", "D", "F", "G", "H", "J", "K", "L"},
+		{"Z", "X", "C", "V", "B", "N", "M"},
 	}
-	// 0-9 and symbols
-	symbols := "0123456789!@#$%^&*()-_=+[]{};:'\",.<>/?|`~"
-	for _, r := range symbols {
-		letters = append(letters, string(r))
-	}
-	// Calculate grid size
-	total := len(letters)
-	cols := 13
-	rows := (total + cols - 1) / cols
-	quadWidth := float64(cols)*colStep + 18.0
-	quadHeight := float64(rows)*rowStep + 18.0
+	shiftRowOffsets := rowOffsets
+	// Number row (unshifted and shifted)
+	numRow := []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"}
+	shiftNumRow := []string{"!", "@", "#", "$", "%", "^", "&", "*", "(", ")"}
+	// Symbol row (unshifted and shifted)
+	symbolRow := []string{"-", "=", "[", "]", ";", "'", ",", ".", "/"}
+	shiftSymbolRow := []string{"_", "+", "{", "}", ":", "\"", "<", ">", "?"}
+
+	// Expanded background quad for both keyboards
+	quadWidth := 13*colStep + 48.0 // wider for offsets and symbols
+	quadHeight := 2*startY + 2*rowStep + 10*rowStep + 32.0 // much taller for both keyboards
 	quad := ebiten.NewImage(int(quadWidth), int(quadHeight))
 	quad.Fill(color.RGBA{30, 30, 30, 220})
 	quadOpts := &ebiten.DrawImageOptions{}
 	quadOpts.GeoM.Translate(startX-9, startY-9)
 	screen.DrawImage(quad, quadOpts)
-	for idx, ch := range letters {
-		row := idx / cols
-		col := idx % cols
-		x := startX + float64(col)*colStep
-		y := startY + float64(row)*rowStep
+
+	// Draw number row (unshifted)
+	for i, ch := range numRow {
+		x := startX + float64(i)*colStep
+		y := startY
 		opts := &text.DrawOptions{}
 		opts.GeoM.Translate(x, y)
 		if possible[ch] {
@@ -267,8 +304,94 @@ func drawLetterIndicators(screen *ebiten.Image, possible map[string]bool) {
 		}
 		text.Draw(screen, ch, font, opts)
 	}
+	// Draw QWERTY rows (unshifted)
+	for rowIdx, row := range rows {
+		offset := rowOffsets[rowIdx]
+		for colIdx, ch := range row {
+			x := startX + offset + float64(colIdx)*colStep
+			y := startY + float64(rowIdx+1)*rowStep
+			opts := &text.DrawOptions{}
+			opts.GeoM.Translate(x, y)
+			if possible[ch] {
+				opts.ColorScale.ScaleWithColor(color.White)
+			} else {
+				opts.ColorScale.ScaleWithColor(color.RGBA{120, 120, 120, 255})
+			}
+			text.Draw(screen, ch, font, opts)
+		}
+	}
+	// Draw symbol row (unshifted)
+	for i, ch := range symbolRow {
+		x := startX + colStep*2.5 + float64(i)*colStep
+		y := startY + 4*rowStep
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(x, y)
+		if possible[ch] {
+			opts.ColorScale.ScaleWithColor(color.White)
+		} else {
+			opts.ColorScale.ScaleWithColor(color.RGBA{120, 120, 120, 255})
+		}
+		text.Draw(screen, ch, font, opts)
+	}
+
+	// Draw shifted (shift) keyboard below
+	shiftY := startY + 5*rowStep + 24
+	// Draw number row (shifted)
+	for i, ch := range shiftNumRow {
+		x := startX + float64(i)*colStep
+		y := shiftY
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(x, y)
+		if possible[ch] {
+			opts.ColorScale.ScaleWithColor(color.White)
+		} else {
+			opts.ColorScale.ScaleWithColor(color.RGBA{120, 120, 120, 255})
+		}
+		text.Draw(screen, ch, font, opts)
+	}
+	// Draw QWERTY rows (shifted)
+	for rowIdx, row := range shiftRows {
+		offset := shiftRowOffsets[rowIdx]
+		for colIdx, ch := range row {
+			x := startX + offset + float64(colIdx)*colStep
+			y := shiftY + float64(rowIdx+1)*rowStep
+			opts := &text.DrawOptions{}
+			opts.GeoM.Translate(x, y)
+			if possible[ch] {
+				opts.ColorScale.ScaleWithColor(color.White)
+			} else {
+				opts.ColorScale.ScaleWithColor(color.RGBA{120, 120, 120, 255})
+			}
+			text.Draw(screen, ch, font, opts)
+		}
+	}
+	// Draw symbol row (shifted)
+	for i, ch := range shiftSymbolRow {
+		x := startX + colStep*2.5 + float64(i)*colStep
+		y := shiftY + 4*rowStep
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(x, y)
+		if possible[ch] {
+			opts.ColorScale.ScaleWithColor(color.White)
+		} else {
+			opts.ColorScale.ScaleWithColor(color.RGBA{120, 120, 120, 255})
+		}
+		text.Draw(screen, ch, font, opts)
+	}
+
+	// Add labels
+	labelFont := ui.Font("Game-Bold", 20)
+	labelOpts := &text.DrawOptions{}
+	labelOpts.GeoM.Translate(startX, startY-16)
+	labelOpts.ColorScale.ScaleWithColor(color.RGBA{200, 200, 255, 255})
+	text.Draw(screen, "Keyboard (unshifted)", labelFont, labelOpts)
+	labelOpts2 := &text.DrawOptions{}
+	labelOpts2.GeoM.Translate(startX, shiftY-16)
+	labelOpts2.ColorScale.ScaleWithColor(color.RGBA{200, 200, 255, 255})
+	text.Draw(screen, "Keyboard (shift)", labelFont, labelOpts2)
 }
 
+// drawMobChances draws the mob spawn chances box on the right side of the HUD.
 func drawMobChances(screen *ebiten.Image, mobChances []struct {
 	Type   string
 	Chance float64
@@ -353,7 +476,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			possible[l] = true
 		}
 	}
-	drawLetterIndicators(screen, possible)
+	drawKeyboardIndicators(screen, possible)
 	// Draw right-side mob chances with background
 	if g.CurrentWave < len(g.Level.Waves) {
 		wave := g.Level.Waves[g.CurrentWave]
@@ -433,5 +556,59 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		lettersOpts.GeoM.Translate(1920/2-lettersWidth/2, float64(boxY)+paddingY+60)
 		lettersOpts.ColorScale.ScaleWithColor(color.White)
 		text.Draw(screen, lettersStr, lettersFont, lettersOpts)
+	}
+
+	// Draw player health
+	healthFont := ui.Font("Game-Bold", 32)
+	healthStr := fmt.Sprintf("Health: %d", g.Player.Health)
+	healthOpts := &text.DrawOptions{}
+	healthOpts.GeoM.Translate(30, 900)
+	healthOpts.ColorScale.ScaleWithColor(color.RGBA{255, 80, 80, 255})
+	text.Draw(screen, healthStr, healthFont, healthOpts)
+	// Draw stats near player (bottom left)
+	statsFont := ui.Font("Game-Bold", 24)
+	statsY := 940.0
+	missesOpts := &text.DrawOptions{}
+	missesOpts.GeoM.Translate(30, statsY)
+	text.Draw(screen, fmt.Sprintf("Misses: %d", g.Misses), statsFont, missesOpts)
+	streakOpts := &text.DrawOptions{}
+	streakOpts.GeoM.Translate(30, statsY+30)
+	text.Draw(screen, fmt.Sprintf("Highest Streak: %d", g.HighestStreak), statsFont, streakOpts)
+	luckyOpts := &text.DrawOptions{}
+	luckyOpts.GeoM.Translate(30, statsY+60)
+	text.Draw(screen, fmt.Sprintf("Lucky Hits: %d", g.LuckyHits), statsFont, luckyOpts)
+
+	// Game Over overlay
+	if g.GameOver {
+		msg := "Game Over!"
+		msgFont := ui.Font("Game-Bold", 64)
+		msgWidth := textWidth(msgFont, msg)
+		msgBoxWidth := msgWidth + 120
+		msgBoxHeight := 220.0
+		msgBoxX := 1920.0/2 - msgBoxWidth/2
+		msgBoxY := 400.0
+		msgQuad := ebiten.NewImage(int(msgBoxWidth), int(msgBoxHeight))
+		msgQuad.Fill(color.RGBA{30, 30, 30, 240})
+		msgQuadOpts := &ebiten.DrawImageOptions{}
+		msgQuadOpts.GeoM.Translate(msgBoxX, msgBoxY)
+		screen.DrawImage(msgQuad, msgQuadOpts)
+		msgOpts := &text.DrawOptions{}
+		msgOpts.GeoM.Translate(1920/2-msgWidth/2, msgBoxY+60)
+		msgOpts.ColorScale.ScaleWithColor(color.RGBA{255, 80, 80, 255})
+		text.Draw(screen, msg, msgFont, msgOpts)
+		// Draw buttons
+		btnFont := ui.Font("Game-Bold", 36)
+		btn1 := "[R] Restart Level"
+		btn2 := "[M] Main Menu"
+		btn1Width := textWidth(btnFont, btn1)
+		btn2Width := textWidth(btnFont, btn2)
+		btn1Opts := &text.DrawOptions{}
+		btn1Opts.GeoM.Translate(1920/2-btn1Width/2, msgBoxY+120)
+		btn1Opts.ColorScale.ScaleWithColor(color.White)
+		text.Draw(screen, btn1, btnFont, btn1Opts)
+		btn2Opts := &text.DrawOptions{}
+		btn2Opts.GeoM.Translate(1920/2-btn2Width/2, msgBoxY+170)
+		btn2Opts.ColorScale.ScaleWithColor(color.White)
+		text.Draw(screen, btn2, btnFont, btn2Opts)
 	}
 }

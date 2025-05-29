@@ -12,8 +12,9 @@ const (
 )
 
 type Player struct {
-	Pos   ui.Location
-	Image *ebiten.Image
+	Pos    ui.Location
+	Image  *ebiten.Image
+	Health int // Player health
 }
 
 func NewPlayer() *Player {
@@ -22,8 +23,9 @@ func NewPlayer() *Player {
 		panic(err)
 	}
 	return &Player{
-		Pos:   ui.Location{X: 100, Y: PLAYER_Y}, // px
-		Image: image,
+		Pos:    ui.Location{X: 100, Y: PLAYER_Y}, // px
+		Image:  image,
+		Health: 5, // Default health now 5
 	}
 }
 
@@ -50,4 +52,10 @@ func (p *Player) SetPosition(x, y float64) {
 
 func (p *Player) StartDeath() {
 	// TODO: Implement player death logic (animation, state, etc)
+}
+
+func (p *Player) DecrementHealth() {
+	if p.Health > 0 {
+		p.Health--
+	}
 }
