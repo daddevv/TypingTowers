@@ -1,6 +1,16 @@
 # TypeDefense
 
-TypeDefense is a typing-based tower defense game built with Ebiten. Players defend against waves of enemies by typing the letters displayed above each mob. The game features dynamic difficulty scaling, projectile-based combat feedback, and an endless mode that progressively introduces new letters and increases challenge.
+TypeDefense is a typing-based tower defense game built with Ebiten. All game content—levels, mobs, and worlds—is now defined in JSON configuration files for rapid iteration and modding. You can add or edit content without rebuilding the project.
+
+## Content Configuration Overview
+
+Game content is loaded from JSON files in `desktop/content/`:
+
+- `levels.json`: Level definitions (name, difficulty, biome, available letters, background)
+- `mobs.json`: Mob/enemy definitions (type, sprite, animation, min/max letters, etc.)
+- `worlds.json`: World/biome definitions (name, background)
+
+See [`desktop/content/README.md`](desktop/content/README.md) for a full guide on editing these files.
 
 ## Gameplay
 
@@ -29,7 +39,7 @@ When you type a letter correctly, a projectile fires from the player position to
 
 ### Mob System
 
-- **BeachballMob**: Animated beach ball enemies with customizable letter sequences
+- **BeachballMob**: Animated beach ball enemies with customizable letter sequences (configurable in JSON)
 - **Smart Spawning**: MobSpawner handles timing, letter generation, and difficulty scaling
 - **Visual States**: Each letter has distinct visual states (target/active/inactive)
 - **Death Animations**: Mobs play death animations when defeated
@@ -40,6 +50,7 @@ When you type a letter correctly, a projectile fires from the player position to
 - **Fixed Canvas**: 1920x1080 internal resolution with automatic scaling to window size
 - **Parallel Processing**: Mob updates run in parallel for better performance
 - **State Management**: Clean separation between menu, game, and pause states
+- **JSON-Driven Content**: All levels, mobs, and worlds are loaded from JSON files at runtime
 
 ## Architecture Overview
 
@@ -92,11 +103,12 @@ TypeDefense has a fully functional core game loop with:
 - ✅ Score tracking and letter pool expansion
 - ✅ Performance-optimized rendering
 - ✅ Responsive input handling for rapid typing
+- ✅ **JSON-driven content system** for easy modding and content updates
 
 ### Immediate Development Areas
 
 - Enhanced visual effects and animations
-- Additional mob types and behaviors
+- Additional mob types and behaviors (add via JSON)
 - Level progression and win/lose conditions
 - Improved UI and menu systems
 - Audio feedback and sound effects
@@ -107,14 +119,10 @@ See `TODO.md` for detailed development roadmap and priorities.
 
 We welcome contributions! Whether you want to add new mob types, create worlds and biomes, implement game modes, or help with features, there are many ways to contribute.
 
-**📖 [Read the Developer Contribution Guide](CONTRIBUTING.md)** - Comprehensive guide covering:
+**📖 [Read the Developer Contribution Guide](CONTRIBUTING.md)**
 
-- How to add new mob types with custom behaviors
-- Creating new worlds, biomes, and levels
-- Implementing new game modes and features  
-- Extending the letter and typing systems
-- UI development and menu creation
-- Testing guidelines and best practices
+- For content editing, see [`desktop/content/README.md`](desktop/content/README.md).
+- For code and system extension, see `CONTRIBUTING.md`.
 
 The codebase is designed to be modular and extensible, making it easy to add content without modifying core systems. Perfect for developers who want to contribute while learning game development!
 
@@ -122,6 +130,7 @@ The codebase is designed to be modular and extensible, making it easy to add con
 
 ```bash
 # Run the main game
+cd desktop
 go run ./cmd/game/main.go
 
 # Preview sprite animations (development tool)
@@ -135,6 +144,7 @@ desktop/
 ├── cmd/
 │   ├── game/main.go          # Main game entry point
 │   └── preview/main.go       # Sprite animation preview tool
+├── content/                  # JSON content configs (levels, mobs, worlds)
 ├── internal/
 │   ├── engine/               # Game engine and state management
 │   ├── game/                 # Core game logic and loop
