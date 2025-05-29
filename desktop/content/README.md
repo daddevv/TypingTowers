@@ -47,32 +47,38 @@ desktop/content/
 
 ```json
 {
-  "name": "World 1",
-  "difficulty": "Easy",
+  "name": "Beach Bash!",
+  "worldNumber": 1,
+  "levelNumber": 1,
   "world": "BEACH",
   "startingLetters": ["a", "e", "i", "o", "u"],
-  "possibleLetters": ["a", "e", "i", "o", "u", "f", "g", "h", "j"],
+  "levelCompleteScore": 15,
   "waves": [
     {
-      "scoreThreshold": 5,
-      "possibleLetters": ["a", "e", "i", "o", "u"]
+      "waveNumber": 1,
+      "possibleLetters": ["a", "e", "i", "o", "u"],
+      "enemyCount": 5
     },
     {
-      "scoreThreshold": 10,
-      "possibleLetters": ["a", "e", "i", "o", "u", "f", "g"]
+      "waveNumber": 2,
+      "possibleLetters": ["a", "e", "i", "o", "u", "f", "g"],
+      "enemyCount": 5
     },
     {
-      "scoreThreshold": 15,
-      "possibleLetters": ["a", "e", "i", "o", "u", "f", "g", "h", "j"]
+      "waveNumber": 3,
+      "possibleLetters": ["a", "e", "i", "o", "u", "f", "g", "h", "j"],
+      "enemyCount": 5
     }
   ]
 }
 ```
 
+- `name`: Fun, descriptive name for the level (displayed at the top of the screen).
+- `worldNumber`/`levelNumber`: Used for world/level progression and unlocking.
 - `world`: Reference to a world/biome defined in `worlds.json`.
 - `startingLetters`: Letters available at the start of the level.
-- `possibleLetters`: All letters that can be unlocked in this level.
-- `waves`: Each wave has a `scoreThreshold` (score required to complete the wave) and can optionally override `possibleLetters` for that wave.
+- `levelCompleteScore`: Score required to complete the level.
+- `waves`: Each wave has a `waveNumber`, `possibleLetters`, and `enemyCount` (number of enemies to defeat in that wave).
 
 ### 3. Editing or Adding Worlds
 

@@ -7,6 +7,7 @@ import (
 	"td/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 type Engine struct {
@@ -48,10 +49,49 @@ func (e *Engine) Update() error {
 		switch state {
 		case "Start Game":
 			if e.Game == nil {
+				// Load first level from content config
+				levelCfg := LoadedLevels[0]
+				// Load world background
+				var bgImg *ebiten.Image
+				for _, w := range LoadedWorlds {
+					if w.Name == levelCfg.World {
+						img, _, err := ebitenutil.NewImageFromFile(w.Background)
+						if err == nil {
+							bgImg = img
+						}
+					}
+				}
+				// Convert waves
+				waves := make([]struct {
+					WaveNumber      int
+					PossibleLetters []string
+					EnemyCount      int
+				}, len(levelCfg.Waves))
+				for i, w := range levelCfg.Waves {
+					waves[i] = struct {
+						WaveNumber      int
+						PossibleLetters []string
+						EnemyCount      int
+					}{
+						WaveNumber:      w.WaveNumber,
+						PossibleLetters: w.PossibleLetters,
+						EnemyCount:      w.EnemyCount,
+					}
+				}
+				level := world.Level{
+					Name:               levelCfg.Name,
+					WorldNumber:        levelCfg.WorldNumber,
+					LevelNumber:        levelCfg.LevelNumber,
+					World:              levelCfg.World,
+					StartingLetters:    levelCfg.StartingLetters,
+					Waves:              waves,
+					LevelCompleteScore: levelCfg.LevelCompleteScore,
+					Background:         bgImg,
+				}
 				e.Game = game.NewGame(game.GameOptions{
-					Level:    *world.NewLevel("World 1", "normal", []string{"f", "g", "h", "j"}),
-					GameMode: game.ENDLESS,
-					MobConfigs: LoadedMobs, // Pass loaded mob configs
+					Level:     level,
+					GameMode:  game.ENDLESS,
+					MobConfigs: LoadedMobs,
 				})
 			}
 			e.State = GAME_PLAYING

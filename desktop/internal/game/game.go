@@ -24,6 +24,9 @@ type Game struct {
 	MobSpawner   *entity.MobSpawner
 	LastUpdate   time.Time
 	Score        int // Number of mobs defeated
+	LevelComplete bool // True if level is complete
+	CurrentWave   int // Current wave index (0-based)
+	WaveEnemyDefeated int // Number of enemies defeated in current wave
 }
 
 func NewGame(opts GameOptions) *Game {
@@ -46,10 +49,16 @@ func NewGame(opts GameOptions) *Game {
 		MobSpawner:   mobSpawner,
 		LastUpdate:   time.Now(),
 		Score:        0,
+		LevelComplete: false,
+		CurrentWave:   0,
+		WaveEnemyDefeated: 0,
 	}
 }
 
 func (g *Game) Update() error {
+	if g.LevelComplete {
+		return nil // No updates if level is complete
+	}
 	// Calculate delta time for smooth timing
 	now := time.Now()
 	deltaTime := now.Sub(g.LastUpdate).Seconds()
@@ -111,7 +120,6 @@ func (g *Game) Update() error {
 	g.checkProjectileCollisions()
 
 	// --- Collision and despawn logic ---
-	// Remove mobs that go off-screen (X < -100) or are dead
 	activeMobs := g.Mobs[:0]
 	for _, mob := range g.Mobs {
 		pos := mob.GetPosition()
@@ -121,33 +129,25 @@ func (g *Game) Update() error {
 			// Check if mob was defeated (all letters typed) vs just went off screen
 			if beachballMob, ok := mob.(*entity.BeachballMob); ok && beachballMob.Dead {
 				g.Score++
+				g.WaveEnemyDefeated++
 				g.MobSpawner.SpeedUpOverTime(g.Score)
 			}
 		}
 	}
 	g.Mobs = activeMobs
 
-	// Remove inactive projectiles and decrement pending projectiles for missed shots
-	activeProjectiles := g.Projectiles[:0]
-	for _, projectile := range g.Projectiles {
-		if projectile.IsActive() {
-			activeProjectiles = append(activeProjectiles, projectile)
-		} else {
-			// If projectile became inactive but didn't deal damage, it missed
-			if !projectile.DamageDealt {
-				if beachballMob, ok := projectile.TargetMob.(*entity.BeachballMob); ok {
-					beachballMob.PendingProjectiles--
-
-					// If this mob is pending death and has no more pending projectiles, start death animation
-					if beachballMob.PendingDeath && beachballMob.PendingProjectiles <= 0 {
-						beachballMob.StartDeath()
-					}
-				}
-			}
+	// Wave/level progression logic
+	if g.CurrentWave < len(g.Level.Waves) {
+		wave := g.Level.Waves[g.CurrentWave]
+		if g.WaveEnemyDefeated >= wave.EnemyCount {
+			g.CurrentWave++
+			g.WaveEnemyDefeated = 0
+			// Optionally: update possible letters for next wave, etc.
 		}
 	}
-	g.Projectiles = activeProjectiles
-
+	if g.Score >= g.Level.LevelCompleteScore {
+		g.LevelComplete = true
+	}
 	return nil
 }
 
@@ -193,13 +193,40 @@ func (g *Game) checkProjectileCollisions() {
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.Level.DrawBackground(screen)
 
+	// Draw level name at top center
+	levelName := g.Level.Name
+	font := ui.Font("Game-Bold", 48)
+	nameOpts := &text.DrawOptions{}
+	nameOpts.GeoM.Translate(1920/2-300, 60)
+	nameOpts.ColorScale.ScaleWithColor(color.RGBA{255, 255, 0, 255})
+	text.Draw(screen, levelName, font, nameOpts)
+
+	// Draw world/level number
+	levelNumStr := fmt.Sprintf("World %d - Level %d", g.Level.WorldNumber, g.Level.LevelNumber)
+	levelNumFont := ui.Font("Game-Bold", 32)
+	levelNumOpts := &text.DrawOptions{}
+	levelNumOpts.GeoM.Translate(1920/2-200, 120)
+	levelNumOpts.ColorScale.ScaleWithColor(color.White)
+	text.Draw(screen, levelNumStr, levelNumFont, levelNumOpts)
+
 	// Draw score in top left corner
 	scoreStr := fmt.Sprintf("Score: %d", g.Score)
-	opts := &text.DrawOptions{}
-	opts.GeoM.Translate(20, 50)                 // position on screen
-	opts.ColorScale.ScaleWithColor(color.White) // text color
-	font := ui.Font("Game-Bold", 32)            // use the font source to get the font
-	text.Draw(screen, scoreStr, font, opts)
+	scoreOpts := &text.DrawOptions{}
+	scoreOpts.GeoM.Translate(20, 50)
+	scoreOpts.ColorScale.ScaleWithColor(color.White)
+	fontSmall := ui.Font("Game-Bold", 32)
+	text.Draw(screen, scoreStr, fontSmall, scoreOpts)
+
+	// Draw wave info
+	if g.CurrentWave < len(g.Level.Waves) {
+		wave := g.Level.Waves[g.CurrentWave]
+		waveStr := fmt.Sprintf("Wave %d: %d/%d enemies defeated", wave.WaveNumber, g.WaveEnemyDefeated, wave.EnemyCount)
+		waveFont := ui.Font("Game-Bold", 32)
+		waveOpts := &text.DrawOptions{}
+		waveOpts.GeoM.Translate(20, 100)
+		waveOpts.ColorScale.ScaleWithColor(color.White)
+		text.Draw(screen, waveStr, waveFont, waveOpts)
+	}
 
 	entities := append(g.Mobs, g.Player)
 	// TODO: Sort entities by Z-index (smallest Y first) if needed
@@ -210,5 +237,15 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// Draw projectiles
 	for _, projectile := range g.Projectiles {
 		projectile.Draw(screen)
+	}
+
+	// Draw level complete message if needed
+	if g.LevelComplete {
+		msg := "Level Complete!"
+		msgFont := ui.Font("Game-Bold", 64)
+		msgOpts := &text.DrawOptions{}
+		msgOpts.GeoM.Translate(1920/2-320, 540)
+		msgOpts.ColorScale.ScaleWithColor(color.RGBA{0,255,0,255})
+		text.Draw(screen, msg, msgFont, msgOpts)
 	}
 }

@@ -1,7 +1,8 @@
 [
     {
-        "name": "World 1",
-        "difficulty": "Easy",
+        "name": "Beach Bash!",
+        "worldNumber": 1,
+        "levelNumber": 1,
         "world": "BEACH",
         "startingLetters": [
             "a",
@@ -10,30 +11,21 @@
             "o",
             "u"
         ],
-        "possibleLetters": [
-            "a",
-            "e",
-            "i",
-            "o",
-            "u",
-            "f",
-            "g",
-            "h",
-            "j"
-        ],
+        "levelCompleteScore": 15,
         "waves": [
             {
-                "scoreThreshold": 5,
+                "waveNumber": 1,
                 "possibleLetters": [
                     "a",
                     "e",
                     "i",
                     "o",
                     "u"
-                ]
+                ],
+                "enemyCount": 5
             },
             {
-                "scoreThreshold": 10,
+                "waveNumber": 2,
                 "possibleLetters": [
                     "a",
                     "e",
@@ -42,10 +34,11 @@
                     "u",
                     "f",
                     "g"
-                ]
+                ],
+                "enemyCount": 5
             },
             {
-                "scoreThreshold": 15,
+                "waveNumber": 3,
                 "possibleLetters": [
                     "a",
                     "e",
@@ -56,7 +49,8 @@
                     "g",
                     "h",
                     "j"
-                ]
+                ],
+                "enemyCount": 5
             }
         ]
     }

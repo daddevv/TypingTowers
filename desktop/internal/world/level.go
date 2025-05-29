@@ -2,35 +2,37 @@ package world
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 type Level struct {
-	Name            string
-	Difficulty      string
-	Biome           Biome
-	PossibleLetters []string
-	Background      *ebiten.Image
+	Name               string
+	WorldNumber        int
+	LevelNumber        int
+	World              string
+	StartingLetters    []string
+	Waves              []struct {
+		WaveNumber      int
+		PossibleLetters []string
+		EnemyCount      int
+	}
+	LevelCompleteScore int
+	Background         *ebiten.Image
 }
 
-func NewLevel(name, difficulty string, possibleLetters []string) *Level {
-	var biome Biome
-	var background *ebiten.Image
-	var err error
-	switch name {
-	case "World 1":
-		biome = BEACH
-		background, _, err = ebitenutil.NewImageFromFile("assets/images/background/beach.png")
-		if err != nil {
-			panic("Failed to load background image: " + err.Error())
-		}
-	}
+func NewLevel(name string, worldNumber, levelNumber int, world string, startingLetters []string, waves []struct {
+	WaveNumber      int
+	PossibleLetters []string
+	EnemyCount      int
+}, levelCompleteScore int, background *ebiten.Image) *Level {
 	return &Level{
-		Name:            name,
-		Difficulty:      difficulty,
-		Biome:           biome,
-		PossibleLetters: possibleLetters,
-		Background:      background,
+		Name:               name,
+		WorldNumber:        worldNumber,
+		LevelNumber:        levelNumber,
+		World:              world,
+		StartingLetters:    startingLetters,
+		Waves:              waves,
+		LevelCompleteScore: levelCompleteScore,
+		Background:         background,
 	}
 }
 

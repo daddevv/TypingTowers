@@ -3,18 +3,20 @@ package content
 
 // LevelWaveConfig defines a wave in a level.
 type LevelWaveConfig struct {
-	ScoreThreshold int      `json:"scoreThreshold"` // Score required to complete this wave
-	PossibleLetters []string `json:"possibleLetters,omitempty"` // Letters available in this wave (optional, overrides level)
+	WaveNumber      int      `json:"waveNumber"`
+	PossibleLetters []string `json:"possibleLetters"`
+	EnemyCount      int      `json:"enemyCount"` // Number of enemies to defeat in this wave
 }
 
 // LevelConfig defines the structure for a level configuration.
 type LevelConfig struct {
-	Name            string            `json:"name"`
-	Difficulty      string            `json:"difficulty"`
+	Name            string            `json:"name"` // Fun display name
+	WorldNumber     int               `json:"worldNumber"`
+	LevelNumber     int               `json:"levelNumber"`
 	World           string            `json:"world"` // Reference to WorldConfig.Name
 	StartingLetters []string          `json:"startingLetters"`
-	PossibleLetters []string          `json:"possibleLetters"`
 	Waves           []LevelWaveConfig `json:"waves"`
+	LevelCompleteScore int            `json:"levelCompleteScore"` // Score required to complete the level
 }
 
 // MobConfig defines the structure for a mob configuration.
