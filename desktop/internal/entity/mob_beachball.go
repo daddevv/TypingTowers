@@ -38,10 +38,11 @@ func NewBeachballMob(count int, possible []string) *BeachballMob {
 	}
 	font := ui.Font("Mob", 32)
 	for i := range m.Mob.Letters {
+		char := []rune(possible[i])[0]
 		if i == 0 {
-			m.Mob.Letters[i] = NewLetter(GetLetterImage([]rune(possible[i])[0], LetterTarget, font), LetterTarget)
+			m.Mob.Letters[i] = NewLetter(GetLetterImage(char, LetterTarget, font), LetterTarget, char)
 		} else {
-			m.Mob.Letters[i] = NewLetter(GetLetterImage([]rune(possible[i])[0], LetterActive, font), LetterActive)
+			m.Mob.Letters[i] = NewLetter(GetLetterImage(char, LetterActive, font), LetterActive, char)
 		}
 	}
 	// Calculate the total width of the word formed by the letters (in px)
