@@ -24,13 +24,10 @@ func GetFontSource(font string) (*text.GoTextFaceSource, error) {
 	switch font {
 	case "Game-Regular":
 		loadFont("assets/fonts/OpenDyslexicNerdFont-Regular.otf")
-		break
 	case "Game-Bold":
 		loadFont("assets/fonts/OpenDyslexicNerdFont-Bold.otf")
-		break
 	case "Mob":
 		loadFont("assets/fonts/ShureTechMonoNerdFontMono-Regular.ttf")
-		break
 	default:
 		return nil, errors.New("font not found: " + font)
 	}

@@ -36,19 +36,16 @@ func NewEngine(width, height int, version string) *Engine {
 func (e *Engine) Update() error {
 	switch e.State {
 	case MAIN_MENU:
-		selection, err := e.Menu.Update()
+		state, err := e.Menu.Update()
 		if err != nil {
 			return err
 		}
-		if selection != "" {
-			switch selection {
+		switch state {
 			case "Start Game":
 				if e.Game == nil {
 					e.Game = game.NewGame(game.GameOptions{
-						Width:           e.Width,
-						Height:          e.Height,
-						Level:           *world.NewLevel("World 1", "normal", []string{"f", "g", "h", "j"}),
-						GameMode:        game.ENDLESS,
+						Level:    *world.NewLevel("World 1", "normal", []string{"f", "g", "h", "j"}),
+						GameMode: game.ENDLESS,
 					})
 				}
 				e.State = GAME_PLAYING
@@ -57,7 +54,6 @@ func (e *Engine) Update() error {
 			case "Quit":
 				os.Exit(0)
 			}
-		}
 		return nil
 	case GAME_PLAYING:
 		err := e.Game.Update()

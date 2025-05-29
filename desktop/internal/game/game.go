@@ -8,26 +8,19 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
-var fontSource *text.GoTextFaceSource
-
 type Game struct {
-	Width  int
-	Height int
 	Level  world.Level
 	Player entity.Entity
-	Mobs []entity.Entity
+	Mobs   []entity.Entity
 }
 
 func NewGame(opts GameOptions) *Game {
 	return &Game{
-		Width:      opts.Width,
-		Height:     opts.Height,
-		Level:      opts.Level,
-		Player:     entity.NewPlayer(),
-		Mobs: entity.EmptyList(),
+		Level:  opts.Level,
+		Player: entity.NewPlayer(),
+		Mobs:   entity.EmptyList(),
 	}
 }
 
@@ -89,12 +82,12 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.Level.DrawBackground(screen)
-    // scoreStr := fmt.Sprintf("Score: %d", g.Score)
-    // opts := &text.DrawOptions{}
-    // opts.GeoM.Translate(10, 30)                  // position on screen
-    // opts.ColorScale.ScaleWithColor(color.White)  // text color
-    // font := ui.Font("Game-Bold", 48)			 // use the font source to get the font
-    // text.Draw(screen, scoreStr, font, opts)
+	// scoreStr := fmt.Sprintf("Score: %d", g.Score)
+	// opts := &text.DrawOptions{}
+	// opts.GeoM.Translate(10, 30)                  // position on screen
+	// opts.ColorScale.ScaleWithColor(color.White)  // text color
+	// font := ui.Font("Game-Bold", 48)			 // use the font source to get the font
+	// text.Draw(screen, scoreStr, font, opts)
 
 	entities := append(g.Mobs, g.Player)
 	// TODO: Sort entities by Z-index (smallest Y first) if needed
