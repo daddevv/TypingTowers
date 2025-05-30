@@ -2,7 +2,7 @@ package engine
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"os"
 )
 
@@ -12,7 +12,7 @@ func LoadJSONConfig[T any](path string) ([]T, error) {
 		return nil, err
 	}
 	defer file.Close()
-	bytes, err := ioutil.ReadAll(file)
+	bytes, err := io.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}

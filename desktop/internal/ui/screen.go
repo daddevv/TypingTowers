@@ -21,10 +21,10 @@ type BaseScreen struct {
 	Frame *ebiten.Image
 }
 
-// NewBaseScreen creates a new BaseScreen with the specified width and height.
-func NewBaseScreen(width, height int) *BaseScreen {
+// NewBaseScreen creates a new BaseScreen instance with a default frame size of 1920x1080.
+func NewBaseScreen() *BaseScreen {
 	return &BaseScreen{
-		Frame: ebiten.NewImage(width, height),
+		Frame: ebiten.NewImage(1920, 1080),
 	}
 }
 

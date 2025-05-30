@@ -45,17 +45,16 @@ type Game struct {
 func NewGame(opts GameOptions) *Game {
 	player := entity.NewPlayer()
 	inputHandler := NewInputHandler(player.GetPosition())
-	// Use a LetterPool for endless mode (letters expand over time)
 	letterPool := entity.NewDefaultLetterPool()
 	var mobSpawner *entity.MobSpawner
-	if opts.MobConfigs != nil && len(opts.MobConfigs) > 0 {
+	if len(opts.MobConfigs) > 0 {
 		mobSpawner = entity.NewMobSpawnerWithConfigs(letterPool, opts.MobConfigs)
 	} else {
 		mobSpawner = entity.NewMobSpawner(letterPool)
 	}
 	L := lua.NewState()
 	game := &Game{
-		Frame:             ui.NewBaseScreen(1920, 1080),
+		Frame:             ui.NewBaseScreen(),
 		Level:             opts.Level,
 		Player:            player,
 		Mobs:              entity.EmptyList(),
@@ -74,8 +73,8 @@ func NewGame(opts GameOptions) *Game {
 		LuckyHits:         0,
 		L:                 L,
 	}
-	RegisterGameAPI(L, game)
-	game.loadLuaPlugins("lua") // <-- changed from "plugins" to "lua"
+	RegisterGameAPI(L)
+	game.loadLuaPlugins("lua") 
 	return game
 }
 
@@ -185,54 +184,6 @@ func (g *Game) Update() error {
 		return nil
 	}
 	return nil
-}
-
-func allLettersInactive(mob *entity.BeachballMob) bool {
-	for _, l := range mob.Letters {
-		if l.State != entity.LetterInactive {
-			return false
-		}
-	}
-	return true
-}
-
-// checkProjectileCollisions checks for collisions between projectiles and mobs
-// Projectiles now only provide visual feedback - letter states are advanced immediately in input handler
-func (g *Game) checkProjectileCollisions() {
-	for _, projectile := range g.Projectiles {
-		if !projectile.IsActive() || projectile.DamageDealt {
-			continue
-		}
-
-		// Only check collision with the projectile's intended target mob
-		if projectile.TargetMob == nil {
-			continue
-		}
-		mob := projectile.TargetMob
-		mobPos := mob.GetPosition()
-		projPos := projectile.GetPosition()
-
-		// Simple collision detection - check if projectile is within mob bounds
-		// Assuming mob is roughly 48x48 pixels (sprite size * scale)
-		mobSize := 48.0 * 3.0 // sprite size * scale factor
-		if projPos.X >= mobPos.X && projPos.X <= mobPos.X+mobSize &&
-			projPos.Y >= mobPos.Y && projPos.Y <= mobPos.Y+mobSize {
-
-			// Collision detected - deactivate projectile (letter states already advanced)
-			projectile.Deactivate()
-			projectile.DamageDealt = true
-
-			// Decrement pending projectiles counter for this mob
-			if beachballMob, ok := mob.(*entity.BeachballMob); ok {
-				beachballMob.PendingProjectiles--
-
-				// If this mob is pending death and has no more pending projectiles, start death animation
-				if beachballMob.PendingDeath && beachballMob.PendingProjectiles <= 0 {
-					beachballMob.StartDeath()
-				}
-			}
-		}
-	}
 }
 
 func textWidth(face *text.GoTextFace, s string) float64 {

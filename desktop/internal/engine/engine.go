@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"td/internal/game"
-	"td/internal/menu"
 	"td/internal/state"
 	"td/internal/ui"
 	"td/internal/world"
@@ -22,8 +21,9 @@ type Engine struct {
 	Version string
 	State   state.EngineState // enum: current screen to display
 	Screen  *ebiten.Image // Internal buffer for drawing at 1920x1080
-	Menu    ui.Screen
-	Game    ui.Screen
+	Menu    ui.Menu
+	Game    *game.Game
+	GameConfig *game.GameConfig // Configuration for the game
 	L      *lua.LState
 }
 
@@ -41,34 +41,55 @@ func NewEngine(width, height int, version string) *Engine {
 		return 0
 	}))
 
-	m := menu.NewMainMenu(l)
 	return &Engine{
 		isGameActive: false,
 		Version:      version,
-		WindowHeight: 1080, // Always use 1920x1080 for internal canvas
-		WindowWidth:  1920,
 		Screen:      ebiten.NewImage(1920, 1080),
 		State:       state.MAIN_MENU,
-		Menu:       m,
+		Menu:       nil,
 		Game:       nil,
+		GameConfig: nil,
 		L:         l,
 	}
 }
 
 // Update calls the appropriate update method based on the current state of the engine.
 func (e *Engine) Update() error {
+	// Ensure Game and Menu are initialized
+	if e.Game == nil {
+		e.NewGame()
+	}
+	if e.Menu == nil {
+		fmt.Println("Initializing main menu")
+		e.NewMainMenu()
+	}
+
+
+
 	// If the game is active, update the game screen
 	if e.isGameActive { 
-		if e.Game == nil {
-			e.NewGame()
-		}
 		if err := e.Game.Update(); err != nil {
 			return fmt.Errorf("failed to update game: %w", err)
 		}
 	// Otherwise, update the menu screen
-	} else { 
-		if err := e.Menu.Update(); err != nil {
-			return fmt.Errorf("failed to update menu: %w", err)
+	} else {
+		if e.Menu != nil {
+			if err := e.Menu.Update(); err != nil {
+				return fmt.Errorf("failed to update menu: %w", err)
+			}
+			if e.Menu.Selected() {
+				e.Menu.SetSelected(false) // Reset selection state
+				option := e.Menu.ActiveOption()
+				switch e.Menu.Options()[option] {
+				case "Start Game":
+					e.NewGame()
+				case "Options":
+					// Handle options logic here
+					fmt.Println("Options selected, but not implemented yet.")
+				case "Quit":
+					os.Exit(0) // Exit the application
+				}
+			}
 		}
 	}
 	return nil
@@ -80,7 +101,9 @@ func (g *Engine) Draw(screen *ebiten.Image) {
 	g.Screen.Clear()
 	switch g.State {
 	case state.MAIN_MENU:
-		g.Menu.Draw(g.Screen)
+		if g.Menu != nil {
+			g.Menu.Draw(g.Screen)
+		}
 	case state.GAME_PLAYING:
 		g.Game.Draw(g.Screen)
 	default:
@@ -118,30 +141,16 @@ func loadLuaPlugins(L *lua.LState, dir string) {
 	}
 }
 
-func (e *Engine) GoToMainMenu() {
-	m := &menu.MainMenu{
-		Options:     []menu.MainMenuOption{menu.StartGameOption, menu.OptionsOption, menu.QuitOption},
-		ActiveOption: 0,
-		L:       e.L,
-	}
-	// Reset game state
-	if e.Game != nil {
-		e.Game = nil
-	}
-	// Set the engine state to MAIN_MENU
-	e.State = state.MAIN_MENU
-	e.Menu = m
-}
-
 func (e *Engine) NewGame() {
+	// Game already active
 	if e.Game != nil {
-		return // Game already active
+		return 
 	}
 	bg, _, _ := ebitenutil.NewImageFromFile("assets/images/background/beach.png")
 	waves := []world.Wave{
 		{
 			WaveNumber:      1,
-			PossibleLetters: []string{"f", "g", "h", "i"},
+			PossibleLetters: []string{"f", "g", "h", "j"},
 			EnemyCount:      10,
 			MobChances: []world.MobChance{
 				{Type: "beachball", Chance: 1.0},
@@ -149,7 +158,7 @@ func (e *Engine) NewGame() {
 		},
 		{
 			WaveNumber:      2,
-			PossibleLetters: []string{"f", "g", "h", "i", "r"},
+			PossibleLetters: []string{"f", "g", "h", "j", "r"},
 			EnemyCount:      15,
 			MobChances: []world.MobChance{
 				{Type: "beachball", Chance: 1.0},
@@ -160,11 +169,14 @@ func (e *Engine) NewGame() {
 	gameOpts := game.GameOptions{
 		GameMode: game.ENDLESS, // Default to ENDLESS mode
 		Level: *world.NewLevel("First Level", 1 , 1, "Beach", []string{"f", "g", "h", "j"}, waves, 10, bg),
-	}
-	gameScreen := game.NewGame(gameOpts)
-	e.Game = gameScreen
-	e.State = state.GAME_PLAYING
+	} 
+	e.Game = game.NewGame(gameOpts)
 
 	// Load Lua plugins for the game
 	loadLuaPlugins(e.L, "plugins")
+}
+
+func (e *Engine) NewMainMenu() {
+	// Initialize the main menu with default options and Lua state
+	e.Menu = ui.NewMainMenu(e.L)
 }
