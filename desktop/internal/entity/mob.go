@@ -20,4 +20,5 @@ type MobBase struct {
 	PendingDeath bool      // Whether all letters are typed but waiting for projectiles
 	DeathTimer int         // Frames left for death animation
 	PendingProjectiles int // Number of projectiles still expected to hit this mob
+	DefeatedAt float64     // Time (seconds since epoch) when all letters became inactive
 }

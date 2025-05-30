@@ -4,28 +4,32 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+type MobChance struct {
+	Type   string  // Type of the mob (e.g., "Goblin", "Orc")
+	Chance float64 // Probability of this mob appearing in the wave
+}
+
+type Wave struct {
+	WaveNumber      int
+	PossibleLetters []string
+	EnemyCount      int
+	MobChances      []MobChance
+}
+
 type Level struct {
 	Name               string
 	WorldNumber        int
 	LevelNumber        int
 	World              string
 	StartingLetters    []string
-	Waves              []struct {
-		WaveNumber      int
-		PossibleLetters []string
-		EnemyCount      int
-		MobChances      []struct{Type string; Chance float64}
-	}
+	Waves              []Wave
+	EnemyCount      int
+	MobChances      []MobChance
 	LevelCompleteScore int
 	Background         *ebiten.Image
 }
 
-func NewLevel(name string, worldNumber, levelNumber int, world string, startingLetters []string, waves []struct {
-	WaveNumber      int
-	PossibleLetters []string
-	EnemyCount      int
-	MobChances      []struct{Type string; Chance float64}
-}, levelCompleteScore int, background *ebiten.Image) *Level {
+func NewLevel(name string, worldNumber, levelNumber int, world string, startingLetters []string, waves []Wave, levelCompleteScore int, background *ebiten.Image) *Level {
 	return &Level{
 		Name:               name,
 		WorldNumber:        worldNumber,
@@ -37,6 +41,7 @@ func NewLevel(name string, worldNumber, levelNumber int, world string, startingL
 		Background:         background,
 	}
 }
+
 
 // DrawBackground draws the level's background on the provided screen.
 // It scales the background image to fill the screen dimensions.

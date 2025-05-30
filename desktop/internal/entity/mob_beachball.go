@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"td/internal/ui"
 	"td/internal/utils"
+	"time"
 
 	"image/color"
 
@@ -159,17 +160,24 @@ func (mob *BeachballMob) Update() error {
 	}
 	mob.Sprite = mob.MoveAnimation.Update()
 
+	// Check if all letters are inactive and DefeatedAt is not set
 	allInactive := true
-	for _, letter := range mob.Letters {
-		if letter.State != LetterInactive {
+	for _, l := range mob.Letters {
+		if l.State != LetterInactive {
 			allInactive = false
 			break
 		}
 	}
-	// When all letters are typed, mark as pending death but don't start death animation yet
-	// The game will start the death animation when the last projectile hits
-	if allInactive && !mob.Dead && !mob.PendingDeath {
-		mob.PendingDeath = true
+	if allInactive && mob.DefeatedAt == 0 {
+		mob.DefeatedAt = float64(time.Now().UnixNano()) / 1e9
+	}
+	// If defeated and grace period passed, and no pending projectiles, mark as dead
+	if mob.DefeatedAt > 0 && !mob.Dead {
+		if mob.PendingProjectiles == 0 && mob.DeathTimer <= 0 {
+			if float64(time.Now().UnixNano())/1e9-mob.DefeatedAt > 2.0 {
+				mob.Dead = true
+			}
+		}
 	}
 	return nil
 }

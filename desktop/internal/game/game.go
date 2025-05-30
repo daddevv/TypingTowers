@@ -19,6 +19,7 @@ import (
 )
 
 type Game struct {
+	Frame *ui.BaseScreen
 	Level             world.Level
 	Player            *entity.Player // Use concrete type for health access
 	Mobs              []entity.Entity
@@ -54,6 +55,7 @@ func NewGame(opts GameOptions) *Game {
 	}
 	L := lua.NewState()
 	game := &Game{
+		Frame:             ui.NewBaseScreen(1920, 1080),
 		Level:             opts.Level,
 		Player:            player,
 		Mobs:              entity.EmptyList(),
@@ -145,49 +147,26 @@ func (g *Game) Update() error {
 		}
 	}
 
-	// Update projectiles
-	for _, projectile := range g.Projectiles {
-		if err := projectile.Update(); err != nil {
-			return err
-		}
-	}
-
-	// Check projectile-mob collisions
-	g.checkProjectileCollisions()
-
-	// --- Collision and despawn logic ---
+	// --- Mob cleanup and wave logic ---
 	activeMobs := g.Mobs[:0]
 	for _, mob := range g.Mobs {
-		pos := mob.GetPosition()
-		if pos.X > 200 {
-			activeMobs = append(activeMobs, mob)
-		} else {
-			// Mob reached left edge: decrement player health, do not increment score
-			g.Player.DecrementHealth()
-			if g.Player.Health <= 0 {
-				g.GameOver = true
-			}
-			// Optionally: mark mob as dead for animation
-		}
-		// Remove mobs with all inactive letters
-		if beachballMob, ok := mob.(*entity.BeachballMob); ok && allLettersInactive(beachballMob) {
-			// Remove mob, do not increment score here
+		// Remove mobs that are dead or have exceeded grace period after defeat
+		if mobIntf, ok := mob.(interface{ IsDead() bool }); ok && mobIntf.IsDead() {
 			continue
 		}
+		activeMobs = append(activeMobs, mob)
 	}
 	g.Mobs = activeMobs
 
-	// Wave/level progression logic
+	// Wave progression: if all mobs defeated for this wave, advance wave and show toast
 	if g.CurrentWave < len(g.Level.Waves) {
 		wave := g.Level.Waves[g.CurrentWave]
-		if g.WaveEnemyDefeated >= wave.EnemyCount {
-			// Remove all mobs at wave end (no score)
-			g.Mobs = entity.EmptyList()
+		if g.WaveEnemyDefeated >= wave.EnemyCount && len(g.Mobs) == 0 {
 			g.CurrentWave++
 			g.WaveEnemyDefeated = 0
 			g.ShowWaveToast = true
-			g.WaveToastTimer = 3.5
-			return nil
+			g.WaveToastTimer = 2.5 // seconds
+			return nil // Pause game logic while toast is up
 		}
 	}
 	if g.CurrentWave >= len(g.Level.Waves) {
@@ -197,11 +176,10 @@ func (g *Game) Update() error {
 		g.WaveToastTimer -= 1.0 / 60.0 // assuming 60 FPS
 		if g.WaveToastTimer <= 0 {
 			g.ShowWaveToast = false
-			// Only allow mob spawning after toast disappears
-			g.MobSpawner.NextSpawnTime = 0.5 // small delay after toast
 		}
-		return nil // Prevent wave from progressing/spawning while toast is up
+		return nil // Prevent mob spawning while toast is up
 	}
+
 	// Prevent mob spawning if toast is up
 	if g.ShowWaveToast {
 		return nil
@@ -565,6 +543,18 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		lettersOpts.GeoM.Translate(1920/2-lettersWidth/2, float64(boxY)+paddingY+60)
 		lettersOpts.ColorScale.ScaleWithColor(color.White)
 		text.Draw(screen, lettersStr, lettersFont, lettersOpts)
+	}
+
+	// Draw wave announcement toast
+	if g.ShowWaveToast && g.CurrentWave < len(g.Level.Waves) {
+		wave := g.Level.Waves[g.CurrentWave]
+		msg := fmt.Sprintf("Wave %d!", wave.WaveNumber)
+		font := ui.Font("Game-Bold", 64)
+		w := textWidth(font, msg)
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(960-float64(w)/2, 200)
+		opts.ColorScale.ScaleWithColor(color.RGBA{255, 255, 0, 255})
+		text.Draw(screen, msg, font, opts)
 	}
 
 	// --- Table-driven HUD via Lua ---

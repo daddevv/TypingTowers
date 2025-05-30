@@ -7,6 +7,7 @@ import (
 	"td/internal/game"
 	"td/internal/menu"
 	"td/internal/state"
+	"td/internal/ui"
 	"td/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -15,14 +16,14 @@ import (
 )
 
 type Engine struct {
+	isGameActive bool // Flag to indicate if the game is currently active
 	WindowWidth   int
 	WindowHeight  int
 	Version string
 	State   state.EngineState // enum: current screen to display
 	Screen  *ebiten.Image // Internal buffer for drawing at 1920x1080
-	Menu    *menu.MainMenu
-	Lobby   *menu.LobbyMenu
-	Game    *game.Game
+	Menu    ui.Screen
+	Game    ui.Screen
 	L      *lua.LState
 }
 
@@ -42,114 +43,38 @@ func NewEngine(width, height int, version string) *Engine {
 
 	m := menu.NewMainMenu(l)
 	return &Engine{
+		isGameActive: false,
 		Version:      version,
 		WindowHeight: 1080, // Always use 1920x1080 for internal canvas
 		WindowWidth:  1920,
 		Screen:      ebiten.NewImage(1920, 1080),
 		State:       state.MAIN_MENU,
 		Menu:       m,
-		Lobby:      nil,
 		Game:       nil,
 		L:         l,
 	}
 }
 
+// Update calls the appropriate update method based on the current state of the engine.
 func (e *Engine) Update() error {
-	switch e.State {
-	case state.MAIN_MENU:
-		currentState, err := e.Menu.Update()
-		if err != nil {
-			return err
+	// If the game is active, update the game screen
+	if e.isGameActive { 
+		if e.Game == nil {
+			e.NewGame()
 		}
-		switch currentState {
-		case "Start Game":
-			if e.Game == nil {
-				// Load first level from content config
-				levelCfg := LoadedLevels[0]
-				// Load world background
-				var bgImg *ebiten.Image
-				for _, w := range LoadedWorlds {
-					if w.Name == levelCfg.World {
-						img, _, err := ebitenutil.NewImageFromFile(w.Background)
-						if err == nil {
-							bgImg = img
-						}
-					}
-				}
-				// Convert waves
-				waves := make([]struct {
-					WaveNumber      int
-					PossibleLetters []string
-					EnemyCount      int
-					MobChances      []struct {
-						Type   string
-						Chance float64
-					}
-				}, len(levelCfg.Waves))
-				for i, w := range levelCfg.Waves {
-					mobChances := make([]struct {
-						Type   string
-						Chance float64
-					}, len(w.MobChances))
-					for j, m := range w.MobChances {
-						mobChances[j] = struct {
-							Type   string
-							Chance float64
-						}{m.Type, m.Chance}
-					}
-					waves[i] = struct {
-						WaveNumber      int
-						PossibleLetters []string
-						EnemyCount      int
-						MobChances      []struct {
-							Type   string
-							Chance float64
-						}
-					}{
-						WaveNumber:      w.WaveNumber,
-						PossibleLetters: w.PossibleLetters,
-						EnemyCount:      w.EnemyCount,
-						MobChances:      mobChances,
-					}
-				}
-				level := world.Level{
-					Name:               levelCfg.Name,
-					WorldNumber:        levelCfg.WorldNumber,
-					LevelNumber:        levelCfg.LevelNumber,
-					World:              levelCfg.World,
-					StartingLetters:    levelCfg.StartingLetters,
-					Waves:              waves,
-					LevelCompleteScore: levelCfg.LevelCompleteScore,
-					Background:         bgImg,
-				}
-				e.Game = game.NewGame(game.GameOptions{
-					Level:      level,
-					GameMode:   game.ENDLESS,
-					MobConfigs: LoadedMobs,
-				})
-			}
-			e.State = state.GAME_PLAYING
-		case "Quit":
-			os.Exit(0)
+		if err := e.Game.Update(); err != nil {
+			return fmt.Errorf("failed to update game: %w", err)
 		}
-		return nil
-	case state.GAME_PLAYING:
-		err := e.Game.Update()
-		if err != nil {
-			if err.Error() == "pause" {
-				e.State = state.MAIN_MENU
-			} else {
-				return err
-			}
+	// Otherwise, update the menu screen
+	} else { 
+		if err := e.Menu.Update(); err != nil {
+			return fmt.Errorf("failed to update menu: %w", err)
 		}
-		return nil
-	default:
-		// Handle default logic
 	}
-
 	return nil
 }
 
+// Draw renders the current screen to the provided canvas.
 func (g *Engine) Draw(screen *ebiten.Image) {
 	// Draw everything to the internal 1920x1080 screen
 	g.Screen.Clear()
@@ -170,12 +95,15 @@ func (g *Engine) Draw(screen *ebiten.Image) {
 	screen.DrawImage(g.Screen, opts)
 }
 
+// Layout defines the size of the internal canvas used by the engine.
+// This is always 1920x1080, regardless of the actual window size.
 func (g *Engine) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
 	// Always use 1920x1080 for the internal canvas
 	return 1920, 1080
 }
 
-func (e *Engine) loadLuaPlugins(dir string) {
+// loadLuaPlugins loads all Lua scripts from the specified directory into the Lua state.
+func loadLuaPlugins(L *lua.LState, dir string) {
 	files, err := os.ReadDir(dir)
 	if err != nil {
 		return
@@ -184,7 +112,7 @@ func (e *Engine) loadLuaPlugins(dir string) {
 		if filepath.Ext(f.Name()) == ".lua" {
 			script, err := os.ReadFile(filepath.Join(dir, f.Name()))
 			if err == nil {
-				e.L.DoString(string(script))
+				L.DoString(string(script))
 			}
 		}
 	}
@@ -192,32 +120,51 @@ func (e *Engine) loadLuaPlugins(dir string) {
 
 func (e *Engine) GoToMainMenu() {
 	m := &menu.MainMenu{
-		Options:  []menu.MainMenuOption{menu.StartGameOption, menu.OptionsOption, menu.QuitOption},
-		Selected: 0,
+		Options:     []menu.MainMenuOption{menu.StartGameOption, menu.OptionsOption, menu.QuitOption},
+		ActiveOption: 0,
 		L:       e.L,
-	}
-	// If Lua table MainMenu exists, override options
-	if tbl := e.L.GetGlobal("MainMenu"); tbl.Type() == lua.LTTable {
-		options := tbl.(*lua.LTable).RawGetString("options")
-		if optTbl, ok := options.(*lua.LTable); ok {
-			m.Options = nil
-			optTbl.ForEach(func(_, v lua.LValue) {
-				if entry, ok := v.(*lua.LTable); ok {
-					label := entry.RawGetString("label").String()
-					m.Options = append(m.Options, menu.MainMenuOption(label))
-				}
-			})
-		}
 	}
 	// Reset game state
 	if e.Game != nil {
 		e.Game = nil
 	}
-	// Reset lobby state
-	if e.Lobby != nil {
-		e.Lobby = nil
-	}
 	// Set the engine state to MAIN_MENU
 	e.State = state.MAIN_MENU
 	e.Menu = m
+}
+
+func (e *Engine) NewGame() {
+	if e.Game != nil {
+		return // Game already active
+	}
+	bg, _, _ := ebitenutil.NewImageFromFile("assets/images/background/beach.png")
+	waves := []world.Wave{
+		{
+			WaveNumber:      1,
+			PossibleLetters: []string{"f", "g", "h", "i"},
+			EnemyCount:      10,
+			MobChances: []world.MobChance{
+				{Type: "beachball", Chance: 1.0},
+			},
+		},
+		{
+			WaveNumber:      2,
+			PossibleLetters: []string{"f", "g", "h", "i", "r"},
+			EnemyCount:      15,
+			MobChances: []world.MobChance{
+				{Type: "beachball", Chance: 1.0},
+			},
+		},
+	}
+	// Initialize a new game screen
+	gameOpts := game.GameOptions{
+		GameMode: game.ENDLESS, // Default to ENDLESS mode
+		Level: *world.NewLevel("First Level", 1 , 1, "Beach", []string{"f", "g", "h", "j"}, waves, 10, bg),
+	}
+	gameScreen := game.NewGame(gameOpts)
+	e.Game = gameScreen
+	e.State = state.GAME_PLAYING
+
+	// Load Lua plugins for the game
+	loadLuaPlugins(e.L, "plugins")
 }
