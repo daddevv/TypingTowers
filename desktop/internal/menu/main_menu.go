@@ -102,9 +102,18 @@ func (m *MainMenu) Draw(screen *ebiten.Image) {
 	// Clear the screen
 	screen.Fill(color.RGBA{0, 0, 0, 255})
 
-	// Draw the menu title
+	// Draw the game title
+	gameTitle := "Type Defense"
+	gameTitleFont := ui.Font("Game-Bold", 80)
+	gameTitleWidth := textWidth(gameTitleFont, gameTitle)
+	gameTitleOpts := &text.DrawOptions{}
+	gameTitleOpts.GeoM.Translate(float64(canvasWidth)/2-gameTitleWidth/2, 100)
+	gameTitleOpts.ColorScale.ScaleWithColor(color.RGBA{0, 200, 255, 255}) // Cyan/blue for game title
+	text.Draw(screen, gameTitle, gameTitleFont, gameTitleOpts)
+
+	// Draw the menu title (section label)
 	title := "Main Menu"
-	titleFont := ui.Font("Game-Bold", 64)
+	titleFont := ui.Font("Game-Bold", 48)
 	titleWidth := textWidth(titleFont, title)
 	titleOpts := &text.DrawOptions{}
 	titleOpts.GeoM.Translate(float64(canvasWidth)/2-titleWidth/2, 200)
