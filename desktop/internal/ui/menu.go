@@ -1,13 +1,5 @@
 package ui
 
-type Menu interface {
-	Screen
-	Selected() bool
-	SetSelected(selected bool)
-	ActiveOption() int
-	Options() []string
-}
-
 type BaseMenu struct {
 	screen      *BaseScreen
 	isSelected  bool

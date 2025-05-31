@@ -6,8 +6,8 @@ import (
 	"td/internal/utils"
 )
 
-// MobTypeConfig holds per-mob-type config for letter count
-type MobTypeConfig struct {
+// MobConfig holds per-mob-type config for letter count
+type MobConfig struct {
 	MinLetters int
 	MaxLetters int
 }
@@ -34,16 +34,16 @@ type MobSpawner struct {
 	MobFactories []func([]string) Mob
 
 	// Per-mob-type letter count config
-	MobTypeConfigs map[string]MobTypeConfig
+	MobTypeConfigs map[string]MobConfig
 }
 
 // NewMobSpawner creates a new MobSpawner with default settings and a LetterPool.
 func NewMobSpawnerWithConfigs(letterPool LetterPool, mobConfigs []content.MobConfig) *MobSpawner {
-	mobTypeConfigs := make(map[string]MobTypeConfig)
-	for _, cfg := range mobConfigs {
-		mobTypeConfigs[cfg.Type] = MobTypeConfig{
-			MinLetters: cfg.MinLetters,
-			MaxLetters: cfg.MaxLetters,
+	mobTypeConfigs := make(map[string]MobConfig)
+	for _, mob := range mobConfigs {
+		mobTypeConfigs[mob.Name] = MobConfig{
+			MinLetters: mob.MinLetters,
+			MaxLetters: mob.MaxLetters,
 		}
 	}
 	spawner := &MobSpawner{
@@ -71,12 +71,17 @@ func NewMobSpawner(letterPool LetterPool) *MobSpawner {
 func (ms *MobSpawner) Update(deltaTime float64, score int) Mob {
 	ms.ElapsedTime += deltaTime
 	ms.NextSpawnTime -= deltaTime
-	ms.LetterPool.Update(score)
+	ms.UpdateLetterPool(score)
 	if ms.NextSpawnTime <= 0 {
 		ms.resetSpawnTimer()
 		return ms.spawnMob()
 	}
 	return nil
+}
+
+// UpdateLetterPool updates the letter pool based on the current score.
+func (ms *MobSpawner) UpdateLetterPool(score int) {
+
 }
 
 // resetSpawnTimer sets the next spawn time to a random value within the configured range.

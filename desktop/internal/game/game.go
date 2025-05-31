@@ -6,26 +6,26 @@ import (
 	"image/color"
 	"os"
 	"path/filepath"
-	"sync"
 	"td/internal/entity"
 	"td/internal/ui"
 	"td/internal/world"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	lua "github.com/yuin/gopher-lua"
 )
 
 type Game struct {
-	Frame *ui.BaseScreen
+	Display *ui.BaseScreen
 	Level             world.Level
 	Player            *entity.Player // Use concrete type for health access
 	Mobs              []entity.Entity
 	Projectiles       []*entity.Projectile
 	InputHandler      *InputHandler
-	MobSpawner        *entity.MobSpawner
+	// MobSpawner        *entity.BaseSpawner
 	LastUpdate        time.Time
 	LevelComplete     bool // True if level is complete
 	CurrentWave       int  // Current wave index (0-based)
@@ -42,25 +42,20 @@ type Game struct {
 	L                 *lua.LState // Lua VM for scripting
 }
 
-func NewGame(opts GameOptions) *Game {
+func NewGame(opts GameConfig, L *lua.LState) *Game {
 	player := entity.NewPlayer()
 	inputHandler := NewInputHandler(player.GetPosition())
-	letterPool := entity.NewDefaultLetterPool()
-	var mobSpawner *entity.MobSpawner
-	if len(opts.MobConfigs) > 0 {
-		mobSpawner = entity.NewMobSpawnerWithConfigs(letterPool, opts.MobConfigs)
-	} else {
-		mobSpawner = entity.NewMobSpawner(letterPool)
-	}
-	L := lua.NewState()
+	// letterPool := entity.NewDefaultLetterPool()
+	// mobSpawner := entity.NewBaseSpawnerWithConfigs(letterPool, content.GetMobConfigs())
+
 	game := &Game{
-		Frame:             ui.NewBaseScreen(),
-		Level:             opts.Level,
-		Player:            player,
+		Display:        ui.NewBaseScreen(),
+		Level:         opts.Level,
+		Player:       player,
 		Mobs:              entity.EmptyList(),
 		Projectiles:       make([]*entity.Projectile, 0),
 		InputHandler:      inputHandler,
-		MobSpawner:        mobSpawner,
+		// MobSpawner:        mobSpawner,
 		LastUpdate:        time.Now(),
 		LevelComplete:     false,
 		CurrentWave:       0,
@@ -73,7 +68,8 @@ func NewGame(opts GameOptions) *Game {
 		LuckyHits:         0,
 		L:                 L,
 	}
-	RegisterGameAPI(L)
+
+	RegisterGameAPI(game.L)
 	game.loadLuaPlugins("lua") 
 	return game
 }
@@ -99,6 +95,7 @@ func (g *Game) Update() error {
 	// Calculate delta time for smooth timing
 	now := time.Now()
 	deltaTime := now.Sub(g.LastUpdate).Seconds()
+	ebitenutil.DebugPrint(g.Display.Frame, fmt.Sprintf("Delta Time: %.2f seconds", deltaTime))
 	g.LastUpdate = now
 
 	// Handle pause
@@ -106,83 +103,6 @@ func (g *Game) Update() error {
 		return errors.New("pause")
 	}
 
-	// Optional: Allow manual spawning for testing (keep space bar functionality)
-	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-		// Force spawn a new beachball mob when space is pressed
-		mob := g.MobSpawner.ForceSpawn()
-		g.Mobs = append(g.Mobs, mob)
-	}
-
-	// Update mob spawner and potentially spawn new mobs
-	newMob := g.MobSpawner.Update(deltaTime, g.WaveEnemyDefeated)
-	if newMob != nil {
-		g.Mobs = append(g.Mobs, newMob)
-	}
-
-	// Update input handler with current player position
-	g.InputHandler.SetPlayerPosition(g.Player.GetPosition())
-
-	// Process input and create projectiles (pass current projectiles for reservation logic)
-	newProjectiles := g.InputHandler.ProcessInput(g.Mobs, g.Projectiles)
-	g.Projectiles = append(g.Projectiles, newProjectiles...)
-
-	// --- Parallel mob updates ---
-	var wg sync.WaitGroup
-	errCh := make(chan error, len(g.Mobs))
-	for m := range g.Mobs {
-		wg.Add(1)
-		go func(mob entity.Entity) {
-			defer wg.Done()
-			if err := mob.Update(); err != nil {
-				errCh <- err
-			}
-		}(g.Mobs[m])
-	}
-	wg.Wait()
-	close(errCh)
-	for err := range errCh {
-		if err != nil {
-			return err
-		}
-	}
-
-	// --- Mob cleanup and wave logic ---
-	activeMobs := g.Mobs[:0]
-	for _, mob := range g.Mobs {
-		// Remove mobs that are dead or have exceeded grace period after defeat
-		if mobIntf, ok := mob.(interface{ IsDead() bool }); ok && mobIntf.IsDead() {
-			continue
-		}
-		activeMobs = append(activeMobs, mob)
-	}
-	g.Mobs = activeMobs
-
-	// Wave progression: if all mobs defeated for this wave, advance wave and show toast
-	if g.CurrentWave < len(g.Level.Waves) {
-		wave := g.Level.Waves[g.CurrentWave]
-		if g.WaveEnemyDefeated >= wave.EnemyCount && len(g.Mobs) == 0 {
-			g.CurrentWave++
-			g.WaveEnemyDefeated = 0
-			g.ShowWaveToast = true
-			g.WaveToastTimer = 2.5 // seconds
-			return nil // Pause game logic while toast is up
-		}
-	}
-	if g.CurrentWave >= len(g.Level.Waves) {
-		g.LevelComplete = true
-	}
-	if g.ShowWaveToast {
-		g.WaveToastTimer -= 1.0 / 60.0 // assuming 60 FPS
-		if g.WaveToastTimer <= 0 {
-			g.ShowWaveToast = false
-		}
-		return nil // Prevent mob spawning while toast is up
-	}
-
-	// Prevent mob spawning if toast is up
-	if g.ShowWaveToast {
-		return nil
-	}
 	return nil
 }
 

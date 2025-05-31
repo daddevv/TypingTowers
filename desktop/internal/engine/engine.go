@@ -4,30 +4,31 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"td/internal/content"
 	"td/internal/game"
 	"td/internal/state"
 	"td/internal/ui"
-	"td/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	lua "github.com/yuin/gopher-lua"
 )
 
+// Engine represents the main game engine that manages the game state, menus, and rendering.
 type Engine struct {
-	isGameActive bool // Flag to indicate if the game is currently active
-	Version string
-	State   state.EngineState // enum: current screen to display
-	Screen  *ebiten.Image // Internal buffer for drawing at 1920x1080
-	Menu    ui.Menu
-	Game    *game.Game
-	GameConfig *game.GameConfig // Configuration for the game
-	L      *lua.LState
+	Version 	 string // Version of the game engine, used for debugging and logging
+	State   	 state.EngineState // enum: current screen to display
+	Screen  	 *ebiten.Image // Internal buffer for drawing at 1920x1080
+	MainMenu 	 *ui.MainMenu // Main menu instance
+	// PauseMenu 	 *ui.PauseMenu // Pause menu instance
+	Game    	 *game.Game // Current active game, can be nil if no game is active
+	GameConfig 	 *game.GameConfig // Configuration for the game
+	L      	 	 *lua.LState // Lua state for scripting and game logic
 }
 
+// NewEngine initializes a new game engine instance.
 func NewEngine(version string) *Engine {
 	// Load all content configs at engine startup
-	err := LoadContentConfigs()
+	err := content.LoadContentConfigs()
 	if err != nil {
 		panic("Failed to load content configs: " + err.Error())
 	}
@@ -40,10 +41,10 @@ func NewEngine(version string) *Engine {
 	}))
 
 	return &Engine{
-		isGameActive: false,
 		Version:      version,
 		Screen:      ebiten.NewImage(1920, 1080),
-		Menu:       nil,
+		MainMenu:   nil,
+		// PauseMenu:  nil,
 		Game:       nil,
 		GameConfig: nil,
 		L:         l,
@@ -52,54 +53,36 @@ func NewEngine(version string) *Engine {
 
 // Update calls the appropriate update method based on the current state of the engine.
 func (e *Engine) Update() error {
-	// Ensure Game and Menu are initialized
-	if e.Game == nil {
-		e.NewGame()
-	}
-	if e.Menu == nil {
-		fmt.Println("Initializing main menu")
-		e.NewMainMenu()
-	}
-
-
-
-	// If the game is active, update the game screen
-	if e.isGameActive { 
-		if err := e.Game.Update(); err != nil {
-			return fmt.Errorf("failed to update game: %w", err)
+	switch e.State {
+	case state.MENU_MAIN:
+		if e.MainMenu == nil {
+			e.MainMenu = ui.NewMainMenu(e.L)
 		}
-	// Otherwise, update the menu screen
-	} else {
-		if e.Menu != nil {
-			if err := e.Menu.Update(); err != nil {
-				return fmt.Errorf("failed to update menu: %w", err)
-			}
-			if e.Menu.Selected() {
-				e.Menu.SetSelected(false) // Reset selection state
-				option := e.Menu.ActiveOption()
-				switch e.Menu.Options()[option] {
-				case "Start Game":
-					e.NewGame()
-					e.isGameActive = true // Set game active flag
-				case "Options":
-					// Handle options logic here
-					fmt.Println("Options selected, but not implemented yet.")
-				case "Quit":
-					os.Exit(0) // Exit the application
-				}
-			}
+		if selection, err := e.MainMenu.Update(); err != nil {
+			return fmt.Errorf("failed to update main menu: %w", err)
+		} else if selection != nil {
+			e.handleMainMenuSelection(*selection)
+		}
+	case state.GAME_PLAYING:
+		if e.Game == nil || e.GameConfig == nil {
+			return fmt.Errorf("game is not initialized")
 		}
 	}
 	return nil
 }
 
+// Draw renders the current state to the screen.
 func (e *Engine) Draw(screen *ebiten.Image) {
 	// Draw everything to the internal 1920x1080 screen
 	e.Screen.Clear()
-	if e.isGameActive {
+	switch e.State {
+	case state.MENU_MAIN:
+		e.MainMenu.Draw(e.Screen)
+	case state.GAME_PLAYING:
 		e.Game.Draw(e.Screen)
-	} else {
-		e.Menu.Draw(e.Screen)
+	case state.GAME_PAUSED:
+		e.State = state.MENU_MAIN // Temporarily set to GAME_PLAYING for drawing
+		// e.PauseMenu.Draw(e.Screen)
 	}
 	// Now scale the internal screen to the window size
 	w, h := screen.Bounds().Dx(), screen.Bounds().Dy()
@@ -133,42 +116,21 @@ func loadLuaPlugins(L *lua.LState, dir string) {
 	}
 }
 
-func (e *Engine) NewGame() {
-	// Game already active
-	if e.Game != nil {
-		return 
+// handleMainMenuSelection processes the selection made in the main menu.
+func (e *Engine) handleMainMenuSelection(selection ui.MainMenuOption) {
+	switch selection {
+	case ui.MainMenuStartGame:
+		if e.GameConfig == nil {
+			e.GameConfig = game.NewGameConfig()
+		}
+		e.Game = game.NewGame(e.GameConfig, e.L)
+		e.State = state.GAME_PLAYING
+	case ui.MainMenuOptions:
+		// Show options menu
+		fmt.Println("Options menu not implemented yet")
+	case ui.MainMenuQuit:
+		// Quit the game
+		fmt.Println("Quitting game...")
+		os.Exit(0)
 	}
-	bg, _, _ := ebitenutil.NewImageFromFile("assets/images/background/beach.png")
-	waves := []world.Wave{
-		{
-			WaveNumber:      1,
-			PossibleLetters: []string{"f", "g", "h", "j"},
-			EnemyCount:      10,
-			MobChances: []world.MobChance{
-				{Type: "beachball", Chance: 1.0},
-			},
-		},
-		{
-			WaveNumber:      2,
-			PossibleLetters: []string{"f", "g", "h", "j", "r"},
-			EnemyCount:      15,
-			MobChances: []world.MobChance{
-				{Type: "beachball", Chance: 1.0},
-			},
-		},
-	}
-	// Initialize a new game screen
-	gameOpts := game.GameOptions{
-		GameMode: game.ENDLESS, // Default to ENDLESS mode
-		Level: *world.NewLevel("First Level", 1 , 1, "Beach", []string{"f", "g", "h", "j"}, waves, 10, bg),
-	} 
-	e.Game = game.NewGame(gameOpts)
-
-	// Load Lua plugins for the game
-	loadLuaPlugins(e.L, "plugins")
-}
-
-func (e *Engine) NewMainMenu() {
-	// Initialize the main menu with default options and Lua state
-	e.Menu = ui.NewMainMenu(e.L)
 }

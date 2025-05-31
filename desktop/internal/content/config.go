@@ -28,7 +28,7 @@ type LevelConfig struct {
 
 // MobConfig defines the structure for a mob configuration.
 type MobConfig struct {
-	Type           string  `json:"type"`
+	Name           string  `json:"name"`
 	SpriteSheet    string  `json:"spriteSheet"`
 	FrameRows      int     `json:"frameRows"`
 	FrameCols      int     `json:"frameCols"`

@@ -10,6 +10,14 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
+type MainMenuOption string
+
+const (
+	MainMenuStartGame MainMenuOption = "Start Game"
+	MainMenuOptions   MainMenuOption = "Options"
+	MainMenuQuit      MainMenuOption = "Quit"
+)
+
 func textWidth(face *text.GoTextFace, s string) float64 {
 	return float64(len(s)) * face.Size * 0.6
 }
@@ -26,12 +34,11 @@ func NewMainMenu(L *lua.LState) *MainMenu {
 		menu: BaseMenu{
 			screen:     NewBaseScreen(),
 			options:    []string{
-				"Start Game", 
-				"Options", 
-				"Quit",
+				string(MainMenuStartGame),
+				string(MainMenuOptions),
+				string(MainMenuQuit),
 			},
 			activeOption: 0,
-			isSelected:   false,
 		},
 		L: L,
 	}
@@ -51,7 +58,7 @@ func NewMainMenu(L *lua.LState) *MainMenu {
 	return m
 }
 
-func (m *MainMenu) Update() error {
+func (m *MainMenu) Update() (*MainMenuOption, error) {
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		os.Exit(0)
 	}
@@ -68,9 +75,17 @@ func (m *MainMenu) Update() error {
 		}
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
-		m.menu.isSelected = true
-		return nil
+	switch m.menu.activeOption {
+	case 0: // Start Game
+		opt := MainMenuStartGame
+		return &opt, nil
+	case 1: // Options
+		opt := MainMenuOptions
+		return &opt, nil
+	case 2: // Quit
+		os.Exit(0) 
 	}
+}
 	if inpututil.IsKeyJustPressed(ebiten.KeyF) {
 		if ebiten.IsFullscreen() {
 			ebiten.SetFullscreen(false)
@@ -78,7 +93,7 @@ func (m *MainMenu) Update() error {
 			ebiten.SetFullscreen(true)
 		}
 	}
-	return nil
+	return nil, nil
 }
 
 func (m *MainMenu) Draw(screen *ebiten.Image) {

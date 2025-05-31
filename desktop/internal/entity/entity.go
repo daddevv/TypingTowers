@@ -36,7 +36,6 @@ type MobLetterController interface {
 // LetterPool defines an interface for managing available letters for mobs
 type LetterPool interface {
 	GetPossibleLetters() []string
-	Update(score int)
 	AddLetter(letter string)
 	AddLetters(letters []string)
 }
@@ -47,32 +46,29 @@ type DefaultLetterPool struct {
 	allLetters   []string
 	possible     []string
 	unlockOrder  []string // order in which letters are unlocked
-	unlockScores []int    // score thresholds for unlocking
+	unlockedCount int // how many letters have been unlocked
 }
 
 func NewDefaultLetterPool() *DefaultLetterPool {
 	// Example: unlock vowels at 0, then common consonants, then rare
-	unlockOrder := []string{"a","e","i","o","u","n","s","t","r","l","d","c","m","p","b","g","h","f","y","w","k","v","x","z","j","q"}
-	unlockScores := []int{0,0,0,0,0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,210}
+	indexFingers := []string{"f","j","g","h","r","u","t","y","v","m","b","n"}
+	midFingers := []string{"d","k","e","i","c",","}
+	ringFingers := []string{"s","l","w","o","x","."}
+	pinkyFingers := []string{"a",";","q","p","z","/"}
+	// Combine all fingers into a single unlock order
+	unlockOrder := append(indexFingers, midFingers...)
+	unlockOrder = append(unlockOrder, ringFingers...)
+	unlockOrder = append(unlockOrder, pinkyFingers...)
 	return &DefaultLetterPool{
 		allLetters:   unlockOrder,
-		possible:     []string{"a","e","i","o","u"},
+		possible:     []string{},
 		unlockOrder:  unlockOrder,
-		unlockScores: unlockScores,
+		unlockedCount: 0,
 	}
 }
 
 func (lp *DefaultLetterPool) GetPossibleLetters() []string {
 	return lp.possible
-}
-
-func (lp *DefaultLetterPool) Update(score int) {
-	// Expand possible letters based on score
-	for i, letter := range lp.unlockOrder {
-		if lp.unlockScores[i] <= score && !contains(lp.possible, letter) {
-			lp.possible = append(lp.possible, letter)
-		}
-	}
 }
 
 func (lp *DefaultLetterPool) AddLetter(letter string) {
