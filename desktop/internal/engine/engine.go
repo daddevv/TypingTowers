@@ -43,7 +43,6 @@ func NewEngine(version string) *Engine {
 		isGameActive: false,
 		Version:      version,
 		Screen:      ebiten.NewImage(1920, 1080),
-		State:       state.MAIN_MENU,
 		Menu:       nil,
 		Game:       nil,
 		GameConfig: nil,
@@ -81,6 +80,7 @@ func (e *Engine) Update() error {
 				switch e.Menu.Options()[option] {
 				case "Start Game":
 					e.NewGame()
+					e.isGameActive = true // Set game active flag
 				case "Options":
 					// Handle options logic here
 					fmt.Println("Options selected, but not implemented yet.")
@@ -93,19 +93,13 @@ func (e *Engine) Update() error {
 	return nil
 }
 
-// Draw renders the current screen to the provided canvas.
-func (g *Engine) Draw(screen *ebiten.Image) {
+func (e *Engine) Draw(screen *ebiten.Image) {
 	// Draw everything to the internal 1920x1080 screen
-	g.Screen.Clear()
-	switch g.State {
-	case state.MAIN_MENU:
-		if g.Menu != nil {
-			g.Menu.Draw(g.Screen)
-		}
-	case state.GAME_PLAYING:
-		g.Game.Draw(g.Screen)
-	default:
-		// Handle default drawing
+	e.Screen.Clear()
+	if e.isGameActive {
+		e.Game.Draw(e.Screen)
+	} else {
+		e.Menu.Draw(e.Screen)
 	}
 	// Now scale the internal screen to the window size
 	w, h := screen.Bounds().Dx(), screen.Bounds().Dy()
@@ -113,7 +107,7 @@ func (g *Engine) Draw(screen *ebiten.Image) {
 	scaleY := float64(h) / 1080.0
 	opts := &ebiten.DrawImageOptions{}
 	opts.GeoM.Scale(scaleX, scaleY)
-	screen.DrawImage(g.Screen, opts)
+	screen.DrawImage(e.Screen, opts)
 }
 
 // Layout defines the size of the internal canvas used by the engine.
