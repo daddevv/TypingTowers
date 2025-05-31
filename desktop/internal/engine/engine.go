@@ -16,8 +16,6 @@ import (
 
 type Engine struct {
 	isGameActive bool // Flag to indicate if the game is currently active
-	WindowWidth   int
-	WindowHeight  int
 	Version string
 	State   state.EngineState // enum: current screen to display
 	Screen  *ebiten.Image // Internal buffer for drawing at 1920x1080
@@ -27,7 +25,7 @@ type Engine struct {
 	L      *lua.LState
 }
 
-func NewEngine(width, height int, version string) *Engine {
+func NewEngine(version string) *Engine {
 	// Load all content configs at engine startup
 	err := LoadContentConfigs()
 	if err != nil {

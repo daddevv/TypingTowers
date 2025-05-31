@@ -19,15 +19,14 @@ func init() {
 }
 
 func main() {
-	canvasWidth, canvasHeight := 1920, 1080
 	// Ensure plugins directory exists
 	os.MkdirAll("plugins", 0755)
-	engine := engine.NewEngine(canvasWidth, canvasHeight, VERSION)
+	engine := engine.NewEngine(VERSION)
 
-	ebiten.SetWindowSize(canvasWidth, canvasHeight)
+	ebiten.SetWindowSize(1920/2,1080/2) // Set the window size to half of 1920x1080
 	// ebiten.SetFullscreen(true)
 	ebiten.SetWindowTitle("Type Defense")
-	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
+	// ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	// ebiten.SetWindowDecorated(false)
 
 	if err := ebiten.RunGame(engine); err != nil {
