@@ -115,6 +115,7 @@ func main() {
 	previewer := NewPreviewer(imagePath, rows, cols, height, width)
 	ebiten.SetWindowTitle("Sprite Previewer")
 	ebiten.SetWindowSize(1920, 1080)
+	ebiten.SetFullscreen(true)
 	if err := ebiten.RunGame(previewer); err != nil {
 		log.Fatal(err)
 	}

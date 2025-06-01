@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"os"
 
 	"td/internal/engine"
 
@@ -19,13 +18,11 @@ func init() {
 }
 
 func main() {
-	// Ensure plugins directory exists
-	os.MkdirAll("plugins", 0755)
-	engine := engine.NewEngine(VERSION)
+	engine := engine.NewEngine()
 
-	ebiten.SetWindowSize(1920/2,1080/2) // Set the window size to half of 1920x1080
-	// ebiten.SetFullscreen(true)
+	ebiten.SetWindowSize(1920/2,1080/2) 
 	ebiten.SetWindowTitle("Type Defense")
+	// ebiten.SetFullscreen(true)
 	// ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	// ebiten.SetWindowDecorated(false)
 
