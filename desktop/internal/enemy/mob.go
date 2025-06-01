@@ -45,10 +45,12 @@ func NewMob(name string, health, posX, posY, velX, velY, targetX, targetY int) *
 }
 
 func (m *Mob) Update(target *math.Vec2) {
+	mobFeet := m.Position.Add(math.NewVec2(float64(m.Sprite.Bounds().Dx())/2, float64(m.Sprite.Bounds().Dy()))) // Adjust mob position to feet level
+
 	// Update the mob's target position
 	m.Target = target
 	// Calculate the direction vector towards the target
-	direction := m.Target.Subtract(m.Position)
+	direction := m.Target.Subtract(mobFeet)
 	// Normalize the direction vector to get the unit vector
 	directionMagnitude := direction.Magnitude()
 	if directionMagnitude > 0 {

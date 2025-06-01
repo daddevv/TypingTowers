@@ -144,8 +144,8 @@ func (e *Engine) Update() error {
 
 	// Update the test mob
 	e.TestMob.Update(&math.Vec2{
-		X: e.PlayerPos.X + 48, // Set the target position to the player's position plus an offset
-		Y: e.PlayerPos.Y + 32, // Set the target position to the player's position plus an offset
+		X: e.PlayerPos.X + float64(e.TestAnimation.FrameWidth)/2, // Set the target position to the player's position plus an offset
+		Y: e.PlayerPos.Y + float64(e.TestAnimation.FrameHeight), // Set the target position to the player's position plus an offset
 	}) // Update the test mob's position towards the player
 
 	// Update the debug display with current FPS and mouse position
@@ -171,7 +171,7 @@ func (e *Engine) Draw(screen *ebiten.Image) {
 
 	// Draw the test animation at a fixed position
 	opts := &ebiten.DrawImageOptions{}
-	opts.GeoM.Translate(e.PlayerPos.X, e.PlayerPos.Y) // Position the animation at the player position
+	opts.GeoM.Translate(e.PlayerPos.X-float64(e.TestAnimation.FrameWidth)/2, e.PlayerPos.Y-float64(e.TestAnimation.FrameHeight/2)) // Position the animation at the player position
 	e.Screen.DrawImage(e.TestAnimation.Frame(), opts)
 
 	// Draw the test spawner
@@ -205,6 +205,10 @@ func (e *Engine) Draw(screen *ebiten.Image) {
 	opts = &ebiten.DrawImageOptions{}
 	opts.GeoM.Translate(e.TestMob.Position.X, e.TestMob.Position.Y) // Position the mob
 	e.Screen.DrawImage(e.TestMob.Sprite, opts) // Draw the mob sprite
+
+	// Draw the player and mob frame outlines in red
+	// vector.DrawFilledRect(e.Screen, float32(e.PlayerPos.X), float32(e.PlayerPos.Y), float32(e.TestAnimation.FrameWidth), float32(e.TestAnimation.FrameHeight), color.RGBA{255, 0, 0, 255}, false) // Draw player frame outline
+	// vector.DrawFilledRect(e.Screen, float32(e.TestMob.Position.X), float32(e.TestMob.Position.Y), float32(e.TestMob.Sprite.Bounds().Dx()), float32(e.TestMob.Sprite.Bounds().Dy()), color.RGBA{255, 0, 0, 255}, false) // Draw mob frame outline
 
 	e.renderFrame(screen)
 }
