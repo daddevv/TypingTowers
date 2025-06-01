@@ -28,6 +28,7 @@ type Engine struct {
 	Goblins  []*enemy.Mob // List of goblins in the game
 	TestAnimation *ui.Animation // Animation for testing purposes
 	TestSpawner *goblin.GoblinSpawner
+	TestMob *enemy.Mob // Example mob for testing
 }
 
 // NewEngine initializes a new game engine instance.
@@ -54,7 +55,7 @@ func NewEngine() *Engine {
 	
 
 	return &Engine{
-		PlayerPos: math.Vec2{X: 100, Y: 100}, // Initialize player position
+		PlayerPos: math.Vec2{X: 600, Y: 600}, // Initialize player position
 		DebugDisplay: debugDisplay, // Initialize the debug display
 		DebugEnabled: true, // Debug display is initially enabled
 		Goblins:  []*enemy.Mob{}, // Initialize the goblins list
@@ -62,6 +63,7 @@ func NewEngine() *Engine {
 		Background: bg,
 		TestAnimation: player.WalkingAnimation,
 		TestSpawner: goblin.NewGoblinSpawner(building.MobSpawnerLevel1, 400, 400, 60), // Example spawner
+		TestMob: enemy.NewMob("Goblin", 100, 200, 200, 0, 0, 100, 100), // Example mob for testing
 	}
 }
 
@@ -90,30 +92,39 @@ func (e *Engine) Update() error {
 	if ebiten.IsKeyPressed(ebiten.KeyW) {
 		deltaVec.Y -= 10 // Move player up by 10 units
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyUp) {
-		deltaVec.Y -= 20 // Move player up by 20 units (alternative key)
+	if ebiten.IsKeyPressed(ebiten.KeyE) {
+		deltaVec.Y -= 10 // Move player up by 10 units (alternative key for testing)
+		deltaVec.X += 10 // Move player right by 10 units (alternative key for testing)
 	}
 	// S for moving the player down
 	if ebiten.IsKeyPressed(ebiten.KeyS) {
 		deltaVec.Y += 10 // Move player down by 10 units
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyDown) {
-		deltaVec.Y += 20 // Move player down by 20 units (alternative key)
+	// E for moving the player up and right (testing purposes)
+	if ebiten.IsKeyPressed(ebiten.KeyC) {
+		deltaVec.Y += 10 // Move player down by 10 units (alternative key for testing)
+		deltaVec.X += 10 // Move player right by 10 units (alternative key for testing)
 	}
 	// A for moving the player left
 	if ebiten.IsKeyPressed(ebiten.KeyA) {
 		deltaVec.X -= 10 // Move player left by 10 units
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyLeft) {
-		deltaVec.X -= 20 // Move player left by 20 units (alternative key)
+	if ebiten.IsKeyPressed(ebiten.KeyQ) {
+		deltaVec.X -= 10 // Move player left by 10 units (alternative key for testing)
+		deltaVec.Y -= 10 // Move player up by 10 units (alternative key for testing)
 	}
 	// D for moving the player right
 	if ebiten.IsKeyPressed(ebiten.KeyD) {
 		deltaVec.X += 10 // Move player right by 10 units
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyRight) {
-		deltaVec.X += 20 // Move player right by 20 units (alternative key)
+		deltaVec.X += 10 // Move player right by 10 units (alternative key)
 	}
+	if ebiten.IsKeyPressed(ebiten.KeyZ) {
+		deltaVec.X -= 10 // Move player right by 10 units (alternative key for testing)
+		deltaVec.Y += 10 // Move player up by 10 units (alternative key for testing)
+	}
+
 	// Normalize the delta vector to ensure consistent movement speed
 	deltaPos := deltaVec.Normalize()
 	// Update player position based on input
@@ -131,6 +142,11 @@ func (e *Engine) Update() error {
 
 	e.Goblins = e.TestSpawner.Update(e.Goblins) // Update the test spawner, passing the goblins list
 
+	// Update the test mob
+	e.TestMob.Update(&math.Vec2{
+		X: e.PlayerPos.X + 48, // Set the target position to the player's position plus an offset
+		Y: e.PlayerPos.Y + 32, // Set the target position to the player's position plus an offset
+	}) // Update the test mob's position towards the player
 
 	// Update the debug display with current FPS and mouse position
 	e.DebugDisplay["FPS"] = ebiten.ActualFPS() // Update FPS in debug display
@@ -184,6 +200,11 @@ func (e *Engine) Draw(screen *ebiten.Image) {
 		}
 	}
 	ebitenutil.DebugPrint(e.Screen, text) // Print the debug text on the screen
+
+	// Draw the test mob
+	opts = &ebiten.DrawImageOptions{}
+	opts.GeoM.Translate(e.TestMob.Position.X, e.TestMob.Position.Y) // Position the mob
+	e.Screen.DrawImage(e.TestMob.Sprite, opts) // Draw the mob sprite
 
 	e.renderFrame(screen)
 }

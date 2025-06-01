@@ -36,15 +36,36 @@ func NewMob(name string, health, posX, posY, velX, velY, targetX, targetY int) *
 		Position:         math.NewVec2(float64(posX), float64(posY)),
 		Velocity:         math.NewVec2(float64(velX), float64(velY)),
 		Acceleration:     math.NewVec2(0.0, 0.0), // Default X acceleration
-		AccelerationRate: 0.1,                    // Default acceleration rate
-		ActionRange:      100.0,                  // Default action range
+		AccelerationRate: 0.5,                    // Default acceleration rate
+		ActionRange:      10.0,                  // Default action range
 		AttackDamage:     10,                     // Default attack damage
 		AttackCooldown:   60,                     // Default attack cooldown in ticks
 		AttackTick:       0,                      // Initialize attack tick
 	}
 }
 
-func (m *Mob) Update() {
+func (m *Mob) Update(target *math.Vec2) {
+	// Update the mob's target position
+	m.Target = target
+	// Calculate the direction vector towards the target
+	direction := m.Target.Subtract(m.Position)
+	// Normalize the direction vector to get the unit vector
+	directionMagnitude := direction.Magnitude()
+	if directionMagnitude > 0 {
+		direction = direction.Normalize()
+	}
+	// Update the mob's acceleration towards the target
+	m.Acceleration = direction.Scale(m.AccelerationRate)
+	// Update the mob's position based on its velocity
+	// Move the mob towards the target position
+	if directionMagnitude < m.ActionRange {
+		// If within action range, set velocity to zero
+		m.Velocity = math.NewVec2(0, 0)
+	} else {
+		// Otherwise, move towards the target
+		m.Velocity = direction.Scale(m.AccelerationRate)
+	}
+	// Update the mob's position based on its velocity
 	m.Position.X += m.Velocity.X
 	m.Position.Y += m.Velocity.Y
 
@@ -53,7 +74,7 @@ func (m *Mob) Update() {
 	m.Velocity.Y += m.Acceleration.Y
 
 	// Clamp the mob's velocity to a maximum value
-	maxSpeed := 5.0
+	maxSpeed := 10.0
 	if m.Velocity.Magnitude() > maxSpeed {
 		m.Velocity = m.Velocity.Normalize().Scale(maxSpeed)
 	}
