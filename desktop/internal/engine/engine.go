@@ -3,10 +3,12 @@ package engine
 import (
 	"fmt"
 	"image/color"
+	"sort"
 
 	"td/internal/building"
 	"td/internal/enemy"
 	"td/internal/goblin"
+	"td/internal/math"
 	"td/internal/player"
 	"td/internal/ui"
 	"td/internal/world"
@@ -18,6 +20,7 @@ import (
 
 // Engine represents the main game engine that manages the game state, menus, and rendering.
 type Engine struct {
+	PlayerPos math.Vec2 // Player position in the game world
 	DebugDisplay map[string]any // Debug display for various game states
 	DebugEnabled bool // Flag to enable or disable debug display
 	Screen     *ebiten.Image // Internal screen for rendering at 1920x1080
@@ -51,10 +54,11 @@ func NewEngine() *Engine {
 	
 
 	return &Engine{
+		PlayerPos: math.Vec2{X: 100, Y: 100}, // Initialize player position
 		DebugDisplay: debugDisplay, // Initialize the debug display
 		DebugEnabled: true, // Debug display is initially enabled
 		Goblins:  []*enemy.Mob{}, // Initialize the goblins list
-		Screen:     ebiten.NewImage(1920, 1080),
+		Screen:     ebiten.NewImage(1920, 1080), // Create a new image for the internal screen
 		Background: bg,
 		TestAnimation: player.WalkingAnimation,
 		TestSpawner: goblin.NewGoblinSpawner(building.MobSpawnerLevel1, 400, 400, 60), // Example spawner
@@ -71,8 +75,8 @@ func (e *Engine) Update() error {
 			ebiten.SetFullscreen(true) // Enter fullscreen
 		}
 	}
-	// D for debug toggle
-	if inpututil.IsKeyJustPressed(ebiten.KeyD) {
+	// Ctrl+D for debug toggle
+	if inpututil.IsKeyJustPressed(ebiten.KeyD) && ebiten.IsKeyPressed(ebiten.KeyControl) {
 		e.DebugEnabled = !e.DebugEnabled // Toggle debug display
 		if e.DebugEnabled {
 			fmt.Println("Debug display enabled")
@@ -80,12 +84,51 @@ func (e *Engine) Update() error {
 			fmt.Println("Debug display disabled")
 		}
 	}
+
+	deltaVec := math.Vec2{X: 0, Y: 0} // Initialize delta vector for player movement
+	// W for moving the player up
+	if ebiten.IsKeyPressed(ebiten.KeyW) {
+		deltaVec.Y -= 10 // Move player up by 10 units
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyUp) {
+		deltaVec.Y -= 20 // Move player up by 20 units (alternative key)
+	}
+	// S for moving the player down
+	if ebiten.IsKeyPressed(ebiten.KeyS) {
+		deltaVec.Y += 10 // Move player down by 10 units
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyDown) {
+		deltaVec.Y += 20 // Move player down by 20 units (alternative key)
+	}
+	// A for moving the player left
+	if ebiten.IsKeyPressed(ebiten.KeyA) {
+		deltaVec.X -= 10 // Move player left by 10 units
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyLeft) {
+		deltaVec.X -= 20 // Move player left by 20 units (alternative key)
+	}
+	// D for moving the player right
+	if ebiten.IsKeyPressed(ebiten.KeyD) {
+		deltaVec.X += 10 // Move player right by 10 units
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyRight) {
+		deltaVec.X += 20 // Move player right by 20 units (alternative key)
+	}
+	// Normalize the delta vector to ensure consistent movement speed
+	deltaPos := deltaVec.Normalize()
+	// Update player position based on input
+	if deltaPos.X != 0 || deltaPos.Y != 0 {
+		e.PlayerPos.X += deltaPos.X * 2 // Update player X position
+		e.PlayerPos.Y += deltaPos.Y * 2 // Update player Y position
+	}
+	e.TestAnimation.Update()
+
 	// Esc to exit the game
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		return ebiten.Termination // Exit the game
 	}
+	
 
-	e.TestAnimation.Update()
 	e.Goblins = e.TestSpawner.Update(e.Goblins) // Update the test spawner, passing the goblins list
 
 
@@ -95,6 +138,7 @@ func (e *Engine) Update() error {
 	e.DebugDisplay["MouseX"] = mouseX // Store mouse X position in debug display
 	e.DebugDisplay["MouseY"] = mouseY // Store mouse Y position in debug display
 	// Update goblin count in debug display
+	e.DebugDisplay["PlayerPosition"] = e.PlayerPos // Update player position in debug display
 	e.DebugDisplay["Goblins"] = len(e.Goblins) // Store the number of goblins in debug display
 	
 
@@ -104,7 +148,6 @@ func (e *Engine) Update() error {
 
 // Draw constructs the frame on e.Screen and then renders it to the actual screen in one draw call
 func (e *Engine) Draw(screen *ebiten.Image) {
-
 	e.Screen.Clear() // Clear the internal screen
 
 	// draw state to e.Screen
@@ -112,7 +155,7 @@ func (e *Engine) Draw(screen *ebiten.Image) {
 
 	// Draw the test animation at a fixed position
 	opts := &ebiten.DrawImageOptions{}
-	opts.GeoM.Translate(100, 100) // Position the animation at (100, 100)
+	opts.GeoM.Translate(e.PlayerPos.X, e.PlayerPos.Y) // Position the animation at the player position
 	e.Screen.DrawImage(e.TestAnimation.Frame(), opts)
 
 	// Draw the test spawner
@@ -127,15 +170,20 @@ func (e *Engine) Draw(screen *ebiten.Image) {
 		e.Screen.DrawImage(goblin.Sprite, opts) // Draw the goblin sprite
 	}
 
-		//print the debug display if enabled
+	//print the debug display if enabled
+	var text string
 	if e.DebugEnabled {
-		ebitenutil.DebugPrint(e.Screen, fmt.Sprintf("FPS: %.2f\nMouse: (%d, %d)\nGoblins: %d",
-			e.DebugDisplay["FPS"].(float64),
-			e.DebugDisplay["MouseX"].(int),
-			e.DebugDisplay["MouseY"].(int),
-			e.DebugDisplay["Goblins"].(int),
-		))
+		// sort the debug display keys for consistent output
+		keys := make([]string, 0, len(e.DebugDisplay))
+		for key := range e.DebugDisplay {
+			keys = append(keys, key)
+		}
+		sort.Strings(keys)
+		for _, key := range keys {
+			text += fmt.Sprintf("%s: %v\n", key, e.DebugDisplay[key]) // Format the debug display text
+		}
 	}
+	ebitenutil.DebugPrint(e.Screen, text) // Print the debug text on the screen
 
 	e.renderFrame(screen)
 }
