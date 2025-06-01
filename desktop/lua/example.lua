@@ -1,1 +1,0 @@
-print(example("Hello, World!", 42, 69))

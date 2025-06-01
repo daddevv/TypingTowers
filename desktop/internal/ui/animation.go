@@ -20,19 +20,28 @@ type Animation struct {
 	ImagePath    string
 }
 
-func NewAnimation(imagePath string, rows, cols, frameWidth, frameHeight, delay int) (*Animation, error) {
+func NewAnimation(imagePath string, rows, cols, srcFrameWidth, srcFrameHeight, delay int, scale float64) (*Animation, error) {
 	img, _, err := ebitenutil.NewImageFromFile(imagePath)
 	if err != nil {
 		return nil, err
 	}
 
 	frames := make([]*ebiten.Image, 0, rows*cols)
-	for r := 0; r < rows; r++ {
-		for c := 0; c < cols; c++ {
-			x0 := c * frameWidth
-			y0 := r * frameHeight
-			rect := image.Rect(x0, y0, x0+frameWidth, y0+frameHeight)
+	for r := range rows {
+		for c := range cols {
+			x0 := c * srcFrameWidth
+			y0 := r * srcFrameHeight
+			rect := image.Rect(x0, y0, x0+srcFrameWidth, y0+srcFrameHeight)
 			frame := img.SubImage(rect).(*ebiten.Image)
+			// Scale the frame if a scale factor is provided
+			if scale != 1.0 {
+				scaledFrame := ebiten.NewImage(int(float64(srcFrameWidth)*scale), int(float64(srcFrameHeight)*scale))
+				opts := &ebiten.DrawImageOptions{}
+				opts.GeoM.Scale(scale, scale) // Scale the image
+				scaledFrame.DrawImage(frame, opts)
+				frame = scaledFrame
+			}
+			// Add the frame to the list of frames
 			frames = append(frames, frame)
 		}
 	}
@@ -42,8 +51,8 @@ func NewAnimation(imagePath string, rows, cols, frameWidth, frameHeight, delay i
 		Frames:       frames,
 		Rows:         rows,
 		Cols:         cols,
-		FrameWidth:   frameWidth,
-		FrameHeight:  frameHeight,
+		FrameWidth:   srcFrameWidth,
+		FrameHeight:  srcFrameHeight,
 		CurrentFrame: 0,
 		Tick:         0,
 		FrameDelay:   delay,
@@ -51,11 +60,19 @@ func NewAnimation(imagePath string, rows, cols, frameWidth, frameHeight, delay i
 	}, nil
 }
 
-func (a *Animation) Update() *ebiten.Image {
+func (a *Animation) Update() {
 	a.Tick++
 	if a.Tick >= a.FrameDelay {
 		a.CurrentFrame = (a.CurrentFrame + 1) % len(a.Frames)
 		a.Tick = 0
 	}
+}
+
+func (a *Animation) Frame() *ebiten.Image {
 	return a.Frames[a.CurrentFrame]
+}
+
+func (a *Animation) Reset() {
+	a.CurrentFrame = 0
+	a.Tick = 0
 }
