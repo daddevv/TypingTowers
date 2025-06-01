@@ -42,7 +42,7 @@ type Game struct {
 	L                 *lua.LState // Lua VM for scripting
 }
 
-func NewGame(opts GameConfig, L *lua.LState) *Game {
+func NewGame(opts *GameOptions, L *lua.LState) *Game {
 	player := entity.NewPlayer()
 	inputHandler := NewInputHandler(player.GetPosition())
 	// letterPool := entity.NewDefaultLetterPool()

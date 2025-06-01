@@ -30,13 +30,11 @@ func NewGameConfig() *GameConfig {
 			Name: "Default Level",
 			WorldNumber: 1,
 			LevelNumber: 1,
-			World: world.BEACH,
 			StartingLetters: []string{"A", "B", "C", "D"},
 			Waves: nil,
 			EnemyCount: 10,
 			MobChances: nil,
 			LevelCompleteScore: 1000,
-			Background: "default_background.png",
 		},
 		Spawner: entity.BaseSpawner{
 			MinSpawnInterval: 1.0,

@@ -10,3 +10,11 @@ type GameOptions struct {
 	Level      world.Level
 	MobConfigs []content.MobConfig // Add mob configs to options
 }
+
+func NewGameOptions() *GameOptions {
+	return &GameOptions{
+		GameMode:   ENDLESS,
+		Level:      world.Level{}, // Initialize with an empty level
+		// MobConfigs: content.GetAllMobConfigs(), // Load all mob configs from content
+	}
+}

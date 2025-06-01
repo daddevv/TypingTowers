@@ -85,7 +85,7 @@ func (p *Previewer) Update() error {
 func (p *Previewer) Draw(screen *ebiten.Image) {
 	screen.Fill(image.White)
 	opts := &ebiten.DrawImageOptions{}
-	opts.GeoM.Scale(4, 4)
+	opts.GeoM.Scale(1, 1)
 	opts.GeoM.Translate(100, 100)
 	screen.DrawImage(p.Frames[p.CurrentFrame], opts)
 
@@ -114,7 +114,7 @@ func main() {
 
 	previewer := NewPreviewer(imagePath, rows, cols, height, width)
 	ebiten.SetWindowTitle("Sprite Previewer")
-	ebiten.SetWindowSize(800, 600)
+	ebiten.SetWindowSize(1920, 1080)
 	if err := ebiten.RunGame(previewer); err != nil {
 		log.Fatal(err)
 	}
