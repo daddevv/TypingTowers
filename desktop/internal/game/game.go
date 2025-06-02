@@ -17,6 +17,9 @@ import (
 
 type Game struct {
 	Mobs []*Mob // Slice to hold active mobs
+	SpawnTicks int // Ticks for spawning new mobs
+	SpawnInterval int // Interval between spawns
+	SpawnPoints []*physics.Vec2 // Points where mobs can spawn
 }
 
 // Mob represents an autonomous entity in the game, such as an enemy or NPC.
@@ -45,11 +48,11 @@ func NewMob(name string, team Team, health, posX, posY, velX, velY int) *Mob {
 	sprite := ebiten.NewImage(16, 16) // Create a new image for the mob sprite
 	switch team {
 	case TeamPlayer:
-		vector.DrawFilledCircle(sprite, 8, 8, 8, color.RGBA{R: 0, G: 0, B: 255, A: 255}, false)
+		vector.StrokeCircle(sprite, 8, 8, 8, 1, color.RGBA{R: 0, G: 0, B: 255, A: 255}, false) // Blue circle for player team
 	case TeamEnemy:
-		vector.DrawFilledCircle(sprite, 8, 8, 8, color.RGBA{R: 255, G: 0, B: 0, A: 255}, false)
+		vector.StrokeCircle(sprite, 8, 8, 8, 1, color.RGBA{R: 255, G: 0, B: 0, A: 255}, false) // Red circle for enemy team
 	default:
-		vector.DrawFilledCircle(sprite, 8, 8, 8, color.RGBA{R: 128, G: 128, B: 128, A: 255}, false)
+		vector.StrokeCircle(sprite, 8, 8, 8, 1, color.RGBA{R: 128, G: 128, B: 128, A: 255}, false)
 	}
 	hitBox := image.Rect(2, 2, 14, 14) // Smaller than sprite for better collision
 	return &Mob{
@@ -64,7 +67,7 @@ func NewMob(name string, team Team, health, posX, posY, velX, velY int) *Mob {
 		AccelerationRate: 0.4,                // Increased for more aggressive movement
 		ActionRange:      26.0,               // Reduced to ~10 pixels (16px sprite + 10px = 26px)
 		AttackDamage:     15,                 // Increased damage
-		AttackCooldown:   30,                 // Reduced cooldown for faster attacks
+		AttackCooldown:   20,                 // Reduced cooldown for faster attacks
 		AttackTick:       0,                  // Initialize attack tick
 		HitBox:           hitBox,
 		IdleTimer:    0,
@@ -98,19 +101,19 @@ var (
 		SeparationDist:   40.0,
 		CohesionDist:     200.0,
 		AlignmentDist:    120.0,
-		SeparationWeight: 2.5,
-		CohesionWeight:   1.5,
-		AlignmentWeight:  3.5,
-		MaxSpeed:         2.5,
+		SeparationWeight: 0.9,
+		CohesionWeight:   0.8,
+		AlignmentWeight:  1.5,
+		MaxSpeed:         1.5,
 		MaxForce:         0.5,
 		NeighborRadius:   250.0,
 
-		EnemyFrontCohesionWeight: 2.5,
+		EnemyFrontCohesionWeight: 1.9,
 		EnemyFrontCohesionDist:   350.0,
 
 		CombatStoppingDist:   35.0,
 		EnemyRepulsionDist:   20.0,
-		CombatRepulsionForce: 2.0,
+		CombatRepulsionForce: 1.0,
 	}
 	boidParamNames = []string{
 		"SeparationDist", "CohesionDist", "AlignmentDist",
@@ -128,52 +131,6 @@ var (
 	}
 	selectedBoidParam = 0
 )
-
-// Better balanced boid parameters for proper spacing
-const (
-	// New: weight for enemy-front cohesion
-	boidEnemyFrontCohesionWeight = 2.5
-	boidEnemyFrontCohesionDist   = 350.0 // How far back to start pushing toward the enemy front
-)
-
-// // Update updates the mob's position and state based on its target.
-// func (m *Mob) Update(target *math.Vec2) {
-// 	mobFeet := m.Position.Add(math.NewVec2(float64(m.Sprite.Bounds().Dx())/2, float64(m.Sprite.Bounds().Dy()))) // Adjust mob position to feet level
-// 	// Update the mob's target position
-// 	m.Target = target
-// 	// Calculate the direction vector towards the target
-// 	direction := m.Target.Subtract(mobFeet)
-// 	// Normalize the direction vector to get the unit vector
-// 	directionMagnitude := direction.Magnitude()
-// 	if directionMagnitude > 0 {
-// 		direction = direction.Normalize() // Normalize the direction vector
-// 	}
-// 	// Update the mob's acceleration towards the target
-// 	m.Acceleration = direction.Scale(m.AccelerationRate) // Scale the direction by the acceleration rate
-// 	// Update the mob's velocity based on acceleration
-// 	if directionMagnitude < m.ActionRange {
-// 		// If within action range, set velocity to zero
-// 		m.Velocity = math.NewVec2(0, 0)
-// 	} else {
-// 		// Otherwise, move towards the target
-// 		m.Velocity = m.Velocity.Add(m.Acceleration) // Update velocity with acceleration
-// 	}
-// 	// Update the mob's position based on its velocity
-// 	m.Position = m.Position.Add(m.Velocity) // Move the mob towards the target position
-// 	// Ensure the mob's position does not exceed the game boundaries
-// 	if m.Position.X < 0 {
-// 		m.Position.X = 0 // Prevent moving out of bounds on the left
-// 	}
-// 	if m.Position.Y < 0 {
-// 		m.Position.Y = 0 // Prevent moving out of bounds on the top
-// 	}
-// 	if m.Position.X > 1920-float64(m.Sprite.Bounds().Dx()) {
-// 		m.Position.X = 1920 - float64(m.Sprite.Bounds().Dx()) // Prevent moving out of bounds on the right
-// 	}
-// 	if m.Position.Y > 1080-float64(m.Sprite.Bounds().Dy()) {
-// 		m.Position.Y = 1080 - float64(m.Sprite.Bounds().Dy()) // Prevent moving out of bounds on the bottom
-// 	}
-// }
 
 // LocateActionableTarget finds the nearest enemy mob within the game.
 func (m *Mob) LocateActionableTarget(mobs []*Mob) *Mob {
@@ -520,6 +477,19 @@ func NewGame() *Game {
 	return &Game{
 		// Initialize game state here
 		Mobs: make([]*Mob, 0), // Initialize the slice of mobs
+		SpawnTicks: 0,         // No mobs spawned initially
+		SpawnInterval: 60,
+		SpawnPoints: []*physics.Vec2{
+			physics.NewVec2(100, 100), // Example spawn points
+			physics.NewVec2(1820, 100),
+			physics.NewVec2(100, 980),
+			physics.NewVec2(1820, 980),
+			physics.NewVec2(960, 540), // Center spawn point
+			physics.NewVec2(960, 100), // Top center spawn point
+			physics.NewVec2(960, 980), // Bottom center spawn point
+			physics.NewVec2(100, 540), // Left center spawn point
+			physics.NewVec2(1820, 540), // Right center spawn point
+		},
 	}
 }
 
@@ -540,17 +510,6 @@ func (g *Game) Update() error {
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		return ebiten.Termination // Exit the game if Escape is pressed
-	}
-
-	if ebiten.IsKeyPressed(ebiten.KeyP) {
-		// Handle P key press, e.g., pause the game or perform an action
-		ally := NewMob("New Mob", TeamPlayer, 100, 100, 100, 0, 0) // Create a new mob
-		g.AddMob(ally) // Add the new mob to the game
-	}
-
-	if ebiten.IsKeyPressed(ebiten.KeyE) {
-		enemy := NewMob("Enemy Mob", TeamEnemy, 100, 900, 900, 0, 0) // Create a new enemy mob
-		g.AddMob(enemy) // Add the new enemy mob to the game
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyC) {
@@ -579,6 +538,21 @@ func (g *Game) Update() error {
 		if *boidParamPtrs[selectedBoidParam] < 0 {
 			*boidParamPtrs[selectedBoidParam] = 0
 		}
+	}
+
+	// Spawn new mobs periodically
+	if g.SpawnTicks <= 0 {
+		enemySpawnPoint := g.SpawnPoints[rand.Intn(len(g.SpawnPoints))] // Randomly select a spawn point
+		allySpawnPoint := g.SpawnPoints[rand.Intn(len(g.SpawnPoints))] // Randomly select a spawn point for allies
+		newEnemyMob := NewMob(fmt.Sprintf("Mob%d", len(g.Mobs)+1), TeamEnemy, 100, int(enemySpawnPoint.X), int(enemySpawnPoint.Y), 0, 0)
+		g.AddMob(newEnemyMob) // Add a new enemy mob to the game
+
+		newAllyMob := NewMob(fmt.Sprintf("Mob%d", len(g.Mobs)+1), TeamPlayer, 100, int(allySpawnPoint.X), int(allySpawnPoint.Y), 0, 0)
+		g.AddMob(newAllyMob) // Add a new mob to the game
+
+		g.SpawnTicks = g.SpawnInterval // Reset spawn ticks
+	} else {
+		g.SpawnTicks-- // Decrement spawn ticks
 	}
 
 	return nil
