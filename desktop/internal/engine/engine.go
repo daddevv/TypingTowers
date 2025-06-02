@@ -62,6 +62,14 @@ func (e *Engine) Update() error {
 
 	// Update the debug display with current FPS and mouse position
 	e.DebugDisplay["FPS"] = ebiten.ActualFPS() // Update FPS in debug display
+	e.DebugDisplay["Mobs"] = len(e.Game.Mobs) // Update the number of mobs in debug display
+	for i, mob := range e.Game.Mobs {
+		// Add each mob and its target to the debug display
+		if mob != nil {
+			e.DebugDisplay[fmt.Sprintf("Mob %d", i)] = fmt.Sprintf("Position: (%.2f, %.2f), Target: (%.2f, %.2f)",
+				mob.Position.X, mob.Position.Y, mob.Target.X, mob.Target.Y)
+		}
+	}
 
 	return nil
 }
