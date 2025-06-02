@@ -2,7 +2,6 @@ package engine
 
 import (
 	"fmt"
-	"image/color"
 	"sort"
 	"td/internal/game"
 
@@ -61,15 +60,15 @@ func (e *Engine) Update() error {
 	}
 
 	// Update the debug display with current FPS and mouse position
-	e.DebugDisplay["FPS"] = ebiten.ActualFPS() // Update FPS in debug display
-	e.DebugDisplay["Mobs"] = len(e.Game.Mobs) // Update the number of mobs in debug display
-	for i, mob := range e.Game.Mobs {
-		// Add each mob and its target to the debug display
-		if mob != nil {
-			e.DebugDisplay[fmt.Sprintf("Mob %d", i)] = fmt.Sprintf("Position: (%.2f, %.2f), Target: (%.2f, %.2f)",
-				mob.Position.X, mob.Position.Y, mob.Target.X, mob.Target.Y)
-		}
-	}
+	// e.DebugDisplay["FPS"] = ebiten.ActualFPS() // Update FPS in debug display
+	// e.DebugDisplay["Mobs"] = len(e.Game.Mobs) // Update the number of mobs in debug display
+	// for i, mob := range e.Game.Mobs {
+	// 	// Add each mob and its target to the debug display
+	// 	if mob != nil {
+	// 		e.DebugDisplay[fmt.Sprintf("Mob %d", i)] = fmt.Sprintf("Position: (%.2f, %.2f), Target: (%.2f, %.2f)",
+	// 			mob.Position.X, mob.Position.Y, mob.Target.X, mob.Target.Y)
+	// 	}
+	// }
 
 	return nil
 }
@@ -80,17 +79,16 @@ func (e *Engine) Draw(screen *ebiten.Image) {
 
 	e.Game.Draw(e.Screen) // Draw the game state to the internal screen
 
-	//print the debug display if enabled
 	var text string
 	if e.DebugEnabled {
-			// Draw 48x48 grid outline for debugging
-		for x := range 1920 {
-			for y := range 1080 {
-				if x%48 == 0 || y%48 == 0 {
-					e.Screen.Set(x, y, color.RGBA{255, 0, 0, 255}) // Red lines for grid
-				}
-			}
-		}
+		// Draw 48x48 grid outline for debugging
+		// for x := range 1920 {
+		// 	for y := range 1080 {
+		// 		if x%48 == 0 || y%48 == 0 {
+		// 			e.Screen.Set(x, y, color.RGBA{255, 0, 0, 255}) // Red lines for grid
+		// 		}
+		// 	}
+		// }
 
 		// sort the debug display keys for consistent output
 		keys := make([]string, 0, len(e.DebugDisplay))
@@ -101,9 +99,10 @@ func (e *Engine) Draw(screen *ebiten.Image) {
 		for _, key := range keys {
 			text += fmt.Sprintf("%s: %v\n", key, e.DebugDisplay[key]) // Format the debug display text
 		}
+		// Add boid parameter debug info
+		text += e.Game.PrintBoidParams()
 		ebitenutil.DebugPrint(e.Screen, text) // Print the debug text on the screen
 	}
-
 	e.renderFrame(screen)
 }
 

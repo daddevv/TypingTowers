@@ -1,7 +1,7 @@
 package enemy
 
 import (
-	"td/internal/math"
+	"td/internal/physics"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -11,10 +11,10 @@ type Mob struct {
 	Name             string        // Name of the mob
 	Sprite           *ebiten.Image // Sprite image for the mob
 	Health           int           // Health points of the mob
-	Target           *math.Vec2    // Target position for the mob to move towards
-	Position         *math.Vec2    // Position of the mob in the game world
-	Velocity         *math.Vec2    // Velocity vector of the mob
-	Acceleration     *math.Vec2    // Acceleration vector for the mob
+	Target           *physics.Vec2    // Target position for the mob to move towards
+	Position         *physics.Vec2    // Position of the mob in the game world
+	Velocity         *physics.Vec2    // Velocity vector of the mob
+	Acceleration     *physics.Vec2    // Acceleration vector for the mob
 	AccelerationRate float64       // Rate of acceleration for the mob
 	ActionRange      float64       // Range within which the mob can attack
 	AttackDamage     int           // Damage dealt by the mob when it attacks
@@ -32,10 +32,10 @@ func NewMob(name string, health, posX, posY, velX, velY, targetX, targetY int) *
 		Name:             name,
 		Sprite:           sprite,
 		Health:           health,
-		Target:           math.NewVec2(float64(targetX), float64(targetY)), // Initialize target position to current position
-		Position:         math.NewVec2(float64(posX), float64(posY)),
-		Velocity:         math.NewVec2(float64(velX), float64(velY)),
-		Acceleration:     math.NewVec2(0.0, 0.0), // Default X acceleration
+		Target:           physics.NewVec2(float64(targetX), float64(targetY)), // Initialize target position to current position
+		Position:         physics.NewVec2(float64(posX), float64(posY)),
+		Velocity:         physics.NewVec2(float64(velX), float64(velY)),
+		Acceleration:     physics.NewVec2(0.0, 0.0), // Default X acceleration
 		AccelerationRate: 0.5,                    // Default acceleration rate
 		ActionRange:      10.0,                  // Default action range
 		AttackDamage:     10,                     // Default attack damage
@@ -44,8 +44,8 @@ func NewMob(name string, health, posX, posY, velX, velY, targetX, targetY int) *
 	}
 }
 
-func (m *Mob) Update(target *math.Vec2) {
-	mobFeet := m.Position.Add(math.NewVec2(float64(m.Sprite.Bounds().Dx())/2, float64(m.Sprite.Bounds().Dy()))) // Adjust mob position to feet level
+func (m *Mob) Update(target *physics.Vec2) {
+	mobFeet := m.Position.Add(physics.NewVec2(float64(m.Sprite.Bounds().Dx())/2, float64(m.Sprite.Bounds().Dy()))) // Adjust mob position to feet level
 
 	// Update the mob's target position
 	m.Target = target
@@ -62,7 +62,7 @@ func (m *Mob) Update(target *math.Vec2) {
 	// Move the mob towards the target position
 	if directionMagnitude < m.ActionRange {
 		// If within action range, set velocity to zero
-		m.Velocity = math.NewVec2(0, 0)
+		m.Velocity = physics.NewVec2(0, 0)
 	} else {
 		// Otherwise, move towards the target
 		m.Velocity = direction.Scale(m.AccelerationRate)

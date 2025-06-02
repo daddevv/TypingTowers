@@ -20,10 +20,10 @@ func init() {
 func main() {
 	engine := engine.NewEngine()
 
-	ebiten.SetWindowSize(1920/2,1080/2) 
+	ebiten.SetWindowSize(1920/8,1080/8) 
 	ebiten.SetWindowTitle("Type Defense")
+	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	// ebiten.SetFullscreen(true)
-	// ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	// ebiten.SetWindowDecorated(false)
 
 	if err := ebiten.RunGame(engine); err != nil {

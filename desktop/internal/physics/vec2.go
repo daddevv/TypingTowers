@@ -1,4 +1,4 @@
-package math
+package physics
 
 import (
 	"fmt"
@@ -21,7 +21,8 @@ func NewVec2(x, y float64) *Vec2 {
 
 // Add adds two Vec2 vectors and returns the result.
 // NOTE: This does NOT modify the receiver; you must assign the result:
-//   v = v.Add(other)
+//
+//	v = v.Add(other)
 func (v *Vec2) Add(other *Vec2) *Vec2 {
 	return &Vec2{
 		X: v.X + other.X,

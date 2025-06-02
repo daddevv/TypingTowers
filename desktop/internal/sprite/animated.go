@@ -2,7 +2,7 @@ package sprite
 
 import (
 	"image"
-	"td/internal/math"
+	"td/internal/physics"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -45,11 +45,11 @@ func (a *AnimatedSprite) GetFrameRect() image.Rectangle {
 	return a.Frames[a.CurrentFrame].Bounds()
 }
 
-func (a *AnimatedSprite) GetPosition() math.Vec2 {
+func (a *AnimatedSprite) GetPosition() physics.Vec2 {
 	return a.Sprite.GetPosition()
 }
 
-func (a *AnimatedSprite) SetPosition(pos math.Vec2) {
+func (a *AnimatedSprite) SetPosition(pos physics.Vec2) {
 	a.Sprite.SetPosition(pos)
 }
 
