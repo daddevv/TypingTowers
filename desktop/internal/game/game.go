@@ -61,7 +61,7 @@ func NewMob(name string, team Team, health, posX, posY, velX, velY int) *Mob {
 		Position:         math.NewVec2(float64(posX), float64(posY)),
 		Velocity:         math.NewVec2(float64(velX), float64(velY)),
 		Acceleration:     math.NewVec2(0.0, 0.0), // Default X acceleration
-		AccelerationRate: 0.2,                // Default acceleration rate
+		AccelerationRate: 0.3,                // Default acceleration rate
 		ActionRange:      48.0,                 // Default action range
 		AttackDamage:     10,                   // Default attack damage
 		AttackCooldown:   60,                  // Default attack cooldown in ticks
@@ -73,16 +73,17 @@ func NewMob(name string, team Team, health, posX, posY, velX, velY int) *Mob {
 	}
 }
 
-// Boid parameters
+// Improved boid parameters
 const (
-	boidSeparationDist = 60.0
-	boidCohesionDist   = 120.0
-	boidAlignmentDist  = 120.0
-	boidSeparationWeight = 1.2
-	boidCohesionWeight   = 0.5
-	boidAlignmentWeight  = 0.5
-	boidMaxSpeed         = 3.0
-	boidMaxForce         = 0.2
+	boidSeparationDist = 80.0
+	boidCohesionDist   = 150.0
+	boidAlignmentDist  = 100.0
+	boidSeparationWeight = 2.0
+	boidCohesionWeight   = 0.8
+	boidAlignmentWeight  = 1.0
+	boidMaxSpeed         = 2.5
+	boidMaxForce         = 0.15
+	boidNeighborRadius   = 200.0  // Maximum distance to consider other boids
 )
 
 // // Update updates the mob's position and state based on its target.
@@ -133,129 +134,216 @@ func (m *Mob) LocateActionableTarget(mobs []*Mob) *Mob {
 	return nil // Return nil if no enemy is found within action range
 }
 
-// UpdateBoid updates the mob's state using boid behavior (separation, alignment, cohesion).
+// limitForce limits the magnitude of a force vector to maxForce
+func limitForce(force *math.Vec2, maxForce float64) *math.Vec2 {
+	if force.Magnitude() > maxForce {
+		return force.Normalize().Scale(maxForce)
+	}
+	return force
+}
+
+// UpdateBoid updates the mob's state using improved boid behavior (separation, alignment, cohesion).
 func (m *Mob) UpdateBoid(mobs []*Mob) {
-	// Boid: separation, alignment, cohesion (only with same team)
 	var (
 		separation = math.NewVec2(0, 0)
 		alignment  = math.NewVec2(0, 0)
 		cohesion   = math.NewVec2(0, 0)
 		countSep, countAli, countCoh int
 	)
+
+	// Calculate boid forces only with same team members
 	for _, other := range mobs {
-		if other == nil || other == m || other.Team != m.Team {
+		if other == nil || other == m || other.Team != m.Team || other.Health <= 0 {
 			continue
 		}
+
 		dist := m.Position.Distance(other.Position)
+		
+		// Only consider nearby boids
+		if dist > boidNeighborRadius {
+			continue
+		}
+
+		// Separation: steer away from nearby boids
 		if dist < boidSeparationDist && dist > 0 {
-			diff := m.Position.Subtract(other.Position).Normalize().Scale(1.0 / dist)
+			diff := m.Position.Subtract(other.Position)
+			// Weight by distance - closer boids have more influence
+			diff = diff.Normalize().Scale(boidSeparationDist / dist)
 			separation = separation.Add(diff)
 			countSep++
 		}
+
+		// Alignment: steer towards average velocity of neighbors
 		if dist < boidAlignmentDist {
 			alignment = alignment.Add(other.Velocity)
 			countAli++
 		}
+
+		// Cohesion: steer towards average position of neighbors
 		if dist < boidCohesionDist {
 			cohesion = cohesion.Add(other.Position)
 			countCoh++
 		}
 	}
+
+	// Calculate separation force
+	var separationForce *math.Vec2
 	if countSep > 0 {
 		separation = separation.Scale(1.0 / float64(countSep))
+		if separation.Magnitude() > 0 {
+			separationForce = separation.Normalize().Scale(boidMaxSpeed)
+			separationForce = separationForce.Subtract(m.Velocity)
+			separationForce = limitForce(separationForce, boidMaxForce)
+		} else {
+			separationForce = math.NewVec2(0, 0)
+		}
+	} else {
+		separationForce = math.NewVec2(0, 0)
 	}
+
+	// Calculate alignment force
+	var alignmentForce *math.Vec2
 	if countAli > 0 {
 		alignment = alignment.Scale(1.0 / float64(countAli))
-		alignment = alignment.Normalize().Scale(boidMaxSpeed)
-		alignment = alignment.Subtract(m.Velocity)
+		if alignment.Magnitude() > 0 {
+			alignmentForce = alignment.Normalize().Scale(boidMaxSpeed)
+			alignmentForce = alignmentForce.Subtract(m.Velocity)
+			alignmentForce = limitForce(alignmentForce, boidMaxForce)
+		} else {
+			alignmentForce = math.NewVec2(0, 0)
+		}
+	} else {
+		alignmentForce = math.NewVec2(0, 0)
 	}
+
+	// Calculate cohesion force
+	var cohesionForce *math.Vec2
 	if countCoh > 0 {
 		cohesion = cohesion.Scale(1.0 / float64(countCoh))
 		cohesion = cohesion.Subtract(m.Position)
-		cohesion = cohesion.Normalize().Scale(boidMaxSpeed)
-		cohesion = cohesion.Subtract(m.Velocity)
+		if cohesion.Magnitude() > 0 {
+			cohesionForce = cohesion.Normalize().Scale(boidMaxSpeed)
+			cohesionForce = cohesionForce.Subtract(m.Velocity)
+			cohesionForce = limitForce(cohesionForce, boidMaxForce)
+		} else {
+			cohesionForce = math.NewVec2(0, 0)
+		}
+	} else {
+		cohesionForce = math.NewVec2(0, 0)
 	}
-	// Combine
-	boidForce := separation.Scale(boidSeparationWeight).
-		Add(alignment.Scale(boidAlignmentWeight)).
-		Add(cohesion.Scale(boidCohesionWeight))
-	// Limit force
-	if boidForce.Magnitude() > boidMaxForce {
-		boidForce = boidForce.Normalize().Scale(boidMaxForce)
-	}
+
+	// Combine all forces with weights
+	boidForce := separationForce.Scale(boidSeparationWeight).
+		Add(alignmentForce.Scale(boidAlignmentWeight)).
+		Add(cohesionForce.Scale(boidCohesionWeight))
+
+	// Apply the combined boid force
 	m.Acceleration = m.Acceleration.Add(boidForce)
 }
 
 // Update updates the mob's position and state based on its target.
 func (m *Mob) Update(mobs []*Mob) {
-	// Boid behavior (per team)
+	// Reset acceleration
+	m.Acceleration = math.NewVec2(0, 0)
+
+	// Apply boid behavior (flocking with same team)
 	m.UpdateBoid(mobs)
 
-	// Prevent stacking: add repulsion if hitboxes overlap (per team)
+	// Prevent stacking: add stronger repulsion if hitboxes overlap
 	for _, other := range mobs {
-		if other == nil || other == m || other.Team != m.Team {
+		if other == nil || other == m || other.Team != m.Team || other.Health <= 0 {
 			continue
 		}
 		if m.HitBox.Overlaps(other.HitBox) {
-			// Push away from each other
+			// Push away from each other more strongly
 			offset := m.Position.Subtract(other.Position)
 			if offset.Magnitude() == 0 {
+				// If positions are identical, create random offset
+				rand.Seed(time.Now().UnixNano() + int64(uintptr(unsafe.Pointer(m))))
 				offset = math.NewVec2(rand.Float64()-0.5, rand.Float64()-0.5)
 			}
-			repulse := offset.Normalize().Scale(0.5)
+			repulse := offset.Normalize().Scale(1.0) // Stronger repulsion
 			m.Acceleration = m.Acceleration.Add(repulse)
 		}
 	}
 
-	// Seek nearest enemy only if one is actionable (within a reasonable distance)
+	// Seek nearest enemy only if one exists
 	targetMob := m.TargetNearestEnemy(mobs)
 	hasEnemy := targetMob != nil
 
 	if hasEnemy {
 		m.Target = targetMob.Position
 		dist := m.Position.Distance(targetMob.Position)
+		
 		if dist < m.ActionRange {
-			// In action range: stationary while battling
-			m.Acceleration = math.NewVec2(0, 0)
-			m.Velocity = math.NewVec2(0, 0)
+			// In action range: reduce movement but don't stop completely
+			// This allows for some tactical movement during combat
+			m.Velocity = m.Velocity.Scale(0.3)
 			// Reset idle state when enemy found
 			m.IdleTimer = 0
 			m.IdleDuration = 0
 			m.IdleDirection = math.NewVec2(0, 0)
 		} else {
-			// Move toward target
+			// Move toward target with seeking behavior
 			dir := m.Target.Subtract(m.Position)
 			if dir.Magnitude() > 0 {
-				dir = dir.Normalize()
+				seekForce := dir.Normalize().Scale(boidMaxSpeed)
+				seekForce = seekForce.Subtract(m.Velocity)
+				seekForce = limitForce(seekForce, boidMaxForce)
+				seekForce = seekForce.Scale(m.AccelerationRate)
+				m.Acceleration = m.Acceleration.Add(seekForce)
 			}
-			seekForce := dir.Scale(m.AccelerationRate)
-			m.Acceleration = m.Acceleration.Add(seekForce)
 			// Reset idle state when enemy found
 			m.IdleTimer = 0
 			m.IdleDuration = 0
 			m.IdleDirection = math.NewVec2(0, 0)
 		}
 	} else {
-		// Idle wandering: change direction every N ticks
+		// Idle wandering: change direction periodically for more natural movement
 		if m.IdleTimer <= 0 {
 			rand.Seed(time.Now().UnixNano() + int64(uintptr(unsafe.Pointer(m))))
-			angle := rand.Float64() * 2 * 3.1415926535
-			mag := 0.2 + rand.Float64()*0.5 // random acceleration magnitude
+			angle := rand.Float64() * 2 * maths.Pi
+			mag := 0.1 + rand.Float64()*0.2 // Gentler idle movement
 			m.IdleDirection = math.NewVec2(maths.Cos(angle), maths.Sin(angle)).Scale(mag)
-			m.IdleDuration = 60 + rand.Intn(120) // 1-3 seconds at 60fps
+			m.IdleDuration = 90 + rand.Intn(180) // 1.5-4.5 seconds at 60fps
 			m.IdleTimer = m.IdleDuration
 		}
-		m.Acceleration = m.Acceleration.Add(m.IdleDirection)
+		
+		// Apply idle wandering force
+		idleForce := limitForce(m.IdleDirection, boidMaxForce*0.5)
+		m.Acceleration = m.Acceleration.Add(idleForce)
 		m.IdleTimer--
 	}
 
-	// Update velocity and clamp
+	// Update velocity with acceleration
 	m.Velocity = m.Velocity.Add(m.Acceleration)
+	
+	// Limit velocity to max speed
 	if m.Velocity.Magnitude() > boidMaxSpeed {
 		m.Velocity = m.Velocity.Normalize().Scale(boidMaxSpeed)
 	}
+	
+	// Update position
 	m.Position = m.Position.Add(m.Velocity)
-	m.Acceleration = math.NewVec2(0, 0)
+
+	// Boundary collision with bounce-back
+	screenMargin := 32.0
+	if m.Position.X < screenMargin {
+		m.Position.X = screenMargin
+		m.Velocity.X = maths.Abs(m.Velocity.X) // Bounce off left wall
+	}
+	if m.Position.Y < screenMargin {
+		m.Position.Y = screenMargin
+		m.Velocity.Y = maths.Abs(m.Velocity.Y) // Bounce off top wall
+	}
+	if m.Position.X > 1920-float64(m.Sprite.Bounds().Dx())-screenMargin {
+		m.Position.X = 1920 - float64(m.Sprite.Bounds().Dx()) - screenMargin
+		m.Velocity.X = -maths.Abs(m.Velocity.X) // Bounce off right wall
+	}
+	if m.Position.Y > 1080-float64(m.Sprite.Bounds().Dy())-screenMargin {
+		m.Position.Y = 1080 - float64(m.Sprite.Bounds().Dy()) - screenMargin
+		m.Velocity.Y = -maths.Abs(m.Velocity.Y) // Bounce off bottom wall
+	}
 
 	// Update hitbox position
 	m.HitBox = image.Rect(
