@@ -19,7 +19,8 @@ type Game struct {
 	Mobs []*Mob // Slice to hold active mobs
 	SpawnTicks int // Ticks for spawning new mobs
 	SpawnInterval int // Interval between spawns
-	SpawnPoints []*physics.Vec2 // Points where mobs can spawn
+	AllySpawnPoints []*physics.Vec2 // Points where mobs can spawn
+	EnemySpawnPoints []*physics.Vec2 // Points where enemy mobs can spawn
 }
 
 // Mob represents an autonomous entity in the game, such as an enemy or NPC.
@@ -478,17 +479,48 @@ func NewGame() *Game {
 		// Initialize game state here
 		Mobs: make([]*Mob, 0), // Initialize the slice of mobs
 		SpawnTicks: 0,         // No mobs spawned initially
-		SpawnInterval: 60,
-		SpawnPoints: []*physics.Vec2{
-			physics.NewVec2(100, 100), // Example spawn points
-			physics.NewVec2(1820, 100),
-			physics.NewVec2(100, 980),
-			physics.NewVec2(1820, 980),
-			physics.NewVec2(960, 540), // Center spawn point
-			physics.NewVec2(960, 100), // Top center spawn point
-			physics.NewVec2(960, 980), // Bottom center spawn point
-			physics.NewVec2(100, 540), // Left center spawn point
-			physics.NewVec2(1820, 540), // Right center spawn point
+		SpawnInterval: 5,
+		AllySpawnPoints: []*physics.Vec2{
+			physics.NewVec2(100, 100),   // Example spawn points for allies
+			physics.NewVec2(200, 100),
+			physics.NewVec2(300, 100),
+			physics.NewVec2(400, 100),
+			physics.NewVec2(500, 100),
+			physics.NewVec2(600, 100),
+			physics.NewVec2(700, 100),
+			physics.NewVec2(800, 100),
+			physics.NewVec2(900, 100),
+			physics.NewVec2(1000, 100),
+			physics.NewVec2(1100, 100),
+			physics.NewVec2(1200, 100),
+			physics.NewVec2(1300, 100),
+			physics.NewVec2(1400, 100),
+			physics.NewVec2(1500, 100),
+			physics.NewVec2(1600, 100),
+			physics.NewVec2(1700, 100),
+			physics.NewVec2(1800, 100),
+			physics.NewVec2(1900, 100),
+		},
+		EnemySpawnPoints: []*physics.Vec2{
+			physics.NewVec2(100, 900),   // Example spawn points for enemies
+			physics.NewVec2(200, 900),
+			physics.NewVec2(300, 900),
+			physics.NewVec2(400, 900),
+			physics.NewVec2(500, 900),
+			physics.NewVec2(600, 900),
+			physics.NewVec2(700, 900),
+			physics.NewVec2(800, 900),
+			physics.NewVec2(900, 900),
+			physics.NewVec2(1000, 900),
+			physics.NewVec2(1100, 900),
+			physics.NewVec2(1200, 900),
+			physics.NewVec2(1300, 900),
+			physics.NewVec2(1400, 900),
+			physics.NewVec2(1500, 900),
+			physics.NewVec2(1600, 900),
+			physics.NewVec2(1700, 900),
+			physics.NewVec2(1800, 900),
+			physics.NewVec2(1900, 900),
 		},
 	}
 }
@@ -542,8 +574,11 @@ func (g *Game) Update() error {
 
 	// Spawn new mobs periodically
 	if g.SpawnTicks <= 0 {
-		enemySpawnPoint := g.SpawnPoints[rand.Intn(len(g.SpawnPoints))] // Randomly select a spawn point
-		allySpawnPoint := g.SpawnPoints[rand.Intn(len(g.SpawnPoints))] // Randomly select a spawn point for allies
+		if len(g.Mobs) >= 100 {
+			return nil // Stop spawning if there are already 100 mobs
+		}
+		enemySpawnPoint := g.EnemySpawnPoints[rand.Intn(len(g.EnemySpawnPoints))] // Randomly select a spawn point
+		allySpawnPoint := g.AllySpawnPoints[rand.Intn(len(g.AllySpawnPoints))] // Randomly select a spawn point for allies
 		newEnemyMob := NewMob(fmt.Sprintf("Mob%d", len(g.Mobs)+1), TeamEnemy, 100, int(enemySpawnPoint.X), int(enemySpawnPoint.Y), 0, 0)
 		g.AddMob(newEnemyMob) // Add a new enemy mob to the game
 
@@ -576,6 +611,30 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		debugInfo := g.PrintBoidParams()
 		ebitenutil.DebugPrint(screen, debugInfo)
 	}
+
+	enemyCount := 0
+	allyCount := 0
+	for _, mob := range g.Mobs {
+		if mob.Team == TeamEnemy {
+			enemyCount++ // Count enemy mobs
+		} else if mob.Team == TeamPlayer {
+			allyCount++ // Count ally mobs
+		}
+	}
+
+	allyPercent := 0
+	if len(g.Mobs) > 0 {
+		allyPercent = int(float64(allyCount) / float64(len(g.Mobs)) * 100) // Calculate percentage of ally mobs
+	}
+	enemyPercent := 0
+	if len(g.Mobs) > 0 {
+		enemyPercent = int(float64(enemyCount) / float64(len(g.Mobs)) * 100) // Calculate percentage of enemy mobs
+	}
+
+	ebitenutil.DebugPrintAt(screen, "Ally Mobs: "+fmt.Sprint(allyCount), 10, 500) // Display the number of ally mobs
+	ebitenutil.DebugPrintAt(screen, "Enemy Mobs: "+fmt.Sprint(enemyCount), 10, 530) // Display the number of enemy mobs
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Ally Percentage: %d%%", allyPercent), 100, 500) // Display the percentage of ally mobs
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Enemy Percentage: %d%%", enemyPercent), 100, 530) // Display the percentage of enemy mobs
 }
 
 func (g *Game) AddMob(mob *Mob) {
