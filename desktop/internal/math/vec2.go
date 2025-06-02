@@ -20,6 +20,8 @@ func NewVec2(x, y float64) *Vec2 {
 }
 
 // Add adds two Vec2 vectors and returns the result.
+// NOTE: This does NOT modify the receiver; you must assign the result:
+//   v = v.Add(other)
 func (v *Vec2) Add(other *Vec2) *Vec2 {
 	return &Vec2{
 		X: v.X + other.X,
@@ -28,6 +30,7 @@ func (v *Vec2) Add(other *Vec2) *Vec2 {
 }
 
 // Subtract subtracts another Vec2 from this Vec2 and returns the result.
+// NOTE: This does NOT modify the receiver; you must assign the result.
 func (v *Vec2) Subtract(other *Vec2) *Vec2 {
 	return &Vec2{
 		X: v.X - other.X,
@@ -36,6 +39,7 @@ func (v *Vec2) Subtract(other *Vec2) *Vec2 {
 }
 
 // Scale scales the Vec2 by a given factor and returns the result.
+// NOTE: This does NOT modify the receiver; you must assign the result.
 func (v *Vec2) Scale(factor float64) *Vec2 {
 	return &Vec2{
 		X: v.X * factor,
