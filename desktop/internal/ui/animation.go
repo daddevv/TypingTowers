@@ -72,7 +72,29 @@ func (a *Animation) Frame() *ebiten.Image {
 	return a.Frames[a.CurrentFrame]
 }
 
+// Reset resets the animation to the first frame and tick count.
 func (a *Animation) Reset() {
+	a.CurrentFrame = 0
+	a.Tick = 0
+}
+
+// SetFrame sets the current frame of the animation to a specific index.
+func (a *Animation) SetFrame(frameIndex int) {
+	if frameIndex < 0 || frameIndex >= len(a.Frames) {
+		return // Ignore invalid frame index
+	}
+	a.CurrentFrame = frameIndex
+	a.Tick = 0 // Reset tick count when setting a specific frame
+}
+
+// SetAnimation updates the animation's sprite sheet and frame properties.
+func (a *Animation) SetAnimation(other *Animation) {
+	a.SpriteSheet = other.SpriteSheet
+	a.Frames = other.Frames
+	a.Rows = other.Rows
+	a.Cols = other.Cols
+	a.FrameWidth = other.FrameWidth
+	a.FrameHeight = other.FrameHeight
 	a.CurrentFrame = 0
 	a.Tick = 0
 }

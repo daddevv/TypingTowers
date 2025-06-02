@@ -10,7 +10,7 @@ import (
 	"td/internal/goblin"
 	"td/internal/math"
 	"td/internal/player"
-	"td/internal/ui"
+	"td/internal/sprite"
 	"td/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -20,13 +20,14 @@ import (
 
 // Engine represents the main game engine that manages the game state, menus, and rendering.
 type Engine struct {
+	DeltaTime float64 // Time since the last update in ms
 	PlayerPos math.Vec2 // Player position in the game world
 	DebugDisplay map[string]any // Debug display for various game states
 	DebugEnabled bool // Flag to enable or disable debug display
 	Screen     *ebiten.Image // Internal screen for rendering at 1920x1080
 	Background *ebiten.Image // Background image for the game
 	Goblins  []*enemy.Mob // List of goblins in the game
-	TestAnimation *ui.Animation // Animation for testing purposes
+	TestAnimation *sprite.AnimatedSprite // Animation for testing purposes
 	TestSpawner *goblin.GoblinSpawner
 	TestMob *enemy.Mob // Example mob for testing
 }
@@ -35,15 +36,6 @@ type Engine struct {
 func NewEngine() *Engine {
 	// Create a new image to hold the background
 	bg := world.Example.Background
-
-	// Draw 48x48 grid outline for debugging
-	for x := range 1920 {
-		for y := range 1080 {
-			if x%48 == 0 || y%48 == 0 {
-				bg.Set(x, y, color.RGBA{255, 0, 0, 255}) // Red lines for grid
-			}
-		}
-	}
 
 	debugDisplay := make(map[string]any) // Initialize the debug display map
 	debugDisplay["FPS"] = 0 // Placeholder for FPS display
@@ -55,6 +47,7 @@ func NewEngine() *Engine {
 	
 
 	return &Engine{
+		DeltaTime: 0, // Initialize delta time to 0
 		PlayerPos: math.Vec2{X: 600, Y: 600}, // Initialize player position
 		DebugDisplay: debugDisplay, // Initialize the debug display
 		DebugEnabled: true, // Debug display is initially enabled
@@ -69,6 +62,24 @@ func NewEngine() *Engine {
 
 // Update calls the appropriate update method based on the current state of the engine.
 func (e *Engine) Update() error {
+	// Calculate delta time in seconds
+	e.DeltaTime = ebiten.ActualTPS() // Get the actual ticks per second
+	e.DeltaTime = 1.0 / e.DeltaTime // Convert ticks per second to seconds
+	
+	// Update the player position normalized for directional movement
+	if ebiten.IsKeyPressed(ebiten.KeyArrowUp) || ebiten.IsKeyPressed(ebiten.KeyW) {
+		e.PlayerPos.Y -= 5 * e.DeltaTime // Move up
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyArrowDown) || ebiten.IsKeyPressed(ebiten.KeyS) {
+		e.PlayerPos.Y += 5 * e.DeltaTime // Move down
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyArrowLeft) || ebiten.IsKeyPressed(ebiten.KeyA) {
+		e.PlayerPos.X -= 5 * e.DeltaTime // Move left
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyArrowRight) || ebiten.IsKeyPressed(ebiten.KeyD) {
+		e.PlayerPos.X += 5 * e.DeltaTime // Move right
+	}
+
 	// F for fullscreen toggle
 	if inpututil.IsKeyJustPressed(ebiten.KeyF) {
 		if ebiten.IsFullscreen() {
@@ -77,6 +88,7 @@ func (e *Engine) Update() error {
 			ebiten.SetFullscreen(true) // Enter fullscreen
 		}
 	}
+
 	// Ctrl+D for debug toggle
 	if inpututil.IsKeyJustPressed(ebiten.KeyD) && ebiten.IsKeyPressed(ebiten.KeyControl) {
 		e.DebugEnabled = !e.DebugEnabled // Toggle debug display
@@ -86,53 +98,6 @@ func (e *Engine) Update() error {
 			fmt.Println("Debug display disabled")
 		}
 	}
-
-	deltaVec := math.Vec2{X: 0, Y: 0} // Initialize delta vector for player movement
-	// W for moving the player up
-	if ebiten.IsKeyPressed(ebiten.KeyW) {
-		deltaVec.Y -= 10 // Move player up by 10 units
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyE) {
-		deltaVec.Y -= 10 // Move player up by 10 units (alternative key for testing)
-		deltaVec.X += 10 // Move player right by 10 units (alternative key for testing)
-	}
-	// S for moving the player down
-	if ebiten.IsKeyPressed(ebiten.KeyS) {
-		deltaVec.Y += 10 // Move player down by 10 units
-	}
-	// E for moving the player up and right (testing purposes)
-	if ebiten.IsKeyPressed(ebiten.KeyC) {
-		deltaVec.Y += 10 // Move player down by 10 units (alternative key for testing)
-		deltaVec.X += 10 // Move player right by 10 units (alternative key for testing)
-	}
-	// A for moving the player left
-	if ebiten.IsKeyPressed(ebiten.KeyA) {
-		deltaVec.X -= 10 // Move player left by 10 units
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyQ) {
-		deltaVec.X -= 10 // Move player left by 10 units (alternative key for testing)
-		deltaVec.Y -= 10 // Move player up by 10 units (alternative key for testing)
-	}
-	// D for moving the player right
-	if ebiten.IsKeyPressed(ebiten.KeyD) {
-		deltaVec.X += 10 // Move player right by 10 units
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyRight) {
-		deltaVec.X += 10 // Move player right by 10 units (alternative key)
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyZ) {
-		deltaVec.X -= 10 // Move player right by 10 units (alternative key for testing)
-		deltaVec.Y += 10 // Move player up by 10 units (alternative key for testing)
-	}
-
-	// Normalize the delta vector to ensure consistent movement speed
-	deltaPos := deltaVec.Normalize()
-	// Update player position based on input
-	if deltaPos.X != 0 || deltaPos.Y != 0 {
-		e.PlayerPos.X += deltaPos.X * 2 // Update player X position
-		e.PlayerPos.Y += deltaPos.Y * 2 // Update player Y position
-	}
-	e.TestAnimation.Update()
 
 	// Esc to exit the game
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
@@ -144,8 +109,8 @@ func (e *Engine) Update() error {
 
 	// Update the test mob
 	e.TestMob.Update(&math.Vec2{
-		X: e.PlayerPos.X + float64(e.TestAnimation.FrameWidth)/2, // Set the target position to the player's position plus an offset
-		Y: e.PlayerPos.Y + float64(e.TestAnimation.FrameHeight), // Set the target position to the player's position plus an offset
+		X: e.PlayerPos.X, // Set the target position to the player's position plus an offset
+		Y: e.PlayerPos.Y, // Set the target position to the player's position plus an offset
 	}) // Update the test mob's position towards the player
 
 	// Update the debug display with current FPS and mouse position
@@ -166,17 +131,17 @@ func (e *Engine) Update() error {
 func (e *Engine) Draw(screen *ebiten.Image) {
 	e.Screen.Clear() // Clear the internal screen
 
-	// draw state to e.Screen
+	// draw the background image
 	e.Screen.DrawImage(e.Background, nil) // Draw the background image
 
 	// Draw the test animation at a fixed position
 	opts := &ebiten.DrawImageOptions{}
-	opts.GeoM.Translate(e.PlayerPos.X-float64(e.TestAnimation.FrameWidth)/2, e.PlayerPos.Y-float64(e.TestAnimation.FrameHeight/2)) // Position the animation at the player position
+	opts.GeoM.Translate(e.PlayerPos.X, e.PlayerPos.Y) // Position the animation at the player position
 	e.Screen.DrawImage(e.TestAnimation.Frame(), opts)
 
 	// Draw the test spawner
 	opts = &ebiten.DrawImageOptions{}
-	opts.GeoM.Translate(e.TestSpawner.Position.X, e.TestSpawner.Position.Y) // Position the spawner
+	opts.GeoM.Translate(e.TestSpawner.Position.X-float64(e.TestSpawner.Sprite.Bounds().Dx())/2, e.TestSpawner.Position.Y-float64(e.TestSpawner.Sprite.Bounds().Dy())) // position at bottom center
 	e.Screen.DrawImage(e.TestSpawner.Sprite, opts) // Draw the spawner sprite
 
 	// Draw the goblins
@@ -189,6 +154,15 @@ func (e *Engine) Draw(screen *ebiten.Image) {
 	//print the debug display if enabled
 	var text string
 	if e.DebugEnabled {
+			// Draw 48x48 grid outline for debugging
+		for x := range 1920 {
+			for y := range 1080 {
+				if x%48 == 0 || y%48 == 0 {
+					e.Screen.Set(x, y, color.RGBA{255, 0, 0, 255}) // Red lines for grid
+				}
+			}
+		}
+
 		// sort the debug display keys for consistent output
 		keys := make([]string, 0, len(e.DebugDisplay))
 		for key := range e.DebugDisplay {
@@ -198,12 +172,12 @@ func (e *Engine) Draw(screen *ebiten.Image) {
 		for _, key := range keys {
 			text += fmt.Sprintf("%s: %v\n", key, e.DebugDisplay[key]) // Format the debug display text
 		}
+		ebitenutil.DebugPrint(e.Screen, text) // Print the debug text on the screen
 	}
-	ebitenutil.DebugPrint(e.Screen, text) // Print the debug text on the screen
 
 	// Draw the test mob
 	opts = &ebiten.DrawImageOptions{}
-	opts.GeoM.Translate(e.TestMob.Position.X, e.TestMob.Position.Y) // Position the mob
+	opts.GeoM.Translate(e.TestMob.Position.X-float64(e.TestMob.Sprite.Bounds().Dx())/2, e.TestMob.Position.Y-float64(e.TestMob.Sprite.Bounds().Dy())) // Position the mob at its feet level
 	e.Screen.DrawImage(e.TestMob.Sprite, opts) // Draw the mob sprite
 
 	// Draw the player and mob frame outlines in red
