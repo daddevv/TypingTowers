@@ -14,7 +14,7 @@ const (
 )
 
 func init() {
-	ebiten.SetTPS(100) // Set the target frames per second
+	ebiten.SetTPS(60) // Set the target frames per second
 }
 
 func main() {
