@@ -31,3 +31,6 @@ Code should be formatted with `gofmt` and accompanied by unit tests when possibl
 ## Automation
 Custom prompts in `.github/prompts` and guidelines in `.github/instructions` are used with GitHub Copilot to streamline development and reduce bugs.
 
+## Reloading Mechanics
+The tower now accepts reload input whenever its magazine isn't full. Once ammo drops below capacity a prompt will show the letter to type (`F` or `J`). Typing the correct letter refills one round and another prompt will appear until the magazine is full. Mistyped letters jam the weapon and require a backspace to clear.
+

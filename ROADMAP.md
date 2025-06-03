@@ -37,3 +37,10 @@ A keyboard-only base defense game where players strategically place towers to de
 ## Tech Tree Mechanics
 
 Branches unlock based on letter access. For example, advanced weapons become available once the player can type the required letters.
+
+## Additional Ideas
+
+- Weather effects that alter projectile speed or visibility.
+- Escort missions where caravans must be protected as they cross the map.
+- Endless mode with scaling difficulty and online leaderboards.
+- Support for custom key layouts and alternate keyboard languages.

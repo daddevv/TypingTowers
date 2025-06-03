@@ -77,13 +77,8 @@ func (t *Tower) Update() {
 		return
 	}
 
-	if !t.reloading {
-		for _, r := range typed {
-			if unicode.ToLower(r) == 'r' && t.ammo < t.ammoCapacity {
-				t.startReload()
-				return
-			}
-		}
+	if !t.reloading && t.ammo < t.ammoCapacity {
+		t.startReload()
 	}
 
 	if t.reloading {
@@ -111,11 +106,6 @@ func (t *Tower) Update() {
 				return
 			}
 		}
-		return
-	}
-
-	if t.ammo <= 0 {
-		t.startReload()
 		return
 	}
 
