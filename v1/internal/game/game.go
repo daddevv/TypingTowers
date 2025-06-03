@@ -2,10 +2,15 @@ package game
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+)
+
+const (
+	topMargin	= 28 // Top margin for the grid
 )
 
 var (
@@ -59,8 +64,9 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 
 // highlightHoverAndClickAndDrag highlights the tile under the mouse cursor.
 func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
+	// Determine the tile at the current mouse position
 	mouseX, mouseY := ebiten.CursorPosition()
-	if mouseX < 0 || mouseY < 28 || mouseX >= 1920 || mouseY >= 1052 {
+	if mouseX < 0 || mouseY < topMargin || mouseX >= 1920 || mouseY >= 1080- topMargin {
 		return // Ignore mouse position outside the screen
 	}
 	tileX, tileY := tileAtPosition(mouseX, mouseY)
@@ -115,7 +121,7 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 			for x := minX; x <= maxX; x++ {
 				for y := minY; y <= maxY; y++ {
 					op := &ebiten.DrawImageOptions{}
-					op.GeoM.Translate(float64(x*32), float64(28+y*32))
+					op.GeoM.Translate(float64(x*32), float64(topMargin+y*32))
 					screen.DrawImage(ImgHighlightTile, op)
 				}
 			}
@@ -133,7 +139,7 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 					dy := y - centerTileY
 					if dx*dx+dy*dy <= radius*radius {
 						op := &ebiten.DrawImageOptions{}
-						op.GeoM.Translate(float64(x*32), float64(28+y*32))
+						op.GeoM.Translate(float64(x*32), float64(topMargin+y*32))
 						screen.DrawImage(ImgHighlightTile, op)
 					}
 				}
@@ -142,8 +148,8 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 			// Draw a pixelated line from clicked tile to current tile using Bresenham's algorithm, clamped to grid
 			x0, y0 := clickedTileX, clickedTileY
 			x1, y1 := tileX, tileY
-			dx := abs(x1 - x0)
-			dy := abs(y1 - y0)
+			dx := math.Abs(float64(x1 - x0))
+			dy := math.Abs(float64(y1 - y0))
 			sx := -1
 			if x0 < x1 {
 				sx = 1
@@ -157,7 +163,7 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 				// Clamp to grid
 				if x0 >= 0 && x0 <= 59 && y0 >= 0 && y0 <= 33 {
 					op := &ebiten.DrawImageOptions{}
-					op.GeoM.Translate(float64(x0*32), float64(28+y0*32))
+					op.GeoM.Translate(float64(x0*32), float64(topMargin+y0*32))
 					screen.DrawImage(ImgHighlightTile, op)
 				}
 				if x0 == x1 && y0 == y1 {
@@ -183,7 +189,7 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 			for x := minX; x <= maxX; x++ {
 				for y := minY; y <= maxY; y++ {
 					op := &ebiten.DrawImageOptions{}
-					op.GeoM.Translate(float64(x*32), float64(28+y*32))
+					op.GeoM.Translate(float64(x*32), float64(topMargin+y*32))
 					screen.DrawImage(ImgHighlightTile, op)
 				}
 			}
@@ -192,7 +198,7 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 		// Not dragging: highlight only hovered tile, clamped to grid
 		if tileX >= 0 && tileX <= 59 && tileY >= 0 && tileY <= 33 {
 			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(float64(tileX*32), float64(28+tileY*32))
+			op.GeoM.Translate(float64(tileX*32), float64(topMargin+tileY*32))
 			screen.DrawImage(ImgHighlightTile, op)
 		}
 	}
@@ -202,7 +208,7 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 		var houseTileX, houseTileY int
 		fmt.Sscanf(id, "%d,%d", &houseTileX, &houseTileY)
 		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(float64(houseTileX*32), float64(28+houseTileY*32))
+		op.GeoM.Translate(float64(houseTileX*32), float64(topMargin+houseTileY*32))
 		screen.DrawImage(ImgHouseTile, op)
 	}
 
@@ -211,12 +217,4 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 	if mousePressed {
 		ebitenutil.DebugPrintAt(screen, "Dragging from: "+strconv.Itoa(clickedTileX)+", "+strconv.Itoa(clickedTileY), 190, 2)
 	}
-}
-
-// Helper function for absolute value of int
-func abs(a int) int {
-	if a < 0 {
-		return -a
-	}
-	return a
 }
