@@ -38,12 +38,12 @@ func NewTower(g *Game, x, y float64) *Tower {
 			frameAnchorY: float64(h) / 2,
 			static:       true,
 		},
-		rate:         60,
+		rate:         100,
 		rangeDst:     300,
 		game:         g,
 		ammoCapacity: 5,
 		ammo:         5,
-		reloadTime:   60,
+		reloadTime:   0,
 	}
 	t.rangeImg = generateRangeImage(t.rangeDst)
 	return t
@@ -61,9 +61,8 @@ func (t *Tower) Update() {
 				t.ammo++
 				if t.ammo >= t.ammoCapacity {
 					t.reloading = false
-					t.cooldown = 0
+					t.cooldown = t.rate
 				} else {
-					t.reloadTimer = t.reloadTime
 					if rand.Intn(2) == 0 {
 						t.reloadLetter = 'f'
 					} else {

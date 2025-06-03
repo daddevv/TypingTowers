@@ -26,6 +26,7 @@ type Game struct {
 	projectiles []*Projectile
 	base        *Base
 	hud         *HUD
+	gameOver    bool
 
 	currentWave   int
 	spawnInterval int
@@ -69,6 +70,10 @@ func (g *Game) Update() error {
 
 	if g.input.Quit() {
 		return ebiten.Termination
+	}
+
+	if g.gameOver {
+		return nil
 	}
 
 	if g.mobsToSpawn > 0 {
@@ -116,6 +121,10 @@ func (g *Game) Update() error {
 		i++
 	}
 
+	if !g.base.Alive() {
+		g.gameOver = true
+	}
+
 	return nil
 }
 
@@ -123,6 +132,12 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.screen.Clear()
 	drawBackgroundTilemap(g.screen)
+
+	if g.gameOver {
+		ebitenutil.DebugPrintAt(g.screen, "Game Over", 900, 540)
+		g.renderFrame(screen)
+		return
+	}
 
 	g.base.Draw(g.screen)
 
