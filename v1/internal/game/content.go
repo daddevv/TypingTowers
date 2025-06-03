@@ -13,6 +13,7 @@ var (
 	ImgBackgroundTile       = loadImage("assets/basic_tile_32.png")
 	ImgHighlightTile        = loadImage("assets/basic_tile_highlight_32.png")
 	ImgHouseTile            = loadImage("assets/blue_house_32.png")
+	ImgBase                 = generateBaseImage()
 	ImgTower                = generateTowerImage()
 	ImgMobA                 = generateMobImage(color.RGBA{255, 0, 0, 255})
 	ImgMobB                 = generateMobImage(color.RGBA{255, 128, 0, 255})
@@ -46,6 +47,12 @@ func generateBackground() *ebiten.Image {
 		}
 	}
 	return bg
+}
+
+func generateBaseImage() *ebiten.Image {
+	img := ebiten.NewImage(64, 64)
+	img.Fill(color.RGBA{100, 100, 100, 255})
+	return img
 }
 
 func generateTowerImage() *ebiten.Image {
