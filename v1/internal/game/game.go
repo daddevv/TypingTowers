@@ -20,13 +20,17 @@ var (
 
 // Game represents the game state and implements ebiten.Game interface.
 type Game struct {
-	screen       *ebiten.Image
-	input        InputHandler
-	towers       []*Tower
-	mobs         []*Mob
-	projectiles  []*Projectile
-	spawnCounter int
-	hud          *HUD
+	screen      *ebiten.Image
+	input       InputHandler
+	towers      []*Tower
+	mobs        []*Mob
+	projectiles []*Projectile
+	base        *Base
+
+	currentWave   int
+	spawnInterval int
+	spawnTicker   int
+	mobsToSpawn   int
 }
 
 // NewGame creates a new instance of the Game.
@@ -39,12 +43,19 @@ func NewGame() *Game {
 	rand.Seed(time.Now().UnixNano())
 
 	g := &Game{
-		screen: ebiten.NewImage(1920, 1080),
-		input:  NewInput(),
+		screen:        ebiten.NewImage(1920, 1080),
+		input:         NewInput(),
+		currentWave:   1,
+		spawnInterval: 60,
 	}
-	tx, ty := tilePosition(2, 16)
+
+	tx, ty := tilePosition(1, 16)
+	g.base = NewBase(float64(tx+32), float64(ty+16))
+
+	tx, ty = tilePosition(2, 16)
 	tower := NewTower(g, float64(tx+16), float64(ty+16))
 	g.towers = []*Tower{tower}
+	g.startWave()
 	g.hud = NewHUD(g)
 	return g
 }
@@ -57,15 +68,23 @@ func (g *Game) Update() error {
 		return ebiten.Termination
 	}
 
-	g.spawnCounter++
-	if g.spawnCounter > 120 {
-		g.spawnCounter = 0
-		g.spawnMob()
+	if g.mobsToSpawn > 0 {
+		g.spawnTicker++
+		if g.spawnTicker >= g.spawnInterval {
+			g.spawnTicker = 0
+			g.spawnMob()
+			g.mobsToSpawn--
+		}
+	} else if len(g.mobs) == 0 {
+		g.currentWave++
+		g.startWave()
 	}
 
 	for _, t := range g.towers {
 		t.Update()
 	}
+
+	g.base.Update()
 
 	for i := 0; i < len(g.projectiles); {
 		p := g.projectiles[i]
@@ -80,6 +99,10 @@ func (g *Game) Update() error {
 	for i := 0; i < len(g.mobs); {
 		m := g.mobs[i]
 		m.Update()
+		if m.pos.X < g.base.pos.X {
+			g.base.Damage(1)
+			m.alive = false
+		}
 		if !m.alive {
 			g.mobs = append(g.mobs[:i], g.mobs[i+1:]...)
 			continue
@@ -94,6 +117,8 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.screen.Clear()
 	drawBackgroundTilemap(g.screen)
+
+	g.base.Draw(g.screen)
 
 	for _, t := range g.towers {
 		t.Draw(g.screen)
@@ -141,6 +166,12 @@ func (g *Game) spawnMob() {
 	x, y := tilePosition(59, row)
 	m := NewMob(float64(x+16), float64(y+16))
 	g.mobs = append(g.mobs, m)
+}
+
+// startWave initializes spawn counters for the next wave.
+func (g *Game) startWave() {
+	g.spawnTicker = 0
+	g.mobsToSpawn = g.currentWave * 3
 }
 
 // highlightHoverAndClickAndDrag highlights the tile under the mouse cursor.
