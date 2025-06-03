@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -11,6 +12,7 @@ var (
 	mousePressed bool // Track if the mouse button is pressed
 	clickedTileX int // X coordinate of the clicked tile
 	clickedTileY int // Y coordinate of the clicked tile
+	houses    = make(map[string]struct{}) // Store house tile positions as "x,y"
 )
 
 // Game represents the game state and implements ebiten.Game interface.
@@ -32,6 +34,10 @@ func NewGame() *Game {
 
 // Update updates the game state. This method is called every frame.
 func (g *Game) Update() error {
+	if ebiten.IsKeyPressed(ebiten.KeyEscape) {
+		// Exit the game when Escape is pressed
+		return ebiten.Termination
+	}
 	// Update game logic here, such as player input, enemy movement, etc.
 	// Return nil if the update is successful, or an error if something goes wrong.
 	return nil
@@ -43,7 +49,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// Use ebiten's drawing functions to render images, text, etc.
 	screen.Clear()
 	screen.DrawImage(BACKGROUND_GRID, nil)
-	highlightHoverAndClickAndDrag(screen, "circle") // Change shape as needed: "rectangle", "circle", "line", etc.
+	highlightHoverAndClickAndDrag(screen, "line") // Change shape as needed: "rectangle", "circle", "line", etc.
 }
 
 // Layout returns the size of the game screen in pixels.
@@ -58,6 +64,14 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 		return // Ignore mouse position outside the screen
 	}
 	tileX, tileY := tileAtPosition(mouseX, mouseY)
+
+	// Right Click to add a house tile (persistently)
+	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
+		if tileX >= 0 && tileX <= 59 && tileY >= 0 && tileY <= 33 {
+			id := fmt.Sprintf("%d,%d", tileX, tileY)
+			houses[id] = struct{}{}
+		}
+	}
 
 	// Handle mouse press/release and track drag start
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
@@ -181,6 +195,15 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 			op.GeoM.Translate(float64(tileX*32), float64(28+tileY*32))
 			screen.DrawImage(ImgHighlightTile, op)
 		}
+	}
+
+	// Draw all house tiles
+	for id := range houses {
+		var houseTileX, houseTileY int
+		fmt.Sscanf(id, "%d,%d", &houseTileX, &houseTileY)
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(float64(houseTileX*32), float64(28+houseTileY*32))
+		screen.DrawImage(ImgHouseTile, op)
 	}
 
 	ebitenutil.DebugPrintAt(screen, "Hovering over tile: "+strconv.Itoa(tileX)+", "+strconv.Itoa(tileY), 10, 2)

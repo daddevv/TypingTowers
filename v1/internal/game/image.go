@@ -8,6 +8,7 @@ import (
 var (
 	ImgBackgroundTile = loadImage("assets/basic_tile_32.png")
 	ImgHighlightTile  = loadImage("assets/basic_tile_highlight_32.png")
+	ImgHouseTile	  = loadImage("assets/blue_house_32.png")
 )
 
 func loadImage(path string) *ebiten.Image {
