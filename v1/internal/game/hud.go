@@ -32,4 +32,10 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 		}
 		ebitenutil.DebugPrintAt(screen, prompt, 10, 52)
 	}
+
+	base := fmt.Sprintf("Base HP: %d", h.game.base.Health())
+	ebitenutil.DebugPrintAt(screen, base, 10, 28)
+
+	wave := fmt.Sprintf("Wave %d | SpawnTicker %d/%d | ToSpawn %d | Mobs %d | Proj %d", h.game.currentWave, h.game.spawnTicker, h.game.spawnInterval, h.game.mobsToSpawn, len(h.game.mobs), len(h.game.projectiles))
+	ebitenutil.DebugPrintAt(screen, wave, 10, 64)
 }

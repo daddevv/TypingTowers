@@ -1,6 +1,9 @@
 package game
 
 // Base represents the player's base that mobs try to destroy.
+const BaseStartingHealth = 10
+
+// Base represents the player's base that mobs try to destroy.
 type Base struct {
 	BaseEntity
 	health int
@@ -19,7 +22,7 @@ func NewBase(x, y float64) *Base {
 			frameAnchorY: float64(h) / 2,
 			static:       true,
 		},
-		health: 100,
+		health: BaseStartingHealth,
 	}
 }
 
@@ -34,4 +37,9 @@ func (b *Base) Damage(amount int) {
 // Health returns the current health of the base.
 func (b *Base) Health() int {
 	return b.health
+}
+
+// Alive reports whether the base still has health remaining.
+func (b *Base) Alive() bool {
+	return b.health > 0
 }
