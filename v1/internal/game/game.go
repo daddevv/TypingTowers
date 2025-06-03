@@ -43,7 +43,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// Use ebiten's drawing functions to render images, text, etc.
 	screen.Clear()
 	screen.DrawImage(BACKGROUND_GRID, nil)
-	highlightHoverAndClickAndDrag(screen, "line") // Change shape as needed: "rectangle", "circle", "line", etc.
+	highlightHoverAndClickAndDrag(screen, "circle") // Change shape as needed: "rectangle", "circle", "line", etc.
 }
 
 // Layout returns the size of the game screen in pixels.
@@ -82,6 +82,19 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 		if minY > maxY {
 			minY, maxY = maxY, minY
 		}
+		// Clamp rectangle bounds to grid
+		if minX < 0 {
+			minX = 0
+		}
+		if maxX > 59 {
+			maxX = 59
+		}
+		if minY < 0 {
+			minY = 0
+		}
+		if maxY > 33 {
+			maxY = 33
+		}
 		switch shape {
 		case "rectangle":
 			// Draw a filled rectangle between the start and end tiles
@@ -93,25 +106,26 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 				}
 			}
 		case "circle":
-			// Draw a circle around the dragged area
-			centerX := (minX + maxX) * 16
-			centerY := (minY + maxY) * 16 + 28 // Adjust for top margin
-			radius := 16 * (maxX - minX + maxY - minY) / 2 // Average radius based on dragged area
-			for x := -radius; x <= radius; x += 32 {
-				for y := -radius; y <= radius; y += 32 {
-					if x*x+y*y <= radius*radius {
-						tX, tY := tileAtPosition(centerX+x, centerY+y)
-						// Ensure we only draw within the bounds of the grid
-						if tX >= 0 && tX < 60 && tY >= 0 && tY < 34 {
-							op := &ebiten.DrawImageOptions{}
-							op.GeoM.Translate(float64(centerX+x), float64(centerY+y))
-							screen.DrawImage(ImgHighlightTile, op)
-						}
+			// Draw a circle around the dragged area, but clamp to grid
+			centerTileX := (minX + maxX) / 2
+			centerTileY := (minY + maxY) / 2
+			radius := (maxX - minX) / 2
+			for x := centerTileX - radius; x <= centerTileX + radius; x++ {
+				for y := centerTileY - radius; y <= centerTileY + radius; y++ {
+					if x < 0 || x > 59 || y < 0 || y > 31 {
+						continue
+					}
+					dx := x - centerTileX
+					dy := y - centerTileY
+					if dx*dx+dy*dy <= radius*radius {
+						op := &ebiten.DrawImageOptions{}
+						op.GeoM.Translate(float64(x*32), float64(28+y*32))
+						screen.DrawImage(ImgHighlightTile, op)
 					}
 				}
 			}
 		case "line":
-			// Draw a pixelated line from clicked tile to current tile using Bresenham's algorithm
+			// Draw a pixelated line from clicked tile to current tile using Bresenham's algorithm, clamped to grid
 			x0, y0 := clickedTileX, clickedTileY
 			x1, y1 := tileX, tileY
 			dx := abs(x1 - x0)
@@ -126,9 +140,12 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 			}
 			err := dx - dy
 			for {
-				op := &ebiten.DrawImageOptions{}
-				op.GeoM.Translate(float64(x0*32), float64(28+y0*32))
-				screen.DrawImage(ImgHighlightTile, op)
+				// Clamp to grid
+				if x0 >= 0 && x0 <= 59 && y0 >= 0 && y0 <= 33 {
+					op := &ebiten.DrawImageOptions{}
+					op.GeoM.Translate(float64(x0*32), float64(28+y0*32))
+					screen.DrawImage(ImgHighlightTile, op)
+				}
 				if x0 == x1 && y0 == y1 {
 					break
 				}
@@ -140,6 +157,10 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 				if e2 < dx {
 					err += dx
 					y0 += sy
+				}
+				// Stop if out of grid
+				if x0 < 0 || x0 > 59 || y0 < 0 || y0 > 33 {
+					break
 				}
 			}
 		// Add more shapes as needed
@@ -154,10 +175,12 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 			}
 		}
 	} else {
-		// Not dragging: highlight only hovered tile
-		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(float64(tileX*32), float64(28+tileY*32))
-		screen.DrawImage(ImgHighlightTile, op)
+		// Not dragging: highlight only hovered tile, clamped to grid
+		if tileX >= 0 && tileX <= 59 && tileY >= 0 && tileY <= 33 {
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Translate(float64(tileX*32), float64(28+tileY*32))
+			screen.DrawImage(ImgHighlightTile, op)
+		}
 	}
 
 	ebitenutil.DebugPrintAt(screen, "Hovering over tile: "+strconv.Itoa(tileX)+", "+strconv.Itoa(tileY), 10, 2)
