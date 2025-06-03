@@ -3,23 +3,29 @@ package game
 import (
 	"fmt"
 	"math"
+	"math/rand"
 	"strconv"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 var (
-	mousePressed bool // Track if the mouse button is pressed
-	clickedTileX int // X coordinate of the clicked tile
-	clickedTileY int // Y coordinate of the clicked tile
-	houses     = make(map[string]struct{}) // Store house tile positions as "x,y"
+	mousePressed bool
+	clickedTileX int
+	clickedTileY int
+	houses       = make(map[string]struct{})
 )
 
 // Game represents the game state and implements ebiten.Game interface.
 type Game struct {
-	screen        *ebiten.Image // Internal screen buffer for rendering
-	input 		InputHandler // Input handler for processing user input
+	screen       *ebiten.Image
+	input        InputHandler
+	towers       []*Tower
+	mobs         []*Mob
+	projectiles  []*Projectile
+	spawnCounter int
 }
 
 // NewGame creates a new instance of the Game.
@@ -29,10 +35,16 @@ func NewGame() *Game {
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	// ebiten.SetFullscreen(true)
 
-	return &Game{
-		screen:        ebiten.NewImage(1920, 1080), // Create a new image for the game screen
-		input: NewInput(),
+	rand.Seed(time.Now().UnixNano())
+
+	g := &Game{
+		screen: ebiten.NewImage(1920, 1080),
+		input:  NewInput(),
 	}
+	tx, ty := tilePosition(2, 16)
+	tower := NewTower(g, float64(tx+16), float64(ty+16))
+	g.towers = []*Tower{tower}
+	return g
 }
 
 // Update updates the game state. This method is called every frame.
@@ -43,24 +55,62 @@ func (g *Game) Update() error {
 		return ebiten.Termination
 	}
 
-	// Update game logic here, such as player input, enemy movement, etc.
-	// Return nil if the update is successful, or an error if something goes wrong.
+	g.spawnCounter++
+	if g.spawnCounter > 120 {
+		g.spawnCounter = 0
+		g.spawnMob()
+	}
+
+	for _, t := range g.towers {
+		t.Update()
+	}
+
+	for i := 0; i < len(g.projectiles); {
+		p := g.projectiles[i]
+		p.Update()
+		if !p.alive {
+			g.projectiles = append(g.projectiles[:i], g.projectiles[i+1:]...)
+			continue
+		}
+		i++
+	}
+
+	for i := 0; i < len(g.mobs); {
+		m := g.mobs[i]
+		m.Update()
+		if !m.alive {
+			g.mobs = append(g.mobs[:i], g.mobs[i+1:]...)
+			continue
+		}
+		i++
+	}
+
 	return nil
 }
 
 // Draw renders the game to the screen. This method is called every frame.
 func (g *Game) Draw(screen *ebiten.Image) {
-	
-	drawBackgroundTilemap(screen) // Draw the background tilemap
-	highlightHoverAndClickAndDrag(screen, "line") // Change shape as needed: "rectangle", "circle", "line", etc.
+	g.screen.Clear()
+	drawBackgroundTilemap(g.screen)
 
-	g.renderFrame(screen) // Scale and draw the internal screen buffer to the actual screen
+	for _, t := range g.towers {
+		t.Draw(g.screen)
+	}
+	for _, p := range g.projectiles {
+		p.Draw(g.screen)
+	}
+	for _, m := range g.mobs {
+		m.Draw(g.screen)
+	}
+
+	highlightHoverAndClickAndDrag(g.screen, "line")
+
+	g.renderFrame(screen)
 }
 
 // renderFrame scales and draws the internal screen buffer to the actual screen
 func (g *Game) renderFrame(screen *ebiten.Image) {
 	screen.Clear()
-	// Now scale the internal screen to the window size
 	w, h := screen.Bounds().Dx(), screen.Bounds().Dy()
 	scaleX := float64(w) / 1920.0
 	scaleY := float64(h) / 1080.0
@@ -79,17 +129,22 @@ func drawBackgroundTilemap(screen *ebiten.Image) {
 	screen.DrawImage(ImgBackgroundBasicTiles, nil)
 }
 
+// spawnMob adds a new mob at the right side.
+func (g *Game) spawnMob() {
+	row := rand.Intn(32)
+	x, y := tilePosition(59, row)
+	m := NewMob(float64(x+16), float64(y+16))
+	g.mobs = append(g.mobs, m)
+}
 
 // highlightHoverAndClickAndDrag highlights the tile under the mouse cursor.
 func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
-	// Determine the tile at the current mouse position
 	mouseX, mouseY := ebiten.CursorPosition()
-	if mouseX < 0 || mouseY < TopMargin || mouseX >= 1920 || mouseY >= 1080- TopMargin {
-		return // Ignore mouse position outside the screen
+	if mouseX < 0 || mouseY < TopMargin || mouseX >= 1920 || mouseY >= 1080-TopMargin {
+		return
 	}
 	tileX, tileY := tileAtPosition(mouseX, mouseY)
 
-	// Right Click to add a house tile (persistently)
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
 		if tileX >= 0 && tileX <= 59 && tileY >= 0 && tileY <= 33 {
 			id := fmt.Sprintf("%d,%d", tileX, tileY)
@@ -97,10 +152,8 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 		}
 	}
 
-	// Handle mouse press/release and track drag start
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		if !mousePressed {
-			// Mouse just pressed
 			mousePressed = true
 			clickedTileX = tileX
 			clickedTileY = tileY
@@ -109,9 +162,7 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 		mousePressed = false
 	}
 
-	// Draw highlight(s)
 	if mousePressed {
-		// Dragging: highlight rectangle from clickedTile to current tile
 		minX, maxX := clickedTileX, tileX
 		if minX > maxX {
 			minX, maxX = maxX, minX
@@ -120,7 +171,6 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 		if minY > maxY {
 			minY, maxY = maxY, minY
 		}
-		// Clamp rectangle bounds to grid
 		if minX < 0 {
 			minX = 0
 		}
@@ -135,7 +185,6 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 		}
 		switch shape {
 		case "rectangle":
-			// Draw a filled rectangle between the start and end tiles
 			for x := minX; x <= maxX; x++ {
 				for y := minY; y <= maxY; y++ {
 					op := &ebiten.DrawImageOptions{}
@@ -144,12 +193,11 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 				}
 			}
 		case "circle":
-			// Draw a circle around the dragged area, but clamp to grid
 			centerTileX := (minX + maxX) / 2
 			centerTileY := (minY + maxY) / 2
 			radius := (maxX - minX) / 2
-			for x := centerTileX - radius; x <= centerTileX + radius; x++ {
-				for y := centerTileY - radius; y <= centerTileY + radius; y++ {
+			for x := centerTileX - radius; x <= centerTileX+radius; x++ {
+				for y := centerTileY - radius; y <= centerTileY+radius; y++ {
 					if x < 0 || x > 59 || y < 0 || y > 31 {
 						continue
 					}
@@ -163,7 +211,6 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 				}
 			}
 		case "line":
-			// Draw a pixelated line from clicked tile to current tile using Bresenham's algorithm, clamped to grid
 			x0, y0 := clickedTileX, clickedTileY
 			x1, y1 := tileX, tileY
 			dx := math.Abs(float64(x1 - x0))
@@ -178,7 +225,6 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 			}
 			err := dx - dy
 			for {
-				// Clamp to grid
 				if x0 >= 0 && x0 <= 59 && y0 >= 0 && y0 <= 33 {
 					op := &ebiten.DrawImageOptions{}
 					op.GeoM.Translate(float64(x0*32), float64(TopMargin+y0*32))
@@ -196,14 +242,11 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 					err += dx
 					y0 += sy
 				}
-				// Stop if out of grid
 				if x0 < 0 || x0 > 59 || y0 < 0 || y0 > 33 {
 					break
 				}
 			}
-		// Add more shapes as needed
 		default:
-			// Default to rectangle if no shape specified
 			for x := minX; x <= maxX; x++ {
 				for y := minY; y <= maxY; y++ {
 					op := &ebiten.DrawImageOptions{}
@@ -213,7 +256,6 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 			}
 		}
 	} else {
-		// Not dragging: highlight only hovered tile, clamped to grid
 		if tileX >= 0 && tileX <= 59 && tileY >= 0 && tileY <= 33 {
 			op := &ebiten.DrawImageOptions{}
 			op.GeoM.Translate(float64(tileX*32), float64(TopMargin+tileY*32))
@@ -221,7 +263,6 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 		}
 	}
 
-	// Draw all house tiles
 	for id := range houses {
 		var houseTileX, houseTileY int
 		fmt.Sscanf(id, "%d,%d", &houseTileX, &houseTileY)
