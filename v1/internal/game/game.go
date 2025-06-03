@@ -99,7 +99,10 @@ func (g *Game) Update() error {
 	for i := 0; i < len(g.mobs); {
 		m := g.mobs[i]
 		m.Update()
-		if m.pos.X < g.base.pos.X {
+		bx, by, bw, bh := g.base.Bounds()
+		dx := m.pos.X - float64(bx+bw/2)
+		dy := m.pos.Y - float64(by+bh/2)
+		if math.Hypot(dx, dy) < float64(m.width/2+bw/2) {
 			g.base.Damage(1)
 			m.alive = false
 		}
@@ -164,7 +167,7 @@ func drawBackgroundTilemap(screen *ebiten.Image) {
 func (g *Game) spawnMob() {
 	row := rand.Intn(32)
 	x, y := tilePosition(59, row)
-	m := NewMob(float64(x+16), float64(y+16))
+	m := NewMob(float64(x+16), float64(y+16), g.base)
 	g.mobs = append(g.mobs, m)
 }
 

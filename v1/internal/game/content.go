@@ -50,8 +50,19 @@ func generateBackground() *ebiten.Image {
 }
 
 func generateBaseImage() *ebiten.Image {
-	img := ebiten.NewImage(64, 64)
-	img.Fill(color.RGBA{100, 100, 100, 255})
+	w, h := 96, 64
+	img := ebiten.NewImage(w, h)
+	clr := color.RGBA{0, 128, 128, 255}
+	topWidth := 40
+	bottomWidth := 80
+	for y := 0; y < h; y++ {
+		t := float64(y) / float64(h-1)
+		rowW := int(float64(topWidth) + (float64(bottomWidth-topWidth) * t))
+		startX := w/2 - rowW/2
+		for x := startX; x < startX+rowW; x++ {
+			img.Set(x, y, clr)
+		}
+	}
 	return img
 }
 
