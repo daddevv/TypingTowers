@@ -9,40 +9,40 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
-const (
-	topMargin	= 28 // Top margin for the grid
-)
-
 var (
 	mousePressed bool // Track if the mouse button is pressed
 	clickedTileX int // X coordinate of the clicked tile
 	clickedTileY int // Y coordinate of the clicked tile
-	houses    = make(map[string]struct{}) // Store house tile positions as "x,y"
+	houses     = make(map[string]struct{}) // Store house tile positions as "x,y"
 )
 
 // Game represents the game state and implements ebiten.Game interface.
 type Game struct {
-	// Add game state fields here, such as score, player state, etc.
+	screen        *ebiten.Image // Internal screen buffer for rendering
+	input 		InputHandler // Input handler for processing user input
 }
 
 // NewGame creates a new instance of the Game.
 func NewGame() *Game {
 	ebiten.SetWindowTitle("TypeDefense")
-	ebiten.SetWindowSize(1920/4, 1080/4)
+	ebiten.SetWindowSize(1920/8, 1080/8)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
-	ebiten.SetFullscreen(true)
-	// ebiten.SetWindowDecorated(false)
+	// ebiten.SetFullscreen(true)
+
 	return &Game{
-		// Initialize game state fields here if needed.
+		screen:        ebiten.NewImage(1920, 1080), // Create a new image for the game screen
+		input: NewInput(),
 	}
 }
 
 // Update updates the game state. This method is called every frame.
 func (g *Game) Update() error {
-	if ebiten.IsKeyPressed(ebiten.KeyEscape) {
-		// Exit the game when Escape is pressed
+	g.input.Update()
+
+	if g.input.Quit() {
 		return ebiten.Termination
 	}
+
 	// Update game logic here, such as player input, enemy movement, etc.
 	// Return nil if the update is successful, or an error if something goes wrong.
 	return nil
@@ -50,11 +50,23 @@ func (g *Game) Update() error {
 
 // Draw renders the game to the screen. This method is called every frame.
 func (g *Game) Draw(screen *ebiten.Image) {
-	// Draw the game state to the screen.
-	// Use ebiten's drawing functions to render images, text, etc.
-	screen.Clear()
-	screen.DrawImage(BACKGROUND_GRID, nil)
+	
+	drawBackgroundTilemap(screen) // Draw the background tilemap
 	highlightHoverAndClickAndDrag(screen, "line") // Change shape as needed: "rectangle", "circle", "line", etc.
+
+	g.renderFrame(screen) // Scale and draw the internal screen buffer to the actual screen
+}
+
+// renderFrame scales and draws the internal screen buffer to the actual screen
+func (g *Game) renderFrame(screen *ebiten.Image) {
+	screen.Clear()
+	// Now scale the internal screen to the window size
+	w, h := screen.Bounds().Dx(), screen.Bounds().Dy()
+	scaleX := float64(w) / 1920.0
+	scaleY := float64(h) / 1080.0
+	opts := &ebiten.DrawImageOptions{}
+	opts.GeoM.Scale(scaleX, scaleY)
+	screen.DrawImage(g.screen, opts)
 }
 
 // Layout returns the size of the game screen in pixels.
@@ -62,11 +74,17 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return 1920, 1080
 }
 
+// drawBackgroundTilemap draws the background tilemap on the screen.
+func drawBackgroundTilemap(screen *ebiten.Image) {
+	screen.DrawImage(ImgBackgroundBasicTiles, nil)
+}
+
+
 // highlightHoverAndClickAndDrag highlights the tile under the mouse cursor.
 func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 	// Determine the tile at the current mouse position
 	mouseX, mouseY := ebiten.CursorPosition()
-	if mouseX < 0 || mouseY < topMargin || mouseX >= 1920 || mouseY >= 1080- topMargin {
+	if mouseX < 0 || mouseY < TopMargin || mouseX >= 1920 || mouseY >= 1080- TopMargin {
 		return // Ignore mouse position outside the screen
 	}
 	tileX, tileY := tileAtPosition(mouseX, mouseY)
@@ -121,7 +139,7 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 			for x := minX; x <= maxX; x++ {
 				for y := minY; y <= maxY; y++ {
 					op := &ebiten.DrawImageOptions{}
-					op.GeoM.Translate(float64(x*32), float64(topMargin+y*32))
+					op.GeoM.Translate(float64(x*32), float64(TopMargin+y*32))
 					screen.DrawImage(ImgHighlightTile, op)
 				}
 			}
@@ -139,7 +157,7 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 					dy := y - centerTileY
 					if dx*dx+dy*dy <= radius*radius {
 						op := &ebiten.DrawImageOptions{}
-						op.GeoM.Translate(float64(x*32), float64(topMargin+y*32))
+						op.GeoM.Translate(float64(x*32), float64(TopMargin+y*32))
 						screen.DrawImage(ImgHighlightTile, op)
 					}
 				}
@@ -163,7 +181,7 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 				// Clamp to grid
 				if x0 >= 0 && x0 <= 59 && y0 >= 0 && y0 <= 33 {
 					op := &ebiten.DrawImageOptions{}
-					op.GeoM.Translate(float64(x0*32), float64(topMargin+y0*32))
+					op.GeoM.Translate(float64(x0*32), float64(TopMargin+y0*32))
 					screen.DrawImage(ImgHighlightTile, op)
 				}
 				if x0 == x1 && y0 == y1 {
@@ -189,7 +207,7 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 			for x := minX; x <= maxX; x++ {
 				for y := minY; y <= maxY; y++ {
 					op := &ebiten.DrawImageOptions{}
-					op.GeoM.Translate(float64(x*32), float64(topMargin+y*32))
+					op.GeoM.Translate(float64(x*32), float64(TopMargin+y*32))
 					screen.DrawImage(ImgHighlightTile, op)
 				}
 			}
@@ -198,7 +216,7 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 		// Not dragging: highlight only hovered tile, clamped to grid
 		if tileX >= 0 && tileX <= 59 && tileY >= 0 && tileY <= 33 {
 			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(float64(tileX*32), float64(topMargin+tileY*32))
+			op.GeoM.Translate(float64(tileX*32), float64(TopMargin+tileY*32))
 			screen.DrawImage(ImgHighlightTile, op)
 		}
 	}
@@ -208,7 +226,7 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 		var houseTileX, houseTileY int
 		fmt.Sscanf(id, "%d,%d", &houseTileX, &houseTileY)
 		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(float64(houseTileX*32), float64(topMargin+houseTileY*32))
+		op.GeoM.Translate(float64(houseTileX*32), float64(TopMargin+houseTileY*32))
 		screen.DrawImage(ImgHouseTile, op)
 	}
 
