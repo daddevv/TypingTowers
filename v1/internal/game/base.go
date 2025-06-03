@@ -10,7 +10,7 @@ type Base struct {
 }
 
 // NewBase creates a new base at the given position.
-func NewBase(x, y float64) *Base {
+func NewBase(x, y float64, hp int) *Base {
 	w, h := ImgBase.Bounds().Dx(), ImgBase.Bounds().Dy()
 	return &Base{
 		BaseEntity: BaseEntity{
@@ -22,7 +22,7 @@ func NewBase(x, y float64) *Base {
 			frameAnchorY: float64(h) / 2,
 			static:       true,
 		},
-		health: BaseStartingHealth,
+		health: hp,
 	}
 }
 

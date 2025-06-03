@@ -12,7 +12,11 @@ func init() {
 }
 
 func main() {
-	g := game.NewGame()
+	cfg, err := game.LoadConfig(game.ConfigFile)
+	if err != nil {
+		log.Println("using default config:", err)
+	}
+	g := game.NewGameWithConfig(cfg)
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
 	}

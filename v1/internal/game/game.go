@@ -30,6 +30,8 @@ type Game struct {
 	paused      bool
 	gold        int
 
+	cfg *Config
+
 	currentWave   int
 	spawnInterval int
 	spawnTicker   int
@@ -38,6 +40,11 @@ type Game struct {
 
 // NewGame creates a new instance of the Game.
 func NewGame() *Game {
+	return NewGameWithConfig(DefaultConfig)
+}
+
+// NewGameWithConfig creates a new instance of the Game using the provided configuration.
+func NewGameWithConfig(cfg Config) *Game {
 	ebiten.SetWindowTitle("TypeDefense")
 	ebiten.SetWindowSize(1920/8, 1080/8)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
@@ -52,13 +59,18 @@ func NewGame() *Game {
 		spawnInterval: 60,
 		spawnTicker:   0,
 		mobsToSpawn:   3,
+		cfg:           &cfg,
 
 		mobs:        make([]*Mob, 0),
 		projectiles: make([]*Projectile, 0),
 	}
 
 	tx, ty := tilePosition(1, 16)
-	g.base = NewBase(float64(tx+32), float64(ty+16))
+	hp := int(cfg.J)
+	if hp <= 0 {
+		hp = BaseStartingHealth
+	}
+	g.base = NewBase(float64(tx+32), float64(ty+16), hp)
 
 	tx, ty = tilePosition(2, 16)
 	tower := NewTower(g, float64(tx+16), float64(ty+16))
@@ -71,6 +83,12 @@ func NewGame() *Game {
 // Update updates the game state. This method is called every frame.
 func (g *Game) Update() error {
 	g.input.Update()
+
+	if g.input.Reload() {
+		if err := g.reloadConfig(ConfigFile); err != nil {
+			fmt.Println("reload config:", err)
+		}
+	}
 
 	if g.input.Space() {
 		g.paused = !g.paused
@@ -204,7 +222,14 @@ func drawBackgroundTilemap(screen *ebiten.Image) {
 func (g *Game) spawnMob() {
 	row := rand.Intn(32)
 	x, y := tilePosition(59, row)
-	m := NewMob(float64(x+16), float64(y+16), g.base)
+	hp := 1
+	if g.cfg != nil {
+		hp = int(1 + float64(g.currentWave-1)*g.cfg.N)
+		if hp < 1 {
+			hp = 1
+		}
+	}
+	m := NewMob(float64(x+16), float64(y+16), g.base, hp)
 	g.mobs = append(g.mobs, m)
 }
 
@@ -353,4 +378,26 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 	if mousePressed {
 		ebitenutil.DebugPrintAt(screen, "Dragging from: "+strconv.Itoa(clickedTileX)+", "+strconv.Itoa(clickedTileY), 190, 2)
 	}
+}
+
+// reloadConfig loads a Config from the given file and applies it to the game.
+func (g *Game) reloadConfig(path string) error {
+	cfg, err := LoadConfig(path)
+	if err != nil {
+		// still apply defaults when loading fails
+		g.cfg = &cfg
+		return err
+	}
+	g.cfg = &cfg
+
+	// apply updated parameters
+	hp := int(cfg.J)
+	if hp <= 0 {
+		hp = BaseStartingHealth
+	}
+	g.base.health = hp
+	for _, t := range g.towers {
+		t.ApplyConfig(cfg)
+	}
+	return nil
 }
