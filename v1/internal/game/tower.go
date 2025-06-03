@@ -23,6 +23,7 @@ type Tower struct {
 	reloadTimer  int
 	reloading    bool
 	reloadLetter rune
+	jammed       bool
 }
 
 // NewTower creates a new Tower at the given position.
@@ -44,6 +45,7 @@ func NewTower(g *Game, x, y float64) *Tower {
 		ammoCapacity: 5,
 		ammo:         5,
 		reloadTime:   0,
+		jammed:       false,
 	}
 	t.rangeImg = generateRangeImage(t.rangeDst)
 	return t
@@ -51,12 +53,30 @@ func NewTower(g *Game, x, y float64) *Tower {
 
 // Update handles tower firing logic.
 func (t *Tower) Update() {
+	typed := t.game.input.TypedChars()
+
+	if t.jammed {
+		if t.game.input.Backspace() {
+			t.jammed = false
+		}
+		return
+	}
+
+	if !t.reloading {
+		for _, r := range typed {
+			if unicode.ToLower(r) == 'r' && t.ammo < t.ammoCapacity {
+				t.startReload()
+				return
+			}
+		}
+	}
+
 	if t.reloading {
 		if t.reloadTimer > 0 {
 			t.reloadTimer--
 			return
 		}
-		for _, r := range t.game.input.TypedChars() {
+		for _, r := range typed {
 			if unicode.ToLower(r) == t.reloadLetter {
 				t.ammo++
 				if t.ammo >= t.ammoCapacity {
@@ -69,7 +89,11 @@ func (t *Tower) Update() {
 						t.reloadLetter = 'j'
 					}
 				}
-				break
+				return
+			} else {
+				t.jammed = true
+				t.reloading = false
+				return
 			}
 		}
 		return
