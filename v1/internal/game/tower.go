@@ -61,6 +61,7 @@ func (t *Tower) Update() {
 				t.ammo++
 				if t.ammo >= t.ammoCapacity {
 					t.reloading = false
+					t.cooldown = 0
 				} else {
 					t.reloadTimer = t.reloadTime
 					if rand.Intn(2) == 0 {
@@ -108,6 +109,7 @@ func (t *Tower) Update() {
 func (t *Tower) startReload() {
 	t.reloading = true
 	t.reloadTimer = t.reloadTime
+	t.cooldown = 0
 	if rand.Intn(2) == 0 {
 		t.reloadLetter = 'f'
 	} else {
@@ -131,11 +133,14 @@ func generateRangeImage(radius float64) *ebiten.Image {
 	r := int(radius)
 	img := ebiten.NewImage(r*2, r*2)
 	clr := color.RGBA{0, 255, 0, 80}
+	rr := r * r
+	inner := (r - 1) * (r - 1)
 	for x := 0; x < r*2; x++ {
 		for y := 0; y < r*2; y++ {
 			dx := x - r
 			dy := y - r
-			if dx*dx+dy*dy <= r*r {
+			d := dx*dx + dy*dy
+			if d <= rr && d >= inner {
 				img.Set(x, y, clr)
 			}
 		}
