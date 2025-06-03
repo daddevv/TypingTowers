@@ -3,7 +3,7 @@
 A high-level plan for implementing the core gameplay described in `ROADMAP.md`.
 
 - [ ] Create wave system that spawns enemy units marching toward the tower.
-- [ ] Allow towers to auto-fire and require manual reload via typed sequences.
+ - [ ] Allow towers to auto-fire and reload whenever ammo is below full using the new letter prompts.
 - [ ] Track typing accuracy and speed to modify reload time and score multiplier.
 - [ ] Implement progressive letter unlocking starting with the home row keys.
 - [ ] Add scoring system and display wave survival statistics.

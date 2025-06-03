@@ -24,6 +24,7 @@
 - Turret targets the closest mob of the letter typed.
 - Mobs drop gold when killed.
 - Friendly units will collect the gold and bring it to the base.
+- Reload any missing ammo by typing the prompted letter (`F` or `J`). A wrong key jams the turret until backspace is pressed.
 
 ### Shop Mode: Buy upgrades with collected gold
 

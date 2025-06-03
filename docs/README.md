@@ -34,6 +34,7 @@ The prototype displays a 60x32 tile grid. Features include:
 - Tile highlighting under the cursor, with click-and-drag support for rectangle, circle, or line shapes.
 - Right-click to place house tiles that persist on the grid.
 - Simple input handler that closes the window on <kbd>Esc</kbd>.
+- Towers can be reloaded at any time once their magazines aren't full. The HUD shows either `F` or `J` as the next letter to type.
 
 These mechanics are a foundation for a larger typing defense game. `NOTES.md` outlines future ideas such as shooting enemies with typed characters and purchasing upgrades.
 
