@@ -38,3 +38,8 @@ func (m *Mob) Update() {
 		m.alive = false
 	}
 }
+
+// Velocity returns the mob's current velocity components.
+func (m *Mob) Velocity() (vx, vy float64) {
+	return -m.speed, 0
+}
