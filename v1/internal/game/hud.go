@@ -31,11 +31,13 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 			prompt = fmt.Sprintf("Type '%c'", t.reloadLetter)
 		}
 		ebitenutil.DebugPrintAt(screen, prompt, 10, 52)
+	} else if t.jammed {
+		ebitenutil.DebugPrintAt(screen, "Jammed! backspace", 10, 52)
 	}
 
 	base := fmt.Sprintf("Base HP: %d", h.game.base.Health())
 	ebitenutil.DebugPrintAt(screen, base, 10, 28)
 
-	wave := fmt.Sprintf("Wave %d | SpawnTicker %d/%d | ToSpawn %d | Mobs %d | Proj %d", h.game.currentWave, h.game.spawnTicker, h.game.spawnInterval, h.game.mobsToSpawn, len(h.game.mobs), len(h.game.projectiles))
+	wave := fmt.Sprintf("Wave %d | Gold %d | Mobs %d", h.game.currentWave, h.game.gold, len(h.game.mobs))
 	ebitenutil.DebugPrintAt(screen, wave, 10, 64)
 }

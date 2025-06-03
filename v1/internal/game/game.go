@@ -27,6 +27,8 @@ type Game struct {
 	base        *Base
 	hud         *HUD
 	gameOver    bool
+	paused      bool
+	gold        int
 
 	currentWave   int
 	spawnInterval int
@@ -44,6 +46,8 @@ func NewGame() *Game {
 	g := &Game{
 		screen:        ebiten.NewImage(1920, 1080),
 		input:         NewInput(),
+		paused:        false,
+		gold:          0,
 		currentWave:   1,
 		spawnInterval: 60,
 		spawnTicker:   0,
@@ -68,8 +72,16 @@ func NewGame() *Game {
 func (g *Game) Update() error {
 	g.input.Update()
 
+	if g.input.Space() {
+		g.paused = !g.paused
+	}
+
 	if g.input.Quit() {
 		return ebiten.Termination
+	}
+
+	if g.paused {
+		return nil
 	}
 
 	if g.gameOver {
@@ -116,6 +128,7 @@ func (g *Game) Update() error {
 		}
 		if !m.alive {
 			g.mobs = append(g.mobs[:i], g.mobs[i+1:]...)
+			g.gold++
 			continue
 		}
 		i++
@@ -149,6 +162,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 	for _, m := range g.mobs {
 		m.Draw(g.screen)
+	}
+
+	if g.paused {
+		ebitenutil.DebugPrintAt(g.screen, "-- PAUSED --", 900, 520)
+		g.renderFrame(screen)
+		return
 	}
 
 	if g.hud != nil {
