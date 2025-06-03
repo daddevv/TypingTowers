@@ -3,6 +3,7 @@ package game
 import "github.com/hajimehoshi/ebiten/v2"
 
 type InputHandler interface {
+	TypedChars() []rune // TypedChars returns any characters typed since the last Update call
 	Update()    // Update processes input events and updates the Input state
 	Reset()     // Reset resets the Input state to its default values
 	Quit() bool // Quit returns whether the game should quit

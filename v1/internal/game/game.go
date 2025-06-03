@@ -5,7 +5,6 @@ import (
 	"math"
 	"math/rand"
 	"strconv"
-	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -26,6 +25,7 @@ type Game struct {
 	mobs        []*Mob
 	projectiles []*Projectile
 	base        *Base
+	hud         *HUD
 
 	currentWave   int
 	spawnInterval int
@@ -40,13 +40,16 @@ func NewGame() *Game {
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	// ebiten.SetFullscreen(true)
 
-	rand.Seed(time.Now().UnixNano())
-
 	g := &Game{
 		screen:        ebiten.NewImage(1920, 1080),
 		input:         NewInput(),
 		currentWave:   1,
 		spawnInterval: 60,
+		spawnTicker:   0,
+		mobsToSpawn:   3,
+
+		mobs:        make([]*Mob, 0),
+		projectiles: make([]*Projectile, 0),
 	}
 
 	tx, ty := tilePosition(1, 16)
