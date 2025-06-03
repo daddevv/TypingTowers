@@ -81,7 +81,10 @@ func (p *Projectile) Update() {
 		dx := p.target.pos.X - p.pos.X
 		dy := p.target.pos.Y - p.pos.Y
 		if math.Hypot(dx, dy) < 16 {
-			p.target.alive = false
+			p.target.health--
+			if p.target.health <= 0 {
+				p.target.alive = false
+			}
 			p.alive = false
 		}
 	}

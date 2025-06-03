@@ -10,10 +10,11 @@ type Mob struct {
 	alive      bool
 	vx, vy     float64
 	target     *Base
+	health     int
 }
 
 // NewMob returns a new mob at the given position.
-func NewMob(x, y float64, target *Base) *Mob {
+func NewMob(x, y float64, target *Base, hp int) *Mob {
 	w, h := ImgMobA.Bounds().Dx(), ImgMobA.Bounds().Dy()
 	return &Mob{
 		BaseEntity: BaseEntity{
@@ -27,6 +28,7 @@ func NewMob(x, y float64, target *Base) *Mob {
 		speed:  1,
 		alive:  true,
 		target: target,
+		health: hp,
 	}
 }
 

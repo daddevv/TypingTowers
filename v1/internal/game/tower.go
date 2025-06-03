@@ -48,7 +48,22 @@ func NewTower(g *Game, x, y float64) *Tower {
 		jammed:       false,
 	}
 	t.rangeImg = generateRangeImage(t.rangeDst)
+	if g.cfg != nil {
+		t.ApplyConfig(*g.cfg)
+	}
 	return t
+}
+
+// ApplyConfig updates tower parameters based on the provided config.
+func (t *Tower) ApplyConfig(cfg Config) {
+	rate := 100
+	if cfg.F > 0 {
+		rate = int(float64(rate) / cfg.F)
+		if rate < 1 {
+			rate = 1
+		}
+	}
+	t.rate = rate
 }
 
 // Update handles tower firing logic.
