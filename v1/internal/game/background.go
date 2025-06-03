@@ -25,8 +25,9 @@ func generateBackground(width, height, gridSize int, color color.RGBA) *ebiten.I
 	}
 	for x := range 60 {
 		for y := range 32 {
+			tileX, tileY := tilePosition(x, y)
 			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(float64(x*gridSize), float64(28+y*gridSize))
+			op.GeoM.Translate(float64(tileX), float64(tileY))
 			bg.DrawImage(tile, op)
 		}
 	}
