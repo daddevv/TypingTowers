@@ -3,6 +3,8 @@ package game
 import (
 	"image/color"
 	"math"
+	"math/rand"
+	"unicode"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -10,11 +12,17 @@ import (
 // Tower represents a stationary auto-firing tower.
 type Tower struct {
 	BaseEntity
-	cooldown int
-	rate     int
-	rangeDst float64
-	game     *Game
-	rangeImg *ebiten.Image
+	cooldown     int
+	rate         int
+	rangeDst     float64
+	game         *Game
+	rangeImg     *ebiten.Image
+	ammo         int
+	ammoCapacity int
+	reloadTime   int
+	reloadTimer  int
+	reloading    bool
+	reloadLetter rune
 }
 
 // NewTower creates a new Tower at the given position.
@@ -30,9 +38,12 @@ func NewTower(g *Game, x, y float64) *Tower {
 			frameAnchorY: float64(h) / 2,
 			static:       true,
 		},
-		rate:     60,
-		rangeDst: 300,
-		game:     g,
+		rate:         60,
+		rangeDst:     300,
+		game:         g,
+		ammoCapacity: 5,
+		ammo:         5,
+		reloadTime:   60,
 	}
 	t.rangeImg = generateRangeImage(t.rangeDst)
 	return t
@@ -40,6 +51,35 @@ func NewTower(g *Game, x, y float64) *Tower {
 
 // Update handles tower firing logic.
 func (t *Tower) Update() {
+	if t.reloading {
+		if t.reloadTimer > 0 {
+			t.reloadTimer--
+			return
+		}
+		for _, r := range t.game.input.TypedChars() {
+			if unicode.ToLower(r) == t.reloadLetter {
+				t.ammo++
+				if t.ammo >= t.ammoCapacity {
+					t.reloading = false
+				} else {
+					t.reloadTimer = t.reloadTime
+					if rand.Intn(2) == 0 {
+						t.reloadLetter = 'f'
+					} else {
+						t.reloadLetter = 'j'
+					}
+				}
+				break
+			}
+		}
+		return
+	}
+
+	if t.ammo <= 0 {
+		t.startReload()
+		return
+	}
+
 	if t.cooldown > 0 {
 		t.cooldown--
 	}
@@ -61,6 +101,17 @@ func (t *Tower) Update() {
 		p := NewProjectile(t.pos.X, t.pos.Y, target)
 		t.game.projectiles = append(t.game.projectiles, p)
 		t.cooldown = t.rate
+		t.ammo--
+	}
+}
+
+func (t *Tower) startReload() {
+	t.reloading = true
+	t.reloadTimer = t.reloadTime
+	if rand.Intn(2) == 0 {
+		t.reloadLetter = 'f'
+	} else {
+		t.reloadLetter = 'j'
 	}
 }
 

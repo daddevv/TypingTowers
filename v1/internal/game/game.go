@@ -26,6 +26,7 @@ type Game struct {
 	mobs         []*Mob
 	projectiles  []*Projectile
 	spawnCounter int
+	hud          *HUD
 }
 
 // NewGame creates a new instance of the Game.
@@ -44,6 +45,7 @@ func NewGame() *Game {
 	tx, ty := tilePosition(2, 16)
 	tower := NewTower(g, float64(tx+16), float64(ty+16))
 	g.towers = []*Tower{tower}
+	g.hud = NewHUD(g)
 	return g
 }
 
@@ -101,6 +103,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 	for _, m := range g.mobs {
 		m.Draw(g.screen)
+	}
+
+	if g.hud != nil {
+		g.hud.Draw(g.screen)
 	}
 
 	highlightHoverAndClickAndDrag(g.screen, "line")
