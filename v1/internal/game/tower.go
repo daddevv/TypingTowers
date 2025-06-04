@@ -54,6 +54,14 @@ func NewTower(g *Game, x, y float64) *Tower {
 	return t
 }
 
+func randomReloadLetter() rune {
+	// randomly return either 'f' or 'j' for reload prompts
+	if rand.Intn(2) == 0 {
+		return 'f'
+	}
+	return 'j'
+}
+
 // ApplyConfig updates tower parameters based on the provided config.
 func (t *Tower) ApplyConfig(cfg Config) {
 	rate := 100
@@ -92,11 +100,7 @@ func (t *Tower) Update() {
 						t.reloading = false
 						t.cooldown = t.rate
 					} else {
-						if rand.Intn(2) == 0 {
-							t.reloadLetter = 'f'
-						} else {
-							t.reloadLetter = 'j'
-						}
+						t.reloadLetter = randomReloadLetter()
 					}
 					t.reloadTimer = t.reloadTime
 					break
@@ -138,11 +142,7 @@ func (t *Tower) startReload() {
 	t.reloading = true
 	t.reloadTimer = t.reloadTime
 	t.cooldown = 0
-	if rand.Intn(2) == 0 {
-		t.reloadLetter = 'f'
-	} else {
-		t.reloadLetter = 'j'
-	}
+	t.reloadLetter = randomReloadLetter()
 }
 
 // Draw renders the tower and its range indicator.

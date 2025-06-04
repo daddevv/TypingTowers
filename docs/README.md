@@ -1,6 +1,6 @@
-# Type Defense
+# TypingTowers
 
-Type Defense is a keyboard-controlled tower defense game built with [Ebiten](https://ebiten.org/). Players type letters to shoot enemy mobs and manage upgrades through keyboard shortcuts.
+TypingTowers is a keyboard-controlled tower defense game built with [Ebiten](https://ebiten.org/). Players type letters to shoot enemy mobs and manage upgrades through keyboard shortcuts.
 
 ## Structure
 

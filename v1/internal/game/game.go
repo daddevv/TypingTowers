@@ -47,7 +47,7 @@ func NewGame() *Game {
 
 // NewGameWithConfig creates a new instance of the Game using the provided configuration.
 func NewGameWithConfig(cfg Config) *Game {
-	ebiten.SetWindowTitle("TypeDefense")
+	ebiten.SetWindowTitle("TypingTowers")
 	ebiten.SetWindowSize(1920/8, 1080/8)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	// ebiten.SetFullscreen(true)
