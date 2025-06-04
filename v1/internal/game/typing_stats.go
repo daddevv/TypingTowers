@@ -75,3 +75,21 @@ func (ts *TypingStats) RateMultiplier() float64 {
 	}
 	return mult
 }
+
+// ScoreMultiplier returns a multiplier for score/gold rewards based on typing
+// performance. Higher WPM and accuracy grant better rewards while poor
+// performance reduces them.
+func (ts *TypingStats) ScoreMultiplier() float64 {
+	acc := ts.Accuracy()
+	wpm := ts.WPM()
+	switch {
+	case wpm >= 60 && acc >= 0.95:
+		return 2.0
+	case wpm >= 40 && acc >= 0.9:
+		return 1.5
+	case wpm < 20 || acc < 0.6:
+		return 0.5
+	default:
+		return 1.0
+	}
+}
