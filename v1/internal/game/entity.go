@@ -7,7 +7,7 @@ import (
 // Entity interface defines the contract for all entities in the game.
 type Entity interface {
 	Frame() *ebiten.Image              // Get the current image frame of the entity (static or animated)
-	Update() error                     // Update the entity state, return an error if something goes wrong
+	Update(dt float64) error           // Update the entity state using delta time
 	Draw(screen *ebiten.Image)         // Draw the entity to the screen
 	Position() (x, y int)              // Get the current position of the entity
 	Bounds() (x, y, width, height int) // Get the bounding box of the entity
@@ -32,7 +32,7 @@ func (e *BaseEntity) Frame() *ebiten.Image {
 }
 
 // Update updates the entity's state. Override this method in derived entities to implement specific behavior.
-func (e *BaseEntity) Update() error {
+func (e *BaseEntity) Update(dt float64) error {
 	return nil
 }
 

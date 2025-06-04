@@ -36,11 +36,11 @@ type Game struct {
 	cfg *Config
 
 	currentWave   int
-	spawnInterval int
-	spawnTicker   int
+	spawnInterval float64
+	spawnTicker   float64
 	mobsToSpawn   int
 
-	currentFrame int // add this field to track the current frame
+	lastUpdate time.Time
 }
 
 // NewGame creates a new instance of the Game.
@@ -85,13 +85,20 @@ func NewGameWithConfig(cfg Config) *Game {
 	tower := NewTower(g, float64(tx+16), float64(ty+16))
 	g.towers = []*Tower{tower}
 	g.startWave()
+	g.lastUpdate = time.Now()
 	g.hud = NewHUD(g)
 	return g
 }
 
 // Update updates the game state. This method is called every frame.
 func (g *Game) Update() error {
-	g.currentFrame++ // increment frame counter
+	now := time.Now()
+	dt := 1.0 / 60.0
+	if !g.lastUpdate.IsZero() {
+		dt = now.Sub(g.lastUpdate).Seconds()
+	}
+	g.lastUpdate = now
+	g.input.Update()
 	g.input.Update()
 
 	if g.input.Reload() {
@@ -119,10 +126,10 @@ func (g *Game) Update() error {
 	if g.shopOpen {
 		// Upgrade options and costs
 		const (
-			upgradeDamageCost = 5
-			upgradeRangeCost  = 5
+			upgradeDamageCost   = 5
+			upgradeRangeCost    = 5
 			upgradeFireRateCost = 5
-			upgradeAmmoCost = 10
+			upgradeAmmoCost     = 10
 		)
 		if len(g.towers) > 0 {
 			tower := g.towers[0]
@@ -156,7 +163,7 @@ func (g *Game) Update() error {
 	}
 
 	if g.mobsToSpawn > 0 {
-		g.spawnTicker++
+		g.spawnTicker += dt
 		if g.spawnTicker >= g.spawnInterval {
 			g.spawnTicker = 0
 			g.spawnMob()
@@ -167,14 +174,14 @@ func (g *Game) Update() error {
 	}
 
 	for _, t := range g.towers {
-		t.Update()
+		t.Update(dt)
 	}
 
-	g.base.Update()
+	g.base.Update(dt)
 
 	for i := 0; i < len(g.projectiles); {
 		p := g.projectiles[i]
-		p.Update()
+		p.Update(dt)
 		if !p.alive {
 			g.projectiles = append(g.projectiles[:i], g.projectiles[i+1:]...)
 			continue
@@ -184,7 +191,7 @@ func (g *Game) Update() error {
 
 	for i := 0; i < len(g.mobs); {
 		m := g.mobs[i]
-		m.Update()
+		m.Update(dt)
 		bx, by, bw, bh := g.base.Bounds()
 		dx := m.pos.X - float64(bx+bw/2)
 		dy := m.pos.Y - float64(by+bh/2)
@@ -222,7 +229,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		// The main shop interface is now drawn by the HUD.
 		// We can keep a minimal centered message or remove it entirely.
 		// For now, let's remove the old one:
-		// ebitenutil.DebugPrintAt(g.screen, "-- SHOP -- press Enter", 850, 520) 
+		// ebitenutil.DebugPrintAt(g.screen, "-- SHOP -- press Enter", 850, 520)
 		// The HUD will display shop details.
 	}
 

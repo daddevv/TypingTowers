@@ -46,10 +46,9 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 
 			sps := 0.0
 			if t.rate > 0 {
-				// Assuming game runs at 60 Ticks Per Second (Ebiten default)
-				sps = 60.0 / float64(t.rate)
+				sps = 1.0 / t.rate
 			}
-			lines = append(lines, fmt.Sprintf("Fire Speed: %.2f/s (Cooldown: %d)", sps, t.rate))
+			lines = append(lines, fmt.Sprintf("Fire Speed: %.2f/s (Cooldown: %.2fs)", sps, t.rate))
 
 			reloading, currentLetter, previewQueue, timer, jammed := t.GetReloadStatus()
 			if jammed {
@@ -68,7 +67,7 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 					}
 					lines = append(lines, fmt.Sprintf("Type: %s", queueStr))
 				} else {
-					lines = append(lines, fmt.Sprintf("Reload in: %d", timer))
+					lines = append(lines, fmt.Sprintf("Reload in: %.2fs", timer))
 					if len(previewQueue) > 0 {
 						queueStr := ""
 						for i, letter := range previewQueue {

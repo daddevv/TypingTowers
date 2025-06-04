@@ -7,7 +7,7 @@ This document outlines a mathematical approach for balancing TypingTowers so pla
 The following configuration parameters impact combat balance:
 
 - `tower_damage` – damage dealt per projectile
-- `tower_fire_rate` – cooldown between shots (frames)
+- `tower_fire_rate` – seconds between shots
 - `tower_reload_rate` – delay after a correct letter before another letter can be typed
 - `tower_ammo_capacity` – number of shots before reloading is required
 - `projectile_speed` – speed of projectiles
@@ -15,13 +15,13 @@ The following configuration parameters impact combat balance:
 - `mob_speed` – movement speed of mobs
 - `mobs_per_wave_base` – mobs spawned on wave 1
 - `mobs_per_wave_growth` – additional mobs per subsequent wave
-- `spawn_interval` – frames between spawns within a wave
+- `spawn_interval` – seconds between spawns within a wave
 
 All values are defined in `config.json` and can be reloaded at runtime.
 
 ## Time to Kill
 
-A tower can fire one projectile every `tower_fire_rate` frames. If each projectile deals `tower_damage` and travels at `projectile_speed`, the time to kill a mob with health `H` is approximately:
+A tower can fire one projectile every `tower_fire_rate` seconds. If each projectile deals `tower_damage` and travels at `projectile_speed`, the time to kill a mob with health `H` is approximately:
 
 ```
 TTK = ceil(H / tower_damage) * tower_fire_rate
@@ -37,11 +37,11 @@ Mobs spawn on the right side and move toward the base with speed `mob_speed`. Le
 Tsurvive = D / mob_speed
 ```
 
-To ensure a player can defeat mobs by typing accurately, we require `TTK < Tsurvive` for the first mob of each wave. Since later mobs spawn after `spawn_interval` frames, we also want the tower to defeat mobs quickly enough that only a manageable number are alive simultaneously.
+To ensure a player can defeat mobs by typing accurately, we require `TTK < Tsurvive` for the first mob of each wave. Since later mobs spawn after `spawn_interval` seconds, we also want the tower to defeat mobs quickly enough that only a manageable number are alive simultaneously.
 
 ## Reload Throughput
 
-With an ammo capacity of `C`, a tower can fire `C` shots before running out. Each empty slot generates a reload letter. Assuming perfect accuracy, the fastest time to refill one slot is `tower_reload_rate` frames. The sustained firing rate considering reload is therefore:
+With an ammo capacity of `C`, a tower can fire `C` shots before running out. Each empty slot generates a reload letter. Assuming perfect accuracy, the fastest time to refill one slot is `tower_reload_rate` seconds. The sustained firing rate considering reload is therefore:
 
 ```
 EffectiveFireRate = max(tower_fire_rate, tower_reload_rate)
@@ -78,9 +78,9 @@ Using the default configuration:
 - `mob_speed = 1`
 - `mobs_per_wave_base = 3`
 - `mobs_per_wave_growth = 3`
-- `spawn_interval = 60`
+- `spawn_interval = 1`
 
-If the distance to the base is ~800 pixels, `Tsurvive ≈ 800` frames. A mob with `H=1` takes `TTK = 100` frames, so `TTK < Tsurvive` is satisfied. The tower can kill about one mob every 100 frames. With the chosen spawn interval of 60 frames, at most two mobs are alive before the first is destroyed, which is less than the ammo capacity of five. This keeps the game winnable when reloading correctly.
+If the distance to the base is ~800 pixels, `Tsurvive ≈ 13s`. A mob with `H=1` takes about `TTK = 1.6s`, so `TTK < Tsurvive` is satisfied. The tower can kill about one mob every `1.6s`. With the chosen spawn interval of one second, at most two mobs are alive before the first is destroyed, which is less than the ammo capacity of five. This keeps the game winnable when reloading correctly.
 
 ## Endless Scaling
 
