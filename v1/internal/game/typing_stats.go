@@ -7,6 +7,8 @@ type TypingStats struct {
 	start     time.Time
 	correct   int
 	incorrect int
+	combo     int
+	maxCombo  int
 }
 
 // NewTypingStats initializes a TypingStats value.
@@ -18,8 +20,13 @@ func NewTypingStats() TypingStats {
 func (ts *TypingStats) Record(correct bool) {
 	if correct {
 		ts.correct++
+		ts.combo++
+		if ts.combo > ts.maxCombo {
+			ts.maxCombo = ts.combo
+		}
 	} else {
 		ts.incorrect++
+		ts.combo = 0
 	}
 }
 
@@ -46,6 +53,12 @@ func (ts *TypingStats) WPM() float64 {
 	return (float64(ts.Total()) / 5.0) / mins
 }
 
+// Combo returns the current combo count of consecutive correct letters.
+func (ts *TypingStats) Combo() int { return ts.combo }
+
+// MaxCombo returns the highest combo achieved.
+func (ts *TypingStats) MaxCombo() int { return ts.maxCombo }
+
 // RateMultiplier returns a fire rate multiplier based on typing performance.
 func (ts *TypingStats) RateMultiplier() float64 {
 	acc := ts.Accuracy()
@@ -56,5 +69,9 @@ func (ts *TypingStats) RateMultiplier() float64 {
 	if wpm < 20 || acc < 0.6 {
 		return 1.2
 	}
-	return 1.0
+	mult := 1.0
+	if ts.combo >= 5 {
+		mult *= 0.85
+	}
+	return mult
 }
