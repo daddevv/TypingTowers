@@ -19,21 +19,38 @@ The following configuration parameters impact combat balance:
 
 All values are defined in `config.json` and can be reloaded at runtime.
 
-## Time to Kill
+## Time to Kill (TTK)
 
 A tower can fire one projectile every `tower_fire_rate` seconds. If each projectile deals `tower_damage` and travels at `projectile_speed`, the time to kill a mob with health `H` is approximately:
 
+```txt
+shots_needed = ceil(H / tower_damage)
+TTK = shots_needed * max(tower_fire_rate, tower_reload_rate)
 ```
-TTK = ceil(H / tower_damage) * tower_fire_rate
+
+**Note:** The actual time between shots is limited by the slower of the fire rate and reload rate, since the player must type to reload each shot.
+
+### Including Projectile Travel Time
+
+Projectiles take time to reach the mob. If the distance to the mob is `D` and projectile speed is `projectile_speed`, the travel time per shot is:
+
+```txt
+travel_time = D / projectile_speed
 ```
 
-The travel time from tower to mob also matters, but because projectiles are fast relative to mob speed, it is typically small. For early balancing, this factor can be ignored or approximated as `distance / projectile_speed`.
+The total time to kill a mob is then:
 
-## Mob Survival Time
-
-Mobs spawn on the right side and move toward the base with speed `mob_speed`. Let `D` be the distance from spawn to base. The time for a mob to reach the base is approximately:
-
+```txt
+TTK_total = TTK + travel_time
 ```
+
+If the mob is moving toward the base, `D` decreases over time, but for balancing, use the average or initial distance.
+
+## Mob Survival Time (Tsurvive)
+
+Mobs spawn on the right side and move toward the base with speed `mob_speed`. The time for a mob to reach the base is:
+
+```txt
 Tsurvive = D / mob_speed
 ```
 
@@ -43,27 +60,37 @@ To ensure a player can defeat mobs by typing accurately, we require `TTK < Tsurv
 
 With an ammo capacity of `C`, a tower can fire `C` shots before running out. Each empty slot generates a reload letter. Assuming perfect accuracy, the fastest time to refill one slot is `tower_reload_rate` seconds. The sustained firing rate considering reload is therefore:
 
-```
+```txt
 EffectiveFireRate = max(tower_fire_rate, tower_reload_rate)
 ```
 
-For balance, the player must be able to maintain this rate by typing each letter correctly when it appears.
+**Downtime:** After firing `C` shots, the tower cannot fire again until at least one reload letter is typed. If the player is slower than `tower_reload_rate`, the effective fire rate drops further.
 
-## Spawn Rate Limits
+## Spawn Rate and Overlapping Mobs
 
 Let `Mwave` be the number of mobs in a wave:
 
-```
+```txt
 Mwave = mobs_per_wave_base + (current_wave - 1) * mobs_per_wave_growth
 ```
 
-We choose `spawn_interval` such that the tower can kill mobs faster than they appear when the player keeps up with reloads. Given `TTK` and `spawn_interval`, the number of mobs alive at once is roughly:
+Mobs spawn every `spawn_interval` frames. The number of mobs alive at once depends on how quickly mobs are killed and how quickly new ones spawn.
 
-```
-Alive ≈ TTK / spawn_interval
+The maximum number of overlapping mobs (`Alive_max`) is:
+
+```txt
+Alive_max = ceil(TTK_total / spawn_interval)
 ```
 
-To keep early waves manageable, we target `Alive ≤ C` so that ammo capacity is sufficient to handle bursts. If this value is too high, increase `spawn_interval` or reduce `Mwave` growth.
+This assumes the tower is always firing at the closest mob and that the player reloads perfectly.
+
+To keep early waves manageable, we target:
+
+```txt
+Alive_max ≤ tower_ammo_capacity
+```
+
+so that ammo capacity is sufficient to handle bursts. If this value is too high, increase `spawn_interval` or reduce `Mwave` growth.
 
 ## Example Baseline
 
@@ -84,8 +111,8 @@ If the distance to the base is ~800 pixels, `Tsurvive ≈ 13s`. A mob with `H=1`
 
 ## Endless Scaling
 
-After all letters are unlocked, waves can grow more challenging by reducing `spawn_interval`, increasing `mob_base_health`, or increasing `mob_speed`. The guiding principle is that `TTK` should remain less than `Tsurvive` while letter prompts remain manageable. A gentle exponential increase to health or spawn rate every few waves can provide a long-term challenge without overwhelming the player immediately.
+After all letters are unlocked, waves can grow more challenging by reducing `spawn_interval`, increasing `mob_base_health`, or increasing `mob_speed`. The guiding principle is that `TTK_total` should remain less than `Tsurvive` while letter prompts remain manageable. A gentle exponential increase to health or spawn rate every few waves can provide a long-term challenge without overwhelming the player immediately.
 
 ## Summary
 
-Balancing revolves around keeping the ratio of tower damage and firing speed ahead of mob health and spawn rate. By monitoring `TTK`, `Tsurvive`, and reload throughput, we can tune parameters so that any player who types each letter correctly can survive the wave. Difficulty can ramp up slowly through additional mobs per wave and moderate increases to health or speed, ensuring the game remains fun while serving as effective typing practice.
+Balancing revolves around keeping the ratio of tower damage and firing speed ahead of mob health and spawn rate, while also accounting for projectile travel time, reload throughput, and overlapping spawns. By monitoring `TTK_total`, `Tsurvive`, and reload throughput, we can tune parameters so that any player who types each letter correctly can survive the wave. Difficulty can ramp up slowly through additional mobs per wave and moderate increases to health or speed, ensuring the game remains fun while serving as effective typing practice.
