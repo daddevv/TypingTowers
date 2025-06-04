@@ -18,10 +18,10 @@ type Tower struct {
 	game         *Game
 	rangeImg     *ebiten.Image
 	
-	// Separate ammo for shooting vs reload bullets being added
-	shootingAmmo int // ammo available for firing projectiles
-	reloadBullets int // bullets being added through typing (separate from shooting ammo)
-	ammoCapacity int
+	// Two-queue ammo system
+	ammoQueue    []bool // ready-to-fire ammunition (true = loaded, false = empty)
+	reloadQueue  []rune // letters that need to be typed to reload
+	ammoCapacity int    // maximum size of ammoQueue
 	
 	damage       int
 	projectiles  int
@@ -29,8 +29,6 @@ type Tower struct {
 	reloadTime   int
 	reloadTimer  int
 	reloading    bool
-	reloadLetter rune
-	nextReloadLetter rune // preview of next letter
 	jammed       bool
 	jammedLetter rune // preserve letter when jammed
 
@@ -54,14 +52,20 @@ func NewTower(g *Game, x, y float64) *Tower {
 		rangeDst:     DefaultConfig.TowerRange,
 		game:         g,
 		ammoCapacity: DefaultConfig.TowerAmmoCapacity,
-		shootingAmmo: DefaultConfig.TowerAmmoCapacity, // start with full ammo
-		reloadBullets: 0, // no bullets being reloaded initially
 		damage:       DefaultConfig.TowerDamage,
 		projectiles:  DefaultConfig.TowerProjectiles,
 		bounce:       DefaultConfig.TowerBounce,
 		reloadTime:   DefaultConfig.TowerReloadRate,
 		jammed:       false,
 	}
+	
+	// Initialize ammo queue with full capacity
+	t.ammoQueue = make([]bool, t.ammoCapacity)
+	for i := range t.ammoQueue {
+		t.ammoQueue[i] = true
+	}
+	t.reloadQueue = make([]rune, 0)
+	
 	t.rangeImg = generateRangeImage(t.rangeDst)
 	if g.cfg != nil {
 		t.ApplyConfig(*g.cfg)
@@ -94,15 +98,19 @@ func (t *Tower) ApplyConfig(cfg Config) {
 		t.rangeImg = generateRangeImage(t.rangeDst)
 	}
 	if cfg.TowerAmmoCapacity > 0 {
-		oldCapacity := t.ammoCapacity
+		// oldCapacity := t.ammoCapacity
 		t.ammoCapacity = cfg.TowerAmmoCapacity
-		// Adjust shooting ammo proportionally
-		if oldCapacity > 0 {
-			ratio := float64(t.shootingAmmo) / float64(oldCapacity)
-			t.shootingAmmo = int(ratio * float64(t.ammoCapacity))
-		} else {
-			t.shootingAmmo = t.ammoCapacity
+		
+		// Resize ammo queue while preserving existing ammo
+		newAmmoQueue := make([]bool, t.ammoCapacity)
+		for i := 0; i < t.ammoCapacity && i < len(t.ammoQueue); i++ {
+			newAmmoQueue[i] = t.ammoQueue[i]
 		}
+		// Fill any new slots with ammo if we increased capacity
+		for i := len(t.ammoQueue); i < t.ammoCapacity; i++ {
+			newAmmoQueue[i] = true
+		}
+		t.ammoQueue = newAmmoQueue
 	}
 	if cfg.TowerDamage > 0 {
 		t.damage = cfg.TowerDamage
@@ -115,6 +123,43 @@ func (t *Tower) ApplyConfig(cfg Config) {
 	}
 }
 
+// getAvailableAmmo counts ready-to-fire ammunition
+func (t *Tower) getAvailableAmmo() int {
+	count := 0
+	for _, loaded := range t.ammoQueue {
+		if loaded {
+			count++
+		}
+	}
+	return count
+}
+
+// consumeAmmo removes one ammunition from the queue (first available)
+func (t *Tower) consumeAmmo() bool {
+	for i := range t.ammoQueue {
+		if t.ammoQueue[i] {
+			t.ammoQueue[i] = false
+			return true
+		}
+	}
+	return false
+}
+
+// fillReloadQueue adds random letters to reload queue for empty ammo slots
+func (t *Tower) fillReloadQueue() {
+	emptySlots := 0
+	for _, loaded := range t.ammoQueue {
+		if !loaded {
+			emptySlots++
+		}
+	}
+	
+	// Add letters to reload queue to match empty slots
+	for len(t.reloadQueue) < emptySlots {
+		t.reloadQueue = append(t.reloadQueue, randomReloadLetter())
+	}
+}
+
 // Update handles tower firing logic.
 func (t *Tower) Update() {
 	typed := t.game.input.TypedChars()
@@ -123,8 +168,6 @@ func (t *Tower) Update() {
 	if t.jammed {
 		if t.game.input.Backspace() {
 			t.jammed = false
-			// Restore the letter that was being typed when jammed
-			t.reloadLetter = t.jammedLetter
 		}
 		// Jammed towers can still fire, just can't reload
 	}
@@ -134,41 +177,33 @@ func (t *Tower) Update() {
 		t.cooldown--
 	}
 
-	// Start reloading if not at capacity and not already reloading
-	// Only start reload if we're not in firing cooldown
-	if !t.reloading && t.shootingAmmo < t.ammoCapacity && t.cooldown == 0 {
-		t.startReload()
-	}
+	// Always ensure reload queue is populated for empty ammo slots
+	t.fillReloadQueue()
 
-	// Handle reload typing (only if not jammed)
-	if t.reloading && !t.jammed {
+	// Handle reload typing (only if not jammed and reload queue has letters)
+	if !t.jammed && len(t.reloadQueue) > 0 {
 		if t.reloadTimer > 0 {
 			t.reloadTimer--
 		} else {
 			for _, r := range typed {
-				if unicode.ToLower(r) == t.reloadLetter {
-					// Successfully typed reload letter
-					t.reloadBullets++
-					t.shootingAmmo++
+				if len(t.reloadQueue) > 0 && unicode.ToLower(r) == t.reloadQueue[0] {
+					// Successfully typed the first letter in reload queue
+					t.reloadQueue = t.reloadQueue[1:] // Remove the typed letter
 					
-					if t.shootingAmmo >= t.ammoCapacity {
-						// Fully reloaded - but don't override firing cooldown
-						t.reloading = false
-						// Only set cooldown if we're not already in firing cooldown
-						if t.cooldown == 0 {
-							t.cooldown = t.rate
+					// Add ammo to first empty slot
+					for i := range t.ammoQueue {
+						if !t.ammoQueue[i] {
+							t.ammoQueue[i] = true
+							break
 						}
-					} else {
-						// Set up next reload letter
-						t.reloadLetter = t.nextReloadLetter
-						t.nextReloadLetter = randomReloadLetter()
 					}
+					
 					t.reloadTimer = t.reloadTime
 					break
-				} else {
+				} else if len(t.reloadQueue) > 0 {
 					// Wrong letter - jam the tower
 					t.jammed = true
-					t.jammedLetter = t.reloadLetter // preserve current letter
+					t.jammedLetter = t.reloadQueue[0] // preserve current letter
 					break
 				}
 			}
@@ -187,7 +222,7 @@ func (t *Tower) Update() {
 	}
 
 	// Only fire if we have ammo
-	if t.shootingAmmo <= 0 {
+	if t.getAvailableAmmo() <= 0 {
 		return
 	}
 
@@ -231,8 +266,9 @@ func (t *Tower) Update() {
 	if shots < 1 {
 		shots = 1
 	}
-	if shots > t.shootingAmmo {
-		shots = t.shootingAmmo
+	availableAmmo := t.getAvailableAmmo()
+	if shots > availableAmmo {
+		shots = availableAmmo
 	}
 	if shots > len(targets) {
 		shots = len(targets)
@@ -251,10 +287,11 @@ func (t *Tower) Update() {
 			continue
 		}
 		
-		p := NewProjectile(t.game, t.pos.X, t.pos.Y, targetMob, t.damage, speed, t.bounce)
-		t.game.projectiles = append(t.game.projectiles, p)
-		t.shootingAmmo--
-		shotsFired++
+		if t.consumeAmmo() {
+			p := NewProjectile(t.game, t.pos.X, t.pos.Y, targetMob, t.damage, speed, t.bounce)
+			t.game.projectiles = append(t.game.projectiles, p)
+			shotsFired++
+		}
 	}
 	
 	// Set cooldown only if we actually fired
@@ -264,23 +301,46 @@ func (t *Tower) Update() {
 	}
 }
 
-func (t *Tower) startReload() {
-	t.reloading = true
-	t.reloadTimer = t.reloadTime
-	// Don't reset cooldown to 0 - preserve firing cooldown
-	t.reloadLetter = randomReloadLetter()
-	t.nextReloadLetter = randomReloadLetter()
-	t.reloadBullets = 0
-}
-
 // GetAmmoStatus returns current ammo and capacity for HUD display
 func (t *Tower) GetAmmoStatus() (int, int) {
-	return t.shootingAmmo, t.ammoCapacity
+	return t.getAvailableAmmo(), t.ammoCapacity
 }
 
 // GetReloadStatus returns reload state info for HUD
-func (t *Tower) GetReloadStatus() (bool, rune, rune, int, bool) {
-	return t.reloading, t.reloadLetter, t.nextReloadLetter, t.reloadTimer, t.jammed
+func (t *Tower) GetReloadStatus() (bool, rune, []rune, int, bool) {
+	reloading := len(t.reloadQueue) > 0
+	var currentLetter rune
+	if t.jammed {
+		currentLetter = t.jammedLetter
+	} else if len(t.reloadQueue) > 0 {
+		currentLetter = t.reloadQueue[0]
+	}
+	
+	// Return up to 5 letters for preview (future "Foresight" upgrade)
+	previewQueue := make([]rune, 0, 5)
+	for i := 0; i < len(t.reloadQueue) && i < 5; i++ {
+		previewQueue = append(previewQueue, t.reloadQueue[i])
+	}
+	
+	return reloading, currentLetter, previewQueue, t.reloadTimer, t.jammed
+}
+
+// UpgradeAmmoCapacity increases the tower's ammunition capacity
+func (t *Tower) UpgradeAmmoCapacity(increase int) {
+	if increase <= 0 {
+		return
+	}
+	
+	oldCapacity := t.ammoCapacity
+	t.ammoCapacity += increase
+	
+	// Expand ammo queue and fill new slots with ammo
+	newAmmoQueue := make([]bool, t.ammoCapacity)
+	copy(newAmmoQueue, t.ammoQueue)
+	for i := oldCapacity; i < t.ammoCapacity; i++ {
+		newAmmoQueue[i] = true // New slots start loaded
+	}
+	t.ammoQueue = newAmmoQueue
 }
 
 // Draw renders the tower and its range indicator.

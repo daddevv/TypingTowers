@@ -10,7 +10,10 @@
 - [x] ~~Implement bouncing projectile mechanics~~
 - [x] ~~Add real-time configuration reloading system~~
 - [x] ~~Implement functional upgrade purchasing with gold~~
-- [x] Add tower damage, range, and fire rate upgrades
+- [x] ~~Add tower damage, range, and fire rate upgrades~~
+- [x] ~~Implement two-queue ammo system (firing queue + reload queue)~~
+- [x] ~~Add ammo capacity upgrades to shop~~
+- [x] ~~Show reload queue preview in HUD~~
 
 ## High Priority (Next Sprint)
 
@@ -18,6 +21,7 @@
 
 - [ ] Create upgrade UI with keyboard navigation
 - [ ] Add visual feedback for purchased upgrades
+- [ ] Add "Foresight" upgrade to show more reload queue letters
 
 ### Multiple Tower Placement
 

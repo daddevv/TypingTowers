@@ -8,6 +8,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 var (
@@ -121,24 +122,29 @@ func (g *Game) Update() error {
 			upgradeDamageCost = 5
 			upgradeRangeCost  = 5
 			upgradeFireRateCost = 5
+			upgradeAmmoCost = 10
 		)
 		if len(g.towers) > 0 {
 			tower := g.towers[0]
-			// Handle upgrade input
-			if ebiten.IsKeyPressed(ebiten.Key1) && g.gold >= upgradeDamageCost {
+			// Handle upgrade input - use inpututil.IsKeyJustPressed to prevent multiple purchases
+			if inpututil.IsKeyJustPressed(ebiten.Key1) && g.gold >= upgradeDamageCost {
 				g.gold -= upgradeDamageCost
 				tower.damage++
 			}
-			if ebiten.IsKeyPressed(ebiten.Key2) && g.gold >= upgradeRangeCost {
+			if inpututil.IsKeyJustPressed(ebiten.Key2) && g.gold >= upgradeRangeCost {
 				g.gold -= upgradeRangeCost
 				tower.rangeDst += 50
 				tower.rangeImg = generateRangeImage(tower.rangeDst)
 			}
-			if ebiten.IsKeyPressed(ebiten.Key3) && g.gold >= upgradeFireRateCost {
+			if inpututil.IsKeyJustPressed(ebiten.Key3) && g.gold >= upgradeFireRateCost {
 				g.gold -= upgradeFireRateCost
 				if tower.rate > 10 {
 					tower.rate -= 10 // Lower rate means faster fire
 				}
+			}
+			if inpututil.IsKeyJustPressed(ebiten.Key4) && g.gold >= upgradeAmmoCost {
+				g.gold -= upgradeAmmoCost
+				tower.UpgradeAmmoCapacity(2) // Increase by 2 ammo slots
 			}
 		}
 		if g.input.Enter() {

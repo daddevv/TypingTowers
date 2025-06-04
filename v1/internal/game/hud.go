@@ -34,6 +34,7 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 		lines = append(lines, "[1] Upgrade Damage (+1): 5 gold")
 		lines = append(lines, "[2] Upgrade Range (+50): 5 gold")
 		lines = append(lines, "[3] Upgrade Fire Rate (faster): 5 gold")
+		lines = append(lines, "[4] Upgrade Ammo Capacity (+2): 10 gold")
 		lines = append(lines, "Press Enter to start next wave")
 	} else {
 		if len(h.game.towers) > 0 {
@@ -50,16 +51,35 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 			}
 			lines = append(lines, fmt.Sprintf("Fire Speed: %.2f/s (Cooldown: %d)", sps, t.rate))
 
-			reloading, letter, nextLetter, timer, jammed := t.GetReloadStatus()
+			reloading, currentLetter, previewQueue, timer, jammed := t.GetReloadStatus()
 			if jammed {
 				lines = append(lines, "Jammed! Press Backspace")
-				lines = append(lines, fmt.Sprintf("Stuck on: '%c'", letter))
+				lines = append(lines, fmt.Sprintf("Stuck on: '%c'", currentLetter))
 			} else if reloading {
 				if timer <= 0 {
-					lines = append(lines, fmt.Sprintf("Type '%c' (next: '%c')", letter, nextLetter))
+					// Show current letter and preview queue
+					queueStr := ""
+					for i, letter := range previewQueue {
+						if i == 0 {
+							queueStr += fmt.Sprintf("[%c]", letter) // Current letter in brackets
+						} else {
+							queueStr += fmt.Sprintf(" %c", letter)
+						}
+					}
+					lines = append(lines, fmt.Sprintf("Type: %s", queueStr))
 				} else {
 					lines = append(lines, fmt.Sprintf("Reload in: %d", timer))
-					lines = append(lines, fmt.Sprintf("Next: '%c' (then: '%c')", letter, nextLetter))
+					if len(previewQueue) > 0 {
+						queueStr := ""
+						for i, letter := range previewQueue {
+							if i == 0 {
+								queueStr += fmt.Sprintf("[%c]", letter)
+							} else {
+								queueStr += fmt.Sprintf(" %c", letter)
+							}
+						}
+						lines = append(lines, fmt.Sprintf("Next: %s", queueStr))
+					}
 				}
 			}
 		}
@@ -77,7 +97,7 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 	// Define background properties
 	bgX := float64(textX) - padding
 	bgY := float64(initialY) - padding
-	bgWidth := 240.0 // Fixed width for the background quad
+	bgWidth := 300.0 // Increased width for longer shop text
 	// Calculate height based on number of lines and line height, plus padding
 	bgHeight := float64(len(lines)*lineHeight) + (padding * 2.0) - (float64(lineHeight) - 10.0) // 10 is approx font char height
 
