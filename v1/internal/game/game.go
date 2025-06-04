@@ -1,10 +1,12 @@
 package game
 
 import (
+	"encoding/json"
 	"fmt"
 	"image/color"
 	"math"
 	"math/rand"
+	"os"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -19,6 +21,22 @@ var (
 	clickedTileY int
 	houses       = make(map[string]struct{})
 )
+
+type savedTower struct {
+	X            float64
+	Y            float64
+	Damage       int
+	Range        float64
+	Rate         float64
+	AmmoCapacity int
+}
+
+type savedGame struct {
+	Gold     int
+	Wave     int
+	BaseHP   int
+	Towers   []savedTower
+	Settings Settings
 
 // Game represents the game state and implements ebiten.Game interface.
 type Game struct {
@@ -57,6 +75,13 @@ type Game struct {
 	lastUpdate time.Time
 
 	typing TypingStats
+
+	pauseCursor    int
+	settingsOpen   bool
+	settingsCursor int
+
+	sound    *SoundManager
+	settings Settings
 }
 
 // NewGame creates a new instance of the Game.
@@ -84,7 +109,6 @@ func NewGameWithConfig(cfg Config) *Game {
 		spawnTicker:   0,
 		mobsToSpawn:   cfg.MobsPerWave,
 		cfg:           &cfg,
-
 		mobs:         make([]*Mob, 0),
 		projectiles:  make([]*Projectile, 0),
 		letterPool:   make([]rune, 0),
@@ -95,6 +119,8 @@ func NewGameWithConfig(cfg Config) *Game {
 		typing:       NewTypingStats(),
 		cursorX:      2,
 		cursorY:      16,
+		sound:       NewSoundManager(),
+		settings:    DefaultSettings(),
 	}
 
 	tx, ty := tilePosition(1, 16)
@@ -163,8 +189,20 @@ func (g *Game) Update() error {
 		}
 	}
 
-	if g.input.Space() {
+	if g.input.Save() {
+		g.saveGame("savegame.json")
+	}
+	if g.input.Load() {
+		if err := g.loadGame("savegame.json"); err != nil {
+			fmt.Println("load game:", err)
+		}
+	}
+
+	if g.input.Space() && !g.settingsOpen {
 		g.paused = !g.paused
+		if g.paused {
+			g.pauseCursor = 0
+		}
 	}
 
 	if g.input.Quit() {
@@ -172,6 +210,46 @@ func (g *Game) Update() error {
 	}
 
 	if g.paused {
+		if g.settingsOpen {
+			if g.input.Down() {
+				g.settingsCursor = (g.settingsCursor + 1) % 2
+			}
+			if g.input.Up() {
+				g.settingsCursor = (g.settingsCursor - 1 + 2) % 2
+			}
+			if g.input.Enter() {
+				switch g.settingsCursor {
+				case 0:
+					g.settings.Mute = !g.settings.Mute
+					if g.sound != nil {
+						g.sound.ToggleMute()
+					}
+				case 1:
+					g.settingsOpen = false
+				}
+			}
+		} else {
+			const optionsCount = 4
+			if g.input.Down() {
+				g.pauseCursor = (g.pauseCursor + 1) % optionsCount
+			}
+			if g.input.Up() {
+				g.pauseCursor = (g.pauseCursor - 1 + optionsCount) % optionsCount
+			}
+			if g.input.Enter() {
+				switch g.pauseCursor {
+				case 0:
+					g.paused = false
+				case 1:
+					g.Restart()
+				case 2:
+					return ebiten.Termination
+				case 3:
+					g.settingsOpen = true
+					g.settingsCursor = 0
+				}
+			}
+		}
 		return nil
 	}
 
@@ -381,10 +459,36 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 
 	if g.paused {
-		opts := &text.DrawOptions{}
-		opts.GeoM.Translate(900, 520)
-		opts.ColorScale.ScaleWithColor(color.White)
-		text.Draw(g.screen, "-- PAUSED --", BoldFont, opts)
+		var lines []string
+		if g.settingsOpen {
+			lines = append(lines, "-- SETTINGS --")
+			mute := "Off"
+			if g.settings.Mute {
+				mute = "On"
+			}
+			options := []string{
+				"Toggle Mute: " + mute,
+				"Back",
+			}
+			for i, opt := range options {
+				prefix := "  "
+				if i == g.settingsCursor {
+					prefix = "> "
+				}
+				lines = append(lines, prefix+opt)
+			}
+		} else {
+			lines = append(lines, "-- PAUSED --")
+			opts := []string{"Resume", "Restart", "Quit", "Settings"}
+			for i, opt := range opts {
+				prefix := "  "
+				if i == g.pauseCursor {
+					prefix = "> "
+				}
+				lines = append(lines, prefix+opt)
+			}
+		}
+		drawMenu(g.screen, lines, 860, 480)
 		g.renderFrame(screen)
 		return
 	}
@@ -696,4 +800,65 @@ func (g *Game) reloadConfig(path string) error {
 	}
 	g.mobsToSpawn = base + cfg.MobsPerWaveInc*(g.currentWave-1)
 	return nil
+}
+
+func (g *Game) saveGame(path string) {
+	sg := savedGame{
+		Gold:     g.gold,
+		Wave:     g.currentWave,
+		BaseHP:   g.base.Health(),
+		Settings: g.settings,
+	}
+	for _, t := range g.towers {
+		sg.Towers = append(sg.Towers, savedTower{
+			X:            t.pos.X,
+			Y:            t.pos.Y,
+			Damage:       t.damage,
+			Range:        t.rangeDst,
+			Rate:         t.rate,
+			AmmoCapacity: t.ammoCapacity,
+		})
+	}
+	b, err := json.MarshalIndent(sg, "", "  ")
+	if err == nil {
+		_ = os.WriteFile(path, b, 0644)
+	}
+}
+
+func (g *Game) loadGame(path string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	var sg savedGame
+	if err := json.Unmarshal(data, &sg); err != nil {
+		return err
+	}
+	*g = *NewGameWithConfig(*g.cfg)
+	g.gold = sg.Gold
+	g.currentWave = sg.Wave
+	g.base.health = sg.BaseHP
+	g.settings = sg.Settings
+	if g.sound != nil && g.settings.Mute {
+		g.sound.mute = true
+	}
+	g.towers = nil
+	for _, st := range sg.Towers {
+		t := NewTower(g, st.X, st.Y)
+		t.damage = st.Damage
+		t.rangeDst = st.Range
+		t.rangeImg = generateRangeImage(t.rangeDst)
+		t.rate = st.Rate
+		t.ammoCapacity = st.AmmoCapacity
+		t.ammoQueue = make([]bool, t.ammoCapacity)
+		for i := range t.ammoQueue {
+			t.ammoQueue[i] = true
+		}
+		g.towers = append(g.towers, t)
+	}
+	return nil
+}
+
+func (g *Game) Restart() {
+	*g = *NewGameWithConfig(*g.cfg)
 }
