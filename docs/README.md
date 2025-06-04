@@ -72,3 +72,15 @@ Code should be formatted with `gofmt` and accompanied by unit tests when possibl
 ## Automation
 
 Custom prompts in `.github/prompts` and guidelines in `.github/instructions` are used with GitHub Copilot to streamline development and reduce bugs.
+
+## Balance Editor
+
+A Python helper script located at `tools/balance_editor.py` can visualize expected game progression and tweak `v1/config.json`. The script simulates up to 100 waves using the formulas described in `docs/BALANCING.md` and plots mob health, time to kill, and survival time.
+
+Run it with optional overrides:
+
+```bash
+python3 tools/balance_editor.py --set tower_damage=15 --save
+```
+
+`matplotlib` is required for plotting.
