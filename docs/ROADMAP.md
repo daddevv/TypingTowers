@@ -1,46 +1,118 @@
 # Project Roadmap
 
-## Concept
+## Vision
 
-A keyboard-only base defense game where players strategically place towers to defend against waves of enemies.
+A keyboard-focused tower defense game that combines strategic placement with typing mechanics, where accuracy and speed directly impact defensive capabilities.
 
-## Features
+## Current State (Implemented)
 
-- **Keyboard Navigation**: All game controls are accessible via keyboard shortcuts.
-- **Letter Mobs**: Enemies are represented by letters, each with unique properties.
-- **Progression**: Players can unlock new mobs by spending points earned from defeating enemies.
-- **Technology Tree**: Players can unlock upgrades to towers and abilities.
+### Core Systems ✅
 
-## Core Gameplay Loop
+- **Wave-based enemy spawning** with configurable intervals and scaling
+- **Auto-targeting tower system** that fires at closest enemies
+- **Manual reload mechanics** requiring 'f' or 'j' key presses
+- **Jamming system** that penalizes incorrect keystrokes
+- **Projectile intercept calculations** for accurate targeting of moving enemies
+- **Base health and game over conditions**
+- **Real-time configuration reloading** for gameplay tuning
 
-1. Waves spawn enemies marching toward the tower.
-2. Towers auto-fire, but they must be reloaded manually by typing sequences.
-3. Typing accuracy and speed affect reload time, score multiplier, and special effects.
-4. Letters are unlocked over time, slowly expanding the typing difficulty.
+### Technical Foundation ✅
 
-## Main Objectives
+- Entity system with BaseEntity for shared behavior
+- Input handling abstraction with InputHandler interface
+- Modular game state management
+- Unit test framework with example tests
+- Asset loading and rendering pipeline
 
-- Survive waves as long as possible.
-- Achieve a high score through efficient typing.
-- Progress through the tech tree to gain tower and player enhancements.
+## Phase 1: Enhanced Typing Mechanics 🎯
 
-## Typing System Design
+### Letter-Based Targeting
 
-- **Initial Set**: Only home row letters (`a`, `s`, `d`, `f`, `j`, `k`, `l`, `;`) are available.
-- **Unlock Logic**: Certain upgrades (e.g., *Laser Beam*) require letters like `z` or `q` to be unlocked.
-- **Typing Tasks**:
-  - Reload tower: `r e l o a d`
-  - Activate power: `s h o c k`
-  - Repair tower: `f i x`
-- **Penalty**: Mistyped letters cause delays or missed reloads.
+- **Enemy Letters**: Each enemy displays a letter that must be typed to target it
+- **Selective Targeting**: Tower fires only when the correct enemy letter is typed
+- **Letter Pools**: Start with home row keys, expand as players progress
 
-## Tech Tree Mechanics
+### Advanced Reload System
 
-Branches unlock based on letter access. For example, advanced weapons become available once the player can type the required letters.
+- **Word-Based Reloading**: Replace single letters with short words (e.g., "reload", "fire")
+- **Typing Speed Bonuses**: Faster typing reduces reload time
+- **Accuracy Penalties**: Mistakes increase reload time or reduce effectiveness
 
-## Additional Ideas
+## Phase 2: Strategic Depth 📈
 
-- Weather effects that alter projectile speed or visibility.
-- Escort missions where caravans must be protected as they cross the map.
-- Endless mode with scaling difficulty and online leaderboards.
-- Support for custom key layouts and alternate keyboard languages.
+### Multiple Tower Types
+
+- **Sniper Tower**: High damage, slow fire rate, requires precise typing
+- **Rapid Fire Tower**: Low damage, fast fire rate, simple key sequences
+- **Splash Tower**: Area damage, requires complex typing patterns
+
+### Resource Management
+
+- **Gold Economy**: Expand current gold system for meaningful upgrades
+- **Tower Placement**: Allow multiple towers with strategic positioning
+- **Upgrade Paths**: Damage, range, ammunition capacity, reload speed
+
+## Phase 3: Progression Systems 🏆
+
+### Technology Tree
+
+- **Letter Unlocks**: New letters unlock new tower types and abilities
+- **Typing Challenges**: Specific key combinations unlock advanced features
+- **Skill Gates**: Advanced content requires demonstrated typing proficiency
+
+### Scoring and Metrics
+
+- **Typing Statistics**: Words per minute, accuracy percentage, error tracking
+- **Performance Bonuses**: High accuracy multiplies score and gold rewards
+- **Leaderboards**: Track best wave survival and typing performance
+
+## Phase 4: Content Expansion 🌟
+
+### Game Modes
+
+- **Endless Mode**: Infinite waves with exponential difficulty scaling
+- **Challenge Modes**: Specific typing constraints or enemy patterns
+- **Tutorial Mode**: Guided introduction to mechanics and typing skills
+
+### Quality of Life
+
+- **Custom Key Bindings**: Support for different keyboard layouts
+- **Accessibility Options**: Colorblind support, font size options
+- **Save System**: Persistent progress and unlocks
+
+## Technical Priorities
+
+### Immediate (Next 2-4 weeks)
+
+- Implement letter-based enemy targeting
+- Add multiple tower placement system
+- Expand shop functionality with real upgrades
+- Create comprehensive unit test coverage
+
+### Medium Term (1-3 months)
+
+- Design and implement technology tree
+- Add typing performance metrics
+- Create multiple enemy and tower types
+- Implement save/load system
+
+### Long Term (3+ months)
+
+- Add multiplayer/competitive modes
+- Create level editor for custom scenarios
+- Implement mod support for community content
+- Port to additional platforms
+
+## Success Metrics
+
+- **Engagement**: Players complete multiple waves consistently
+- **Skill Development**: Observable improvement in typing speed/accuracy
+- **Replayability**: Multiple viable strategies and tower combinations
+- **Community**: Active sharing of strategies and custom content
+
+## Design Philosophy
+
+- **Keyboard First**: All interactions should feel natural on keyboard
+- **Progressive Difficulty**: Gentle introduction with meaningful skill gates
+- **Immediate Feedback**: Clear visual and audio cues for all actions
+- **Meaningful Choice**: Every upgrade and strategy should feel impactful
