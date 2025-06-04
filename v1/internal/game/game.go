@@ -10,6 +10,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 var (
@@ -52,6 +53,9 @@ type Game struct {
 
 	shopOpen bool
 
+	selectedTower int
+	shopCursor    int
+
 	cfg *Config
 
 	currentWave   int
@@ -61,6 +65,9 @@ type Game struct {
 
 	letterPool  []rune
 	unlockStage int
+
+	cursorX int
+	cursorY int
 
 	lastUpdate time.Time
 
@@ -85,6 +92,8 @@ func NewGameWithConfig(cfg Config) *Game {
 		paused:        false,
 		gold:          0,
 		shopOpen:      false,
+		selectedTower: 0,
+		shopCursor:    0,
 		currentWave:   1,
 		spawnInterval: cfg.SpawnInterval, // already in seconds
 		spawnTicker:   0,
@@ -96,6 +105,8 @@ func NewGameWithConfig(cfg Config) *Game {
 		letterPool:  make([]rune, 0),
 		unlockStage: 0,
 		typing:      NewTypingStats(),
+		cursorX:     2,
+		cursorY:     16,
 	}
 
 	tx, ty := tilePosition(1, 16)
@@ -126,7 +137,36 @@ func (g *Game) Update() error {
 	}
 	g.lastUpdate = now
 	g.input.Update()
-	g.input.Update()
+
+	if !g.shopOpen {
+		if g.input.Left() {
+			g.cursorX--
+		}
+		if g.input.Right() {
+			g.cursorX++
+		}
+		if g.input.Up() {
+			g.cursorY--
+		}
+		if g.input.Down() {
+			g.cursorY++
+		}
+		if g.cursorX < 0 {
+			g.cursorX = 0
+		}
+		if g.cursorX > 59 {
+			g.cursorX = 59
+		}
+		if g.cursorY < 0 {
+			g.cursorY = 0
+		}
+		if g.cursorY > 33 {
+			g.cursorY = 33
+		}
+		if g.input.Build() {
+			g.buildTowerAtCursor()
+		}
+	}
 
 	if g.input.Reload() {
 		if err := g.reloadConfig(ConfigFile); err != nil {
@@ -150,41 +190,102 @@ func (g *Game) Update() error {
 		return nil
 	}
 
+	if len(g.towers) > 0 {
+		if g.input.Down() {
+			g.selectedTower = (g.selectedTower + 1) % len(g.towers)
+		}
+		if g.input.Up() {
+			g.selectedTower = (g.selectedTower - 1 + len(g.towers)) % len(g.towers)
+		}
+	}
+
 	if g.shopOpen {
 		// Upgrade options and costs
 		const (
-			upgradeDamageCost   = 5
-			upgradeRangeCost    = 5
-			upgradeFireRateCost = 5
-			upgradeAmmoCost     = 10
+			upgradeDamageCost    = 5
+			upgradeRangeCost     = 5
+			upgradeFireRateCost  = 5
+			upgradeAmmoCost      = 10
+			upgradeForesightCost = 5
+			optionsCount         = 6
 		)
+
+		if g.input.Down() {
+			g.shopCursor = (g.shopCursor + 1) % optionsCount
+		}
+		if g.input.Up() {
+			g.shopCursor = (g.shopCursor - 1 + optionsCount) % optionsCount
+		}
+
 		if len(g.towers) > 0 {
-			tower := g.towers[0]
-			// Handle upgrade input - use inpututil.IsKeyJustPressed to prevent multiple purchases
-			if inpututil.IsKeyJustPressed(ebiten.Key1) && g.gold >= upgradeDamageCost {
-				g.gold -= upgradeDamageCost
-				tower.damage++
+			tower := g.towers[g.selectedTower]
+
+			purchase := func(opt int) bool {
+				switch opt {
+				case 0:
+					if g.gold >= upgradeDamageCost {
+						g.gold -= upgradeDamageCost
+						tower.damage++
+						return true
+					}
+				case 1:
+					if g.gold >= upgradeRangeCost {
+						g.gold -= upgradeRangeCost
+						tower.rangeDst += 50
+						tower.rangeImg = generateRangeImage(tower.rangeDst)
+						return true
+					}
+				case 2:
+					if g.gold >= upgradeFireRateCost {
+						g.gold -= upgradeFireRateCost
+						if tower.rate > 10 {
+							tower.rate -= 10
+						}
+						return true
+					}
+				case 3:
+					if g.gold >= upgradeAmmoCost {
+						g.gold -= upgradeAmmoCost
+						tower.UpgradeAmmoCapacity(2)
+						return true
+					}
+				case 4:
+					if g.gold >= upgradeForesightCost {
+						g.gold -= upgradeForesightCost
+						tower.UpgradeForesight(2)
+						return true
+					}
+				}
+				return false
 			}
-			if inpututil.IsKeyJustPressed(ebiten.Key2) && g.gold >= upgradeRangeCost {
-				g.gold -= upgradeRangeCost
-				tower.rangeDst += 50
-				tower.rangeImg = generateRangeImage(tower.rangeDst)
+
+			// Direct number keys
+			if inpututil.IsKeyJustPressed(ebiten.Key1) {
+				purchase(0)
 			}
-			if inpututil.IsKeyJustPressed(ebiten.Key3) && g.gold >= upgradeFireRateCost {
-				g.gold -= upgradeFireRateCost
-				if tower.rate > 10 {
-					tower.rate -= 10 // Lower rate means faster fire
+			if inpututil.IsKeyJustPressed(ebiten.Key2) {
+				purchase(1)
+			}
+			if inpututil.IsKeyJustPressed(ebiten.Key3) {
+				purchase(2)
+			}
+			if inpututil.IsKeyJustPressed(ebiten.Key4) {
+				purchase(3)
+			}
+			if inpututil.IsKeyJustPressed(ebiten.Key5) {
+				purchase(4)
+			}
+
+			if g.input.Enter() {
+				if g.shopCursor < 5 {
+					purchase(g.shopCursor)
+				} else {
+					g.shopOpen = false
+					g.shopCursor = 0
+					g.currentWave++
+					g.startWave()
 				}
 			}
-			if inpututil.IsKeyJustPressed(ebiten.Key4) && g.gold >= upgradeAmmoCost {
-				g.gold -= upgradeAmmoCost
-				tower.UpgradeAmmoCapacity(2) // Increase by 2 ammo slots
-			}
-		}
-		if g.input.Enter() {
-			g.shopOpen = false
-			g.currentWave++
-			g.startWave()
 		}
 		return nil
 	}
@@ -265,14 +366,29 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	g.base.Draw(g.screen)
 
-	for _, t := range g.towers {
+	for i, t := range g.towers {
 		t.Draw(g.screen)
+		if i == g.selectedTower {
+			bx, by, bw, bh := t.Bounds()
+			vector.StrokeRect(g.screen, float32(bx-2), float32(by-2), float32(bw+4), float32(bh+4), 2, color.RGBA{255, 0, 0, 200}, false)
+		}
 	}
 	for _, p := range g.projectiles {
 		p.Draw(g.screen)
 	}
 	for _, m := range g.mobs {
 		m.Draw(g.screen)
+	}
+
+	if !g.shopOpen {
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(float64(g.cursorX*TileSize), float64(TopMargin+g.cursorY*TileSize))
+		if g.validTowerPosition(g.cursorX, g.cursorY) {
+			g.screen.DrawImage(ImgHighlightTile, op)
+		} else {
+			// draw red rectangle for invalid position
+			vector.DrawFilledRect(g.screen, float32(g.cursorX*TileSize), float32(TopMargin+g.cursorY*TileSize), float32(TileSize), float32(TileSize), color.RGBA{255, 0, 0, 100}, false)
+		}
 	}
 
 	if g.paused {
@@ -334,6 +450,46 @@ func (g *Game) spawnMob() {
 	}
 	m := NewMob(float64(x+16), float64(y+16), g.base, hp, speed)
 	g.mobs = append(g.mobs, m)
+}
+
+func (g *Game) validTowerPosition(tileX, tileY int) bool {
+	if tileX < 0 || tileX > 59 || tileY < 0 || tileY > 33 {
+		return false
+	}
+	tx, ty := tilePosition(tileX, tileY)
+	px := float64(tx + TileSize/2)
+	py := float64(ty + TileSize/2)
+	bx, by, bw, bh := g.base.Bounds()
+	if int(px) >= bx && int(px) <= bx+bw && int(py) >= by && int(py) <= by+bh {
+		return false
+	}
+	for _, t := range g.towers {
+		x, y, w, h := t.Bounds()
+		if int(px) >= x && int(px) <= x+w && int(py) >= y && int(py) <= y+h {
+			return false
+		}
+	}
+	return true
+}
+
+func (g *Game) buildTowerAtCursor() {
+	if g.cfg == nil {
+		return
+	}
+	cost := g.cfg.TowerConstructionCost
+	if cost == 0 {
+		cost = DefaultConfig.TowerConstructionCost
+	}
+	if g.gold < cost {
+		return
+	}
+	if !g.validTowerPosition(g.cursorX, g.cursorY) {
+		return
+	}
+	tx, ty := tilePosition(g.cursorX, g.cursorY)
+	t := NewTower(g, float64(tx+TileSize/2), float64(ty+TileSize/2))
+	g.towers = append(g.towers, t)
+	g.gold -= cost
 }
 
 // startWave initializes spawn counters for the next wave.

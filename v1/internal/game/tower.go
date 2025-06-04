@@ -27,6 +27,7 @@ type Tower struct {
 	bounce       int
 	jammed       bool
 	jammedLetter rune // preserve letter when jammed
+	foresight    int  // number of reload letters to preview
 }
 
 // NewTower creates a new Tower at the given position.
@@ -50,6 +51,7 @@ func NewTower(g *Game, x, y float64) *Tower {
 		projectiles:  DefaultConfig.TowerProjectiles,
 		bounce:       DefaultConfig.TowerBounce,
 		jammed:       false,
+		foresight:    5,
 	}
 
 	// Initialize ammo queue with full capacity
@@ -308,9 +310,8 @@ func (t *Tower) GetReloadStatus() (bool, rune, []rune, float64, bool) {
 		currentLetter = t.reloadQueue[0]
 	}
 
-	// Return up to 5 letters for preview (future "Foresight" upgrade)
-	previewQueue := make([]rune, 0, 5)
-	for i := 0; i < len(t.reloadQueue) && i < 5; i++ {
+	previewQueue := make([]rune, 0, t.foresight)
+	for i := 0; i < len(t.reloadQueue) && i < t.foresight; i++ {
 		previewQueue = append(previewQueue, t.reloadQueue[i])
 	}
 
@@ -333,6 +334,17 @@ func (t *Tower) UpgradeAmmoCapacity(increase int) {
 		newAmmoQueue[i] = true // New slots start loaded
 	}
 	t.ammoQueue = newAmmoQueue
+}
+
+// UpgradeForesight increases how many reload letters are previewed
+func (t *Tower) UpgradeForesight(increase int) {
+	if increase <= 0 {
+		return
+	}
+	t.foresight += increase
+	if t.foresight > 10 {
+		t.foresight = 10
+	}
 }
 
 // Draw renders the tower and its range indicator.

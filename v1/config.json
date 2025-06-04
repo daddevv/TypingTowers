@@ -33,6 +33,7 @@
   "tower_ammo_capacity": 5,
   "tower_projectiles_per_shot": 1,
   "tower_bounce_count": 0,
+  "tower_construction_cost": 20,
 
   "projectile_speed": 3.05,
 
