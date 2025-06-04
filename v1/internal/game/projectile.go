@@ -4,8 +4,8 @@ import "math"
 
 // calcIntercept returns a normalized direction vector from the shooter position
 // to where the projectile should aim in order to intercept the moving target.
-func calcIntercept(px, py float64, target *Mob, speed float64) (float64, float64) {
-	tx, ty := target.pos.X, target.pos.Y
+func calcIntercept(px, py float64, target Enemy, speed float64) (float64, float64) {
+	tx, ty := target.Position()
 	tvx, tvy := target.Velocity()
 	rx := tx - px
 	ry := ty - py
@@ -47,7 +47,7 @@ type Projectile struct {
 	BaseEntity
 	vx, vy float64
 	speed  float64
-	target *Mob
+	target Enemy
 	alive  bool
 
 	damage int
@@ -56,7 +56,7 @@ type Projectile struct {
 }
 
 // NewProjectile creates a new projectile aimed at the target.
-func NewProjectile(g *Game, x, y float64, target *Mob, dmg int, speed float64, bounce int) *Projectile {
+func NewProjectile(g *Game, x, y float64, target Enemy, dmg int, speed float64, bounce int) *Projectile {
 	vx, vy := calcIntercept(x, y, target, speed)
 	w, h := ImgProjectile.Bounds().Dx(), ImgProjectile.Bounds().Dy()
 	return &Projectile{
@@ -83,25 +83,23 @@ func NewProjectile(g *Game, x, y float64, target *Mob, dmg int, speed float64, b
 func (p *Projectile) Update(dt float64) {
 	p.pos.X += p.vx * p.speed * dt
 	p.pos.Y += p.vy * p.speed * dt
-	if p.target != nil && p.target.alive {
-		dx := p.target.pos.X - p.pos.X
-		dy := p.target.pos.Y - p.pos.Y
+	if p.target != nil && p.target.Alive() {
+		tx, ty := p.target.Position()
+		dx := tx - p.pos.X
+		dy := ty - p.pos.Y
 		if math.Hypot(dx, dy) < 16 {
-			// Only process hit if target is still alive
-			if p.target.alive {
-				p.target.health -= p.damage
-				if p.target.health <= 0 {
-					p.target.alive = false
-				}
+			if p.target.Alive() {
+				p.target.Damage(p.damage)
 				if p.bounce > 0 && p.game != nil {
 					p.bounce--
 					// pick new target: closest alive mob
-					var next *Mob
+					var next Enemy
 					dist := math.MaxFloat64
 					for _, m := range p.game.mobs {
-						if m.alive && m != p.target {
-							dx := m.pos.X - p.pos.X
-							dy := m.pos.Y - p.pos.Y
+						if m.Alive() && m != p.target {
+							mx, my := m.Position()
+							dx := mx - p.pos.X
+							dy := my - p.pos.Y
 							d := math.Hypot(dx, dy)
 							if d < dist {
 								dist = d

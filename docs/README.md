@@ -77,6 +77,7 @@ Code should be formatted with `gofmt` and accompanied by unit tests when possibl
 - Tower auto-targeting and firing system
 - Manual reload mechanics with typing prompts
 - Wave-based enemy spawning with scaling difficulty
+- Varied enemy types including armored, fast and boss enemies
 - Base health system and game over conditions
 - Real-time configuration reloading
 - Projectile intercept calculations for moving targets

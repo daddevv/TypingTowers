@@ -44,7 +44,7 @@ type Game struct {
 	screen      *ebiten.Image
 	input       InputHandler
 	towers      []*Tower
-	mobs        []*Mob
+	mobs        []Enemy
 	projectiles []*Projectile
 	base        *Base
 	hud         *HUD
@@ -110,18 +110,18 @@ func NewGameWithConfig(cfg Config) *Game {
 		spawnTicker:   0,
 		mobsToSpawn:   cfg.MobsPerWave,
 		cfg:           &cfg,
-		mobs:         make([]*Mob, 0),
-		projectiles:  make([]*Projectile, 0),
-		letterPool:   make([]rune, 0),
-		unlockStage:  0,
-		techTree:     DefaultTechTree(),
-		achievements: make([]string, 0),
-		towerMods:    TowerModifiers{DamageMult: 1, RangeMult: 1, FireRateMult: 1},
-		typing:       NewTypingStats(),
-		cursorX:      2,
-		cursorY:      16,
-		sound:       NewSoundManager(),
-		settings:    DefaultSettings(),
+		mobs:          make([]Enemy, 0),
+		projectiles:   make([]*Projectile, 0),
+		letterPool:    make([]rune, 0),
+		unlockStage:   0,
+		techTree:      DefaultTechTree(),
+		achievements:  make([]string, 0),
+		towerMods:     TowerModifiers{DamageMult: 1, RangeMult: 1, FireRateMult: 1},
+		typing:        NewTypingStats(),
+		cursorX:       2,
+		cursorY:       16,
+		sound:         NewSoundManager(),
+		settings:      DefaultSettings(),
 	}
 
 	tx, ty := tilePosition(1, 16)
@@ -389,13 +389,15 @@ func (g *Game) Update() error {
 		m := g.mobs[i]
 		m.Update(dt)
 		bx, by, bw, bh := g.base.Bounds()
-		dx := m.pos.X - float64(bx+bw/2)
-		dy := m.pos.Y - float64(by+bh/2)
-		if math.Hypot(dx, dy) < float64(m.width/2+bw/2) {
+		mx, my := m.Position()
+		_, _, mw, _ := m.Bounds()
+		dx := mx - float64(bx+bw/2)
+		dy := my - float64(by+bh/2)
+		if math.Hypot(dx, dy) < float64(mw/2+bw/2) {
 			g.base.Damage(1)
-			m.alive = false
+			m.Damage(mw) // force kill
 		}
-		if !m.alive {
+		if !m.Alive() {
 			g.mobs = append(g.mobs[:i], g.mobs[i+1:]...)
 			g.gold++
 			continue
@@ -542,7 +544,19 @@ func (g *Game) spawnMob() {
 	if speed == 0 {
 		speed = DefaultConfig.MobSpeed
 	}
-	m := NewMob(float64(x+16), float64(y+16), g.base, hp, speed)
+	var m Enemy
+	if g.currentWave%5 == 0 && g.mobsToSpawn == 1 {
+		m = NewBossMob(float64(x+16), float64(y+16), g.base, hp*5, speed*0.5)
+	} else {
+		switch rand.Intn(3) {
+		case 0:
+			m = NewMob(float64(x+16), float64(y+16), g.base, hp, speed)
+		case 1:
+			m = NewArmoredMob(float64(x+16), float64(y+16), g.base, hp, 2, speed)
+		default:
+			m = NewFastMob(float64(x+16), float64(y+16), g.base, hp, speed, 2)
+		}
+	}
 	g.mobs = append(g.mobs, m)
 }
 
