@@ -2,6 +2,15 @@
 
 TypingTowers is a keyboard-controlled tower defense game built with [Ebiten](https://ebiten.org/). Players defend their base against waves of enemies using towers that require manual reloading through typing mechanics.
 
+## Keyboard-First Navigation (Vim/Qutebrowser Style)
+
+All UI and gameplay interactions are designed for Vim/Qutebrowser-style keyboard navigation. This means:
+
+- **No mouse required**: All actions (tower placement, selection, upgrades, shop navigation) are performed via keyboard.
+- **Modal navigation**: The game uses modes (normal/insert/command) similar to Vim for different contexts (e.g., moving selection, typing, issuing commands).
+- **Navigation keys**: Use `h/j/k/l` to move selection, `gg/G` to jump, `/` to search, and other Vim/Qutebrowser conventions.
+- **Action hints**: UI overlays display available keyboard actions and current mode.
+
 ## Gameplay
 
 - **Wave Defense**: Enemies spawn from the right side of the screen and move toward your base on the left
@@ -19,12 +28,16 @@ TypingTowers is a keyboard-controlled tower defense game built with [Ebiten](htt
 
 ## Controls
 
+- **h/j/k/l**: Move selection cursor (towers, shop, menus)
+- **Enter**: Confirm selection or action
 - **Space**: Pause/unpause the game
 - **F5**: Reload configuration file
-- **Escape**: Quit game
-- **Enter**: Proceed to next wave (when in shop mode)
+- **Escape**: Quit game or exit to previous mode
 - **F/J**: Reload ammunition when prompted
 - **Backspace**: Clear jammed tower
+- **1-5**: Purchase upgrades in shop (when available)
+- **: (colon)**: Enter command mode (for advanced actions, e.g., `:quit`, `:save`)
+- **/ (slash)**: Search/select towers or upgrades
 
 ## Structure
 
@@ -57,7 +70,7 @@ The game loads settings from a configuration file that can be reloaded during ga
 
 ## Contributing
 
-Code should be formatted with `gofmt` and accompanied by unit tests when possible. See `.github/instructions` for detailed development guidelines.
+Code should be formatted with `gofmt` and accompanied by unit tests when possible. See `.github/instructions` for detailed development guidelines. All new UI/UX features must support Vim/Qutebrowser-style keyboard navigation.
 
 ## Current Features
 
@@ -69,6 +82,7 @@ Code should be formatted with `gofmt` and accompanied by unit tests when possibl
 - Projectile intercept calculations for moving targets
 - Bouncing projectile mechanics
 - Upgrade purchasing system using gold between waves (damage, range, fire rate upgrades implemented and tested)
+- **Keyboard-driven navigation for all menus and gameplay**
 
 ## Automation
 

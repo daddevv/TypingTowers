@@ -2,7 +2,8 @@
 
 ## Vision
 
-A keyboard-focused tower defense game that combines strategic placement with typing mechanics, where accuracy and speed directly impact defensive capabilities.
+A keyboard-focused tower defense game that combines strategic placement with typing mechanics, where accuracy and speed directly impact defensive capabilities.  
+**All UI/UX is designed for Vim/Qutebrowser-style keyboard navigation (modal, keyboard-driven, no mouse required).**
 
 ## Current State (Implemented)
 
@@ -49,7 +50,7 @@ A keyboard-focused tower defense game that combines strategic placement with typ
 ### Resource Management
 
 - **Gold Economy**: Expand current gold system for meaningful upgrades
-- **Tower Placement**: Allow multiple towers with strategic positioning
+- **Tower Placement**: Allow multiple towers with strategic positioning (keyboard-driven, Vim/Qutebrowser navigation)
 - **Upgrade Paths**: Damage, range, ammunition capacity, reload speed
 
 ## Phase 3: Progression Systems 🏆
@@ -85,8 +86,8 @@ A keyboard-focused tower defense game that combines strategic placement with typ
 ### Immediate (Next 2-4 weeks)
 
 - Implement letter-based enemy targeting
-- Add multiple tower placement system
-- Expand shop functionality with real upgrades
+- Add multiple tower placement system (keyboard-driven, Vim/Qutebrowser navigation)
+- Expand shop functionality with real upgrades (keyboard-driven)
 - Create comprehensive unit test coverage
 
 ### Medium Term (1-3 months)
@@ -112,7 +113,7 @@ A keyboard-focused tower defense game that combines strategic placement with typ
 
 ## Design Philosophy
 
-- **Keyboard First**: All interactions should feel natural on keyboard
+- **Keyboard First**: All interactions should feel natural on keyboard, using Vim/Qutebrowser navigation paradigms
 - **Progressive Difficulty**: Gentle introduction with meaningful skill gates
 - **Immediate Feedback**: Clear visual and audio cues for all actions
 - **Meaningful Choice**: Every upgrade and strategy should feel impactful

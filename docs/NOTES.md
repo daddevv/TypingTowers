@@ -1,22 +1,36 @@
 # Game Notes
 
+## Vim/Qutebrowser-Style Navigation
+
+All user interface and gameplay controls are designed for Vim/Qutebrowser-style keyboard navigation. This means:
+
+- **No mouse required**: All actions are performed via keyboard.
+- **Modal navigation**: The game uses modes (normal/insert/command) for different contexts.
+- **Navigation keys**: Use `h/j/k/l` to move selection, `gg/G` to jump, `/` to search, and other Vim/Qutebrowser conventions.
+- **Action hints**: UI overlays display available keyboard actions and current mode.
+- **All new features must be accessible and testable via keyboard navigation only.**
+
 ## Current Implementation
 
 ### Controls
 
+- **h/j/k/l**: Move selection cursor (towers, shop, menus)
 - **Space**: Pause/unpause game
 - **F5**: Reload configuration file  
-- **Escape**: Quit game
-- **Enter**: Continue to next wave (shop mode)
+- **Escape**: Quit game or exit to previous mode
+- **Enter**: Continue to next wave (shop mode) or confirm selection
 - **F** or **J**: Reload ammunition when prompted
 - **Backspace**: Clear jammed tower
+- **1-5**: Purchase upgrades in shop (when available)
+- **: (colon)**: Enter command mode (for advanced actions)
+- **/ (slash)**: Search/select towers or upgrades
 
 ### Game Flow
 
 1. **Wave Phase**: Enemies spawn from the right and move toward the base
 2. **Auto-Combat**: Tower automatically targets and fires at closest enemy in range
 3. **Reload Phase**: When ammo is low, player must type prompted letters to reload
-4. **Shop Phase**: Between waves, player can proceed to next wave
+4. **Shop Phase**: Between waves, player can proceed to next wave or purchase upgrades using keyboard navigation
 
 ### Tower Mechanics
 
@@ -50,16 +64,4 @@ The game supports real-time configuration changes through:
 
 ## Future Gameplay Ideas
 
-### Planned Features
-
-- **Letter-Based Enemies**: Enemies display letters that must be typed to target them
-- **Typing Challenges**: Complex reload sequences requiring full words
-- **Multiple Tower Types**: Different towers with unique ammunition and reload mechanics
-- **Tech Tree**: Unlock new towers and abilities through progression
-- **Accuracy Scoring**: Track typing accuracy and speed for performance bonuses
-
-### Shop System Framework
-
-- Basic shop phase exists between waves
-- Framework for purchasing upgrades with collected gold
-- Placeholder for tower and ability upgrades
+- All future UI/UX features must be designed for Vim/Qutebrowser-style keyboard navigation.
