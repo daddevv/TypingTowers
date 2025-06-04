@@ -28,6 +28,15 @@ type Tower struct {
 	jammed       bool
 	jammedLetter rune // preserve letter when jammed
 	foresight    int  // number of reload letters to preview
+
+	// Advanced reload mechanics
+	reloadSeq       []rune // optional fixed reload sequence
+	reloadIdx       int    // index into reloadSeq
+	challengeWord   []rune // special challenge sequence
+	challengeIdx    int
+	challengeActive bool
+	bonusTimer      float64
+	damageBonus     int
 }
 
 // NewTower creates a new Tower at the given position.
@@ -52,6 +61,7 @@ func NewTower(g *Game, x, y float64) *Tower {
 		bounce:       DefaultConfig.TowerBounce,
 		jammed:       false,
 		foresight:    5,
+		damageBonus:  0,
 	}
 
 	// Initialize ammo queue with full capacity
@@ -69,6 +79,11 @@ func NewTower(g *Game, x, y float64) *Tower {
 }
 
 func (t *Tower) randomReloadLetter() rune {
+	if len(t.reloadSeq) > 0 {
+		r := t.reloadSeq[t.reloadIdx%len(t.reloadSeq)]
+		t.reloadIdx++
+		return r
+	}
 	if t.game != nil {
 		return t.game.randomReloadLetter()
 	}
@@ -77,6 +92,22 @@ func (t *Tower) randomReloadLetter() rune {
 		return 'f'
 	}
 	return 'j'
+}
+
+// SetReloadSequence sets a fixed reload sequence for the tower.
+func (t *Tower) SetReloadSequence(seq []rune) {
+	t.reloadSeq = seq
+	t.reloadIdx = 0
+}
+
+// StartReloadChallenge activates a special reload challenge word.
+func (t *Tower) StartReloadChallenge(word string) {
+	if word == "" {
+		return
+	}
+	t.challengeWord = []rune(word)
+	t.challengeIdx = 0
+	t.challengeActive = true
 }
 
 // ApplyConfig updates tower parameters based on the provided config.
@@ -152,11 +183,22 @@ func (t *Tower) fillReloadQueue() {
 	for len(t.reloadQueue) < emptySlots {
 		t.reloadQueue = append(t.reloadQueue, t.randomReloadLetter())
 	}
+
+	if !t.challengeActive && len(t.reloadQueue) == 0 && rand.Float64() < 0.05 {
+		t.StartReloadChallenge("bonus")
+	}
 }
 
 // Update handles tower firing logic.
 func (t *Tower) Update(dt float64) {
 	typed := t.game.input.TypedChars()
+
+	if t.bonusTimer > 0 {
+		t.bonusTimer -= dt
+		if t.bonusTimer < 0 {
+			t.bonusTimer = 0
+		}
+	}
 
 	// Handle jam clearing
 	if t.jammed {
@@ -164,6 +206,30 @@ func (t *Tower) Update(dt float64) {
 			t.jammed = false
 		}
 		// Jammed towers can still fire, just can't reload
+	}
+
+	// Handle active challenge before reload typing
+	if t.challengeActive {
+		for _, r := range typed {
+			if unicode.ToLower(r) == unicode.ToLower(t.challengeWord[t.challengeIdx]) {
+				t.challengeIdx++
+				if t.challengeIdx >= len(t.challengeWord) {
+					t.challengeActive = false
+					t.challengeIdx = 0
+					t.bonusTimer = 5
+					if t.game != nil {
+						t.game.typing.Record(true)
+					}
+				}
+			} else {
+				t.challengeIdx = 0
+				if t.game != nil {
+					t.game.typing.Record(false)
+				}
+			}
+		}
+		// letters used for challenge shouldn't also be used for reload
+		return
 	}
 
 	// Handle firing cooldown first - this must decrement before anything else
@@ -279,7 +345,11 @@ func (t *Tower) Update(dt float64) {
 		}
 
 		if t.consumeAmmo() {
-			p := NewProjectile(t.game, t.pos.X, t.pos.Y, targetMob, t.damage, speed, t.bounce)
+			dmg := t.damage
+			if t.bonusTimer > 0 {
+				dmg += t.damageBonus
+			}
+			p := NewProjectile(t.game, t.pos.X, t.pos.Y, targetMob, dmg, speed, t.bounce)
 			t.game.projectiles = append(t.game.projectiles, p)
 			shotsFired++
 		}

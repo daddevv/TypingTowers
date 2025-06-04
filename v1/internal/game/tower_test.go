@@ -48,6 +48,20 @@ func TestTowerReloadQueue(t *testing.T) {
 	}
 }
 
+func TestTowerReloadSequence(t *testing.T) {
+	g := &Game{cfg: &DefaultConfig}
+	tower := NewTower(g, 0, 0)
+	tower.SetReloadSequence([]rune{"a", "b", "c"})
+	for i := 0; i < tower.ammoCapacity; i++ {
+		tower.consumeAmmo()
+	}
+	tower.Update(0.016)
+	_, letter, _, _, _ := tower.GetReloadStatus()
+	if letter != 'a' {
+		t.Errorf("expected first reload letter 'a' got %c", letter)
+	}
+}
+
 func TestTowerAmmoQueue(t *testing.T) {
 	g := &Game{cfg: &DefaultConfig}
 	tower := NewTower(g, 0, 0)
