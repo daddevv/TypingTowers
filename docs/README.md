@@ -20,11 +20,11 @@ All UI and gameplay interactions are designed for Vim/Qutebrowser-style keyboard
 - **Jamming System**: Typing incorrect letters jams the tower, requiring backspace to clear
 - **Progressive Difficulty**: Each wave spawns more enemies with increased health
 - **Upgrade Purchasing**: Spend gold earned from defeating enemies to upgrade tower damage, range, and fire rate between waves
-    - Press [1] to upgrade damage (+1)
-    - Press [2] to upgrade range (+50)
-    - Press [3] to upgrade fire rate (faster)
-    - Each upgrade costs 5 gold and applies to the selected tower
-    - Upgrades are available in the shop between waves and are covered by automated unit tests
+  - Press [1] to upgrade damage (+1)
+  - Press [2] to upgrade range (+50)
+  - Press [3] to upgrade fire rate (faster)
+  - Each upgrade costs 5 gold and applies to the selected tower
+  - Upgrades are available in the shop between waves and are covered by automated unit tests
 
 ## Controls
 

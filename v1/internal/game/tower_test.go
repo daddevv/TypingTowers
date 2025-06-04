@@ -51,7 +51,7 @@ func TestTowerReloadQueue(t *testing.T) {
 func TestTowerReloadSequence(t *testing.T) {
 	g := &Game{cfg: &DefaultConfig}
 	tower := NewTower(g, 0, 0)
-	tower.SetReloadSequence([]rune{"a", "b", "c"})
+	tower.SetReloadSequence([]rune{'a', 'b', 'c'})
 	for i := 0; i < tower.ammoCapacity; i++ {
 		tower.consumeAmmo()
 	}

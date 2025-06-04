@@ -165,6 +165,7 @@ func (t *Tower) ApplyModifiers(mod TowerModifiers) {
 		}
 		t.ammoQueue = newAmmo
 	}
+}
 
 // SetReloadSequence sets a fixed reload sequence for the tower.
 func (t *Tower) SetReloadSequence(seq []rune) {

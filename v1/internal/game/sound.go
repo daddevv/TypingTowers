@@ -30,7 +30,7 @@ func (s *SoundManager) PlayBeep() {
 		return
 	}
 	buf := generateSineWave(440, 0.1)
-	p := audio.NewPlayerFromBytes(s.ctx, buf)
+	p := (*audio.Context).NewPlayerFromBytes(s.ctx, buf)
 	p.Play()
 }
 

@@ -11,8 +11,6 @@ type InputHandler interface {
 	Reset()             // Reset resets the Input state to its default values
 	Backspace() bool    // Backspace reports if backspace was pressed since the last Update call
 	Space() bool        // Space reports if the space bar was pressed since the last Update call
-	Up() bool           // Up reports if the 'k' key or up arrow was pressed
-	Down() bool         // Down reports if the 'j' key or down arrow was pressed
 	Quit() bool         // Quit returns whether the game should quit
 	Reload() bool       // Reload returns whether config reload was requested
 	Enter() bool        // Enter reports if the enter key was pressed

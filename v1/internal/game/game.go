@@ -37,6 +37,7 @@ type savedGame struct {
 	BaseHP   int
 	Towers   []savedTower
 	Settings Settings
+}
 
 // Game represents the game state and implements ebiten.Game interface.
 type Game struct {
