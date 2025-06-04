@@ -1,55 +1,40 @@
-# Type Defense v1
+# Type Defense
 
-This directory contains the early Go prototype of **Type Defense**, a typing-themed defense game built with the [Ebiten](https://ebiten.org) game library.
+Type Defense is a keyboard-controlled tower defense game built with [Ebiten](https://ebiten.org/). Players type letters to shoot enemy mobs and manage upgrades through keyboard shortcuts.
 
-## Project Layout
+## Structure
 
-```
-v1/
-├── assets/        # Game images
-├── cmd/game/      # Entry point for the demo
-└── internal/game/ # Core game logic and utilities
-```
+- `v1/cmd/game`: Main entrypoint for running the game.
+- `v1/internal/game`: Core game logic, including entities, input handling, mobs, and towers.
+- `assets`: Graphic and audio resources.
+- `NOTES.md` and `ROADMAP.md`: Design notes and planned features.
 
-The source code is organized as a standard Go module.  `cmd/game` houses the executable that starts the game, while `internal/game` provides basic entities, tile helpers, input handling, and drawing routines.
+## Running
 
-## Building and Running
-
-Ensure Go 1.22 or newer is installed. To run the game:
+Ensure you have Go installed. From the `v1` directory run:
 
 ```bash
 cd v1
 go run ./cmd/game
 ```
 
-The window size defaults to `1920x1080` internally and scales down to `1920/8 x 1080/8` by default. Press <kbd>Esc</kbd> to exit.
+## Testing
 
-> **Note**: Running `go run` or `go test` may attempt to download the toolchain. In restricted environments this can fail (see error below). This does not affect the project files.
+Run Go tests from the `v1` directory:
 
-## Gameplay Prototype
-
-The prototype displays a 60x32 tile grid. Features include:
-
-- Pre-rendered background tiles from `assets/`.
-- Tile highlighting under the cursor, with click-and-drag support for rectangle, circle, or line shapes.
-- Right-click to place house tiles that persist on the grid.
-- Simple input handler that closes the window on <kbd>Esc</kbd>.
-- Towers can be reloaded at any time once their magazines aren't full. The HUD shows either `F` or `J` as the next letter to type.
-
-These mechanics are a foundation for a larger typing defense game. `NOTES.md` outlines future ideas such as shooting enemies with typed characters and purchasing upgrades.
-
-## Development Notes
-
-The code defines an `Entity` interface and a `BaseEntity` type to support extensible game objects. Utility functions in `tile.go` translate between screen coordinates and tile positions. Input handling (`input.go`) can be expanded to support more actions.
-
-The project depends on:
-
-- `github.com/hajimehoshi/ebiten/v2` for rendering and input
-
-Running the included tests currently fails in environments without internet access due to toolchain downloads, e.g.:
-
-```
-$ go test ./...
-<download failure output>
+```bash
+cd v1
+go test ./...
 ```
 
+## Contributing
+
+Code should be formatted with `gofmt` and accompanied by unit tests when possible. See `.github/instructions` for detailed development guidelines.
+
+## Automation
+
+Custom prompts in `.github/prompts` and guidelines in `.github/instructions` are used with GitHub Copilot to streamline development and reduce bugs.
+
+## Reloading Mechanics
+
+The tower now accepts reload input whenever its magazine isn't full. Once ammo drops below capacity a prompt will show the letter to type (`F` or `J`). Typing the correct letter refills one round and another prompt will appear until the magazine is full. Mistyped letters jam the weapon and require a backspace to clear.
