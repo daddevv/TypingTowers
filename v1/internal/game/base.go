@@ -27,7 +27,7 @@ func NewBase(x, y float64, hp int) *Base {
 }
 
 // Update updates the base state. Currently does nothing.
-func (b *Base) Update() {}
+func (b *Base) Update(dt float64) {}
 
 // Damage reduces the base's health by the given amount.
 func (b *Base) Damage(amount int) {

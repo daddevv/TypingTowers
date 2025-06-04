@@ -31,7 +31,7 @@ func TestTowerReloadQueue(t *testing.T) {
 	}
 
 	// Update should fill reload queue
-	tower.Update()
+	tower.Update(0.016)
 
 	reloading, currentLetter, previewQueue, _, jammed := tower.GetReloadStatus()
 	if !reloading {
@@ -96,7 +96,7 @@ func TestTowerJamming(t *testing.T) {
 	for tower.getAvailableAmmo() > 0 {
 		tower.consumeAmmo()
 	}
-	tower.Update() // Fill reload queue
+	tower.Update(0.016) // Fill reload queue
 
 	// Test jamming preserves letter
 	reloading, currentLetter, _, _, _ := tower.GetReloadStatus()

@@ -7,8 +7,8 @@ func TestProjectileIntercept(t *testing.T) {
 	g := &Game{mobs: []*Mob{mob}}
 	p := NewProjectile(g, 100, 100, mob, 1, 5, 0)
 	for i := 0; i < 200 && mob.alive && p.alive; i++ {
-		mob.Update()
-		p.Update()
+		mob.Update(0.016)
+		p.Update(0.016)
 	}
 	if mob.alive {
 		t.Errorf("projectile did not hit the mob")

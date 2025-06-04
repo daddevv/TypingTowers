@@ -6,7 +6,7 @@ import "math"
 type Mob struct {
 	BaseEntity
 	speed      float64
-	animTicker int
+	animTicker float64
 	alive      bool
 	vx, vy     float64
 	target     *Base
@@ -33,7 +33,7 @@ func NewMob(x, y float64, target *Base, hp int, speed float64) *Mob {
 }
 
 // Update moves the mob and handles animation.
-func (m *Mob) Update() {
+func (m *Mob) Update(dt float64) {
 	if m.target != nil {
 		dx := m.target.pos.X - m.pos.X
 		dy := m.target.pos.Y - m.pos.Y
@@ -43,10 +43,10 @@ func (m *Mob) Update() {
 			m.vy = dy / dist * m.speed
 		}
 	}
-	m.pos.X += m.vx
-	m.pos.Y += m.vy
-	m.animTicker++
-	if m.animTicker%30 < 15 {
+	m.pos.X += m.vx * dt
+	m.pos.Y += m.vy * dt
+	m.animTicker += dt
+	if int(m.animTicker/0.25)%2 == 0 {
 		m.frame = ImgMobA
 	} else {
 		m.frame = ImgMobB

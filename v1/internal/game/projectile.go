@@ -80,9 +80,9 @@ func NewProjectile(g *Game, x, y float64, target *Mob, dmg int, speed float64, b
 }
 
 // Update moves the projectile and checks collision.
-func (p *Projectile) Update() {
-	p.pos.X += p.vx * p.speed
-	p.pos.Y += p.vy * p.speed
+func (p *Projectile) Update(dt float64) {
+	p.pos.X += p.vx * p.speed * dt
+	p.pos.Y += p.vy * p.speed * dt
 	if p.target != nil && p.target.alive {
 		dx := p.target.pos.X - p.pos.X
 		dy := p.target.pos.Y - p.pos.Y
