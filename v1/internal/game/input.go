@@ -11,6 +11,8 @@ type InputHandler interface {
 	Reset()             // Reset resets the Input state to its default values
 	Backspace() bool    // Backspace reports if backspace was pressed since the last Update call
 	Space() bool        // Space reports if the space bar was pressed since the last Update call
+	Up() bool           // Up reports if the 'k' key or up arrow was pressed
+	Down() bool         // Down reports if the 'j' key or down arrow was pressed
 	Quit() bool         // Quit returns whether the game should quit
 	Reload() bool       // Reload returns whether config reload was requested
 	Enter() bool        // Enter reports if the enter key was pressed
@@ -33,6 +35,7 @@ type Input struct {
 	up        bool
 	down      bool
 	build     bool
+
 }
 
 // NewInput creates a new Input instance with default values.
@@ -49,6 +52,7 @@ func NewInput() *Input {
 		up:        false,
 		down:      false,
 		build:     false,
+
 	}
 }
 
@@ -62,6 +66,7 @@ func (i *Input) Update() {
 	i.space = inpututil.IsKeyJustPressed(ebiten.KeySpace)
 	i.reload = inpututil.IsKeyJustPressed(ebiten.KeyF5)
 	i.enter = inpututil.IsKeyJustPressed(ebiten.KeyEnter)
+
 	i.left = inpututil.IsKeyJustPressed(ebiten.KeyH) || inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft)
 	i.right = inpututil.IsKeyJustPressed(ebiten.KeyL) || inpututil.IsKeyJustPressed(ebiten.KeyArrowRight)
 	i.up = inpututil.IsKeyJustPressed(ebiten.KeyK) || inpututil.IsKeyJustPressed(ebiten.KeyArrowUp)
