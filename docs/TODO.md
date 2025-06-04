@@ -52,11 +52,11 @@
 
 ### Typing Performance Modifiers
 
-- [ ] Track typing accuracy for reloads/targeting.
-- [ ] Track typing speed (WPM or similar metric).
-- [ ] Implement: Reload speed bonuses for fast/accurate typing.
-- [ ] Implement: Penalties for slow/inaccurate typing (e.g., increased reload time, temporary jam).
-- [ ] UI: Display basic typing stats (accuracy, WPM) in HUD.
+- [x] Track typing accuracy for reloads/targeting.
+- [x] Track typing speed (WPM or similar metric).
+- [x] Implement: Reload speed bonuses for fast/accurate typing.
+- [x] Implement: Penalties for slow/inaccurate typing (e.g., increased reload time, temporary jam).
+- [x] UI: Display basic typing stats (accuracy, WPM) in HUD.
 
 ### Letter Pool Progression
 

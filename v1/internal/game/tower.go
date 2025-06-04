@@ -191,9 +191,15 @@ func (t *Tower) Update(dt float64) {
 						break
 					}
 				}
+				if t.game != nil {
+					t.game.typing.Record(true)
+				}
 				break
 			} else if len(t.reloadQueue) > 0 {
 				// Wrong letter - jam the tower
+				if t.game != nil {
+					t.game.typing.Record(false)
+				}
 				t.jammed = true
 				t.jammedLetter = t.reloadQueue[0] // preserve current letter
 				break
@@ -281,7 +287,11 @@ func (t *Tower) Update(dt float64) {
 
 	// Set cooldown only if we actually fired
 	if shotsFired > 0 {
-		t.cooldown = t.rate
+		mult := 1.0
+		if t.game != nil {
+			mult = t.game.typing.RateMultiplier()
+		}
+		t.cooldown = t.rate * mult
 	}
 }
 
