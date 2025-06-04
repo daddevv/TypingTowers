@@ -157,7 +157,7 @@ func TestUpgradePurchasing(t *testing.T) {
 		tower.rate -= 10
 	}
 	if tower.rate != oldRate-10 && oldRate > 10 {
-		t.Errorf("fire rate upgrade failed, expected %d got %d", oldRate-10, tower.rate)
+		t.Errorf("fire rate upgrade failed, expected %f got %f", oldRate-10, tower.rate)
 	}
 	if g.gold != 10 {
 		t.Errorf("gold not deducted correctly after fire rate upgrade, expected 10 got %d", g.gold)

@@ -5,6 +5,7 @@ import (
 	"math"
 	"math/rand"
 	"strconv"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
