@@ -1,6 +1,9 @@
 package game
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 func TestTypingStatsBasic(t *testing.T) {
 	ts := NewTypingStats()
@@ -34,5 +37,22 @@ func TestTypingStatsCombo(t *testing.T) {
 	}
 	if ts.MaxCombo() < 3 {
 		t.Errorf("max combo should be at least 3")
+	}
+}
+
+func TestScoreMultiplierAndHistory(t *testing.T) {
+	ts := NewTypingStats()
+	ts.start = ts.start.Add(-time.Minute)
+	for i := 0; i < 50; i++ {
+		ts.Record(true)
+	}
+	if ts.ScoreMultiplier() <= 1 {
+		t.Errorf("expected multiplier > 1 for good performance")
+	}
+
+	hist := PerformanceHistory{}
+	hist.Record(ts)
+	if hist.BestWPM <= 0 || hist.BestAccuracy <= 0 {
+		t.Errorf("history not updated")
 	}
 }

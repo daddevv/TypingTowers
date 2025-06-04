@@ -70,6 +70,10 @@ type Game struct {
 	achievements []string
 	towerMods    TowerModifiers
 
+	score           int
+	gameOverHandled bool
+	history         *PerformanceHistory
+
 	cursorX int
 	cursorY int
 
@@ -92,36 +96,44 @@ func NewGame() *Game {
 
 // NewGameWithConfig creates a new instance of the Game using the provided configuration.
 func NewGameWithConfig(cfg Config) *Game {
+	return NewGameWithHistory(cfg, &PerformanceHistory{})
+}
+
+// NewGameWithHistory allows supplying an existing performance history when creating a game.
+func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 	ebiten.SetWindowTitle("TypingTowers")
 	ebiten.SetWindowSize(1920/8, 1080/8)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	// ebiten.SetFullscreen(true)
 
 	g := &Game{
-		screen:        ebiten.NewImage(1920, 1080),
-		input:         NewInput(),
-		paused:        false,
-		gold:          0,
-		shopOpen:      false,
-		selectedTower: 0,
-		shopCursor:    0,
-		currentWave:   1,
-		spawnInterval: cfg.SpawnInterval, // already in seconds
-		spawnTicker:   0,
-		mobsToSpawn:   cfg.MobsPerWave,
-		cfg:           &cfg,
-		mobs:         make([]*Mob, 0),
-		projectiles:  make([]*Projectile, 0),
-		letterPool:   make([]rune, 0),
-		unlockStage:  0,
-		techTree:     DefaultTechTree(),
-		achievements: make([]string, 0),
-		towerMods:    TowerModifiers{DamageMult: 1, RangeMult: 1, FireRateMult: 1},
-		typing:       NewTypingStats(),
-		cursorX:      2,
-		cursorY:      16,
-		sound:       NewSoundManager(),
-		settings:    DefaultSettings(),
+		screen:          ebiten.NewImage(1920, 1080),
+		input:           NewInput(),
+		paused:          false,
+		gold:            0,
+		shopOpen:        false,
+		selectedTower:   0,
+		shopCursor:      0,
+		currentWave:     1,
+		spawnInterval:   cfg.SpawnInterval, // already in seconds
+		spawnTicker:     0,
+		mobsToSpawn:     cfg.MobsPerWave,
+		cfg:             &cfg,
+		mobs:            make([]*Mob, 0),
+		projectiles:     make([]*Projectile, 0),
+		letterPool:      make([]rune, 0),
+		unlockStage:     0,
+		techTree:        DefaultTechTree(),
+		achievements:    make([]string, 0),
+		towerMods:       TowerModifiers{DamageMult: 1, RangeMult: 1, FireRateMult: 1},
+		typing:          NewTypingStats(),
+		history:         hist,
+		score:           0,
+		gameOverHandled: false,
+		cursorX:         2,
+		cursorY:         16,
+		sound:           NewSoundManager(),
+		settings:        DefaultSettings(),
 	}
 
 	tx, ty := tilePosition(1, 16)
@@ -397,7 +409,13 @@ func (g *Game) Update() error {
 		}
 		if !m.alive {
 			g.mobs = append(g.mobs[:i], g.mobs[i+1:]...)
-			g.gold++
+			mult := g.typing.ScoreMultiplier()
+			reward := int(mult)
+			if reward < 1 {
+				reward = 1
+			}
+			g.gold += reward
+			g.score += reward
 			continue
 		}
 		i++
@@ -405,6 +423,14 @@ func (g *Game) Update() error {
 
 	if !g.base.Alive() {
 		g.gameOver = true
+	}
+
+	if g.gameOver && !g.gameOverHandled {
+		if g.history != nil {
+			g.history.Record(g.typing)
+		}
+		g.evaluatePerformanceAchievements()
+		g.gameOverHandled = true
 	}
 
 	return nil
@@ -420,6 +446,23 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		opts.GeoM.Translate(900, 540)
 		opts.ColorScale.ScaleWithColor(color.White)
 		text.Draw(g.screen, "Game Over", BoldFont, opts)
+		summary := []string{
+			fmt.Sprintf("Score: %d", g.score),
+			fmt.Sprintf("Accuracy: %.0f%%", g.typing.Accuracy()*100),
+			fmt.Sprintf("WPM: %.1f", g.typing.WPM()),
+		}
+		if g.history != nil {
+			summary = append(summary,
+				fmt.Sprintf("Best Accuracy: %.0f%%", g.history.BestAccuracy*100),
+				fmt.Sprintf("Best WPM: %.1f", g.history.BestWPM))
+		}
+		if len(g.achievements) > 0 {
+			summary = append(summary, "Achievements:")
+			for _, a := range g.achievements {
+				summary = append(summary, " - "+a)
+			}
+		}
+		drawMenu(g.screen, summary, 820, 580)
 		g.renderFrame(screen)
 		return
 	}
@@ -861,5 +904,34 @@ func (g *Game) loadGame(path string) error {
 }
 
 func (g *Game) Restart() {
-	*g = *NewGameWithConfig(*g.cfg)
+	hist := g.history
+	*g = *NewGameWithHistory(*g.cfg, hist)
+}
+
+// evaluatePerformanceAchievements awards achievements and gold based on typing performance.
+func (g *Game) evaluatePerformanceAchievements() {
+	wpm := g.typing.WPM()
+	acc := g.typing.Accuracy()
+
+	add := func(name string) {
+		for _, a := range g.achievements {
+			if a == name {
+				return
+			}
+		}
+		g.achievements = append(g.achievements, name)
+	}
+
+	if wpm >= 60 {
+		add("Speed Demon")
+		g.gold += 5
+	}
+	if acc >= 0.95 {
+		add("Sharpshooter")
+		g.gold += 5
+	}
+	if g.typing.MaxCombo() >= 10 {
+		add("Combo Master")
+		g.gold += 5
+	}
 }
