@@ -15,3 +15,16 @@ func TestMobUpdateVelocity(t *testing.T) {
 		t.Errorf("expected positive vx after update got %v", vx)
 	}
 }
+
+func TestArmoredMobDamage(t *testing.T) {
+	b := NewBase(0, 0, 1)
+	m := NewArmoredMob(0, 0, b, 10, 2, 1)
+	m.Damage(1)
+	if m.health != 10 {
+		t.Errorf("armor should absorb damage")
+	}
+	m.Damage(3)
+	if m.health != 9 {
+		t.Errorf("expected health 9 got %d", m.health)
+	}
+}

@@ -397,16 +397,17 @@ func (t *Tower) Update(dt float64) {
 
 	// Find all targets in range, sorted by distance
 	type mobDist struct {
-		m *Mob
+		m Enemy
 		d float64
 	}
 	var targets []mobDist
 	for _, m := range t.game.mobs {
-		if !m.alive {
+		if !m.Alive() {
 			continue
 		}
-		dx := m.pos.X - t.pos.X
-		dy := m.pos.Y - t.pos.Y
+		mx, my := m.Position()
+		dx := mx - t.pos.X
+		dy := my - t.pos.Y
 		d := math.Hypot(dx, dy)
 		if d < t.rangeDst {
 			targets = append(targets, mobDist{m, d})
@@ -452,7 +453,7 @@ func (t *Tower) Update(dt float64) {
 	shotsFired := 0
 	for i := 0; i < shots && i < len(targets); i++ {
 		targetMob := targets[i].m
-		if targetMob == nil || !targetMob.alive {
+		if targetMob == nil || !targetMob.Alive() {
 			continue
 		}
 
