@@ -30,6 +30,8 @@ type Game struct {
 	paused      bool
 	gold        int
 
+	shopOpen bool
+
 	cfg *Config
 
 	currentWave   int
@@ -55,6 +57,7 @@ func NewGameWithConfig(cfg Config) *Game {
 		input:         NewInput(),
 		paused:        false,
 		gold:          0,
+		shopOpen:      false,
 		currentWave:   1,
 		spawnInterval: 60,
 		spawnTicker:   0,
@@ -106,6 +109,15 @@ func (g *Game) Update() error {
 		return nil
 	}
 
+	if g.shopOpen {
+		if g.input.Enter() {
+			g.shopOpen = false
+			g.currentWave++
+			g.startWave()
+		}
+		return nil
+	}
+
 	if g.mobsToSpawn > 0 {
 		g.spawnTicker++
 		if g.spawnTicker >= g.spawnInterval {
@@ -114,8 +126,7 @@ func (g *Game) Update() error {
 			g.mobsToSpawn--
 		}
 	} else if len(g.mobs) == 0 {
-		g.currentWave++
-		g.startWave()
+		g.shopOpen = true
 	}
 
 	for _, t := range g.towers {
@@ -166,6 +177,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	if g.gameOver {
 		ebitenutil.DebugPrintAt(g.screen, "Game Over", 900, 540)
+		g.renderFrame(screen)
+		return
+	}
+
+	if g.shopOpen {
+		ebitenutil.DebugPrintAt(g.screen, "-- SHOP -- press Enter", 850, 520)
 		g.renderFrame(screen)
 		return
 	}

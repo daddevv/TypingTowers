@@ -13,6 +13,7 @@ type InputHandler interface {
 	Space() bool        // Space reports if the space bar was pressed since the last Update call
 	Quit() bool         // Quit returns whether the game should quit
 	Reload() bool       // Reload returns whether config reload was requested
+	Enter() bool        // Enter reports if the enter key was pressed
 }
 
 type Input struct {
@@ -21,6 +22,7 @@ type Input struct {
 	backspace bool   // Whether backspace was pressed this frame
 	space     bool   // Whether space was pressed this frame
 	reload    bool   // Whether F5 was pressed this frame
+	enter     bool   // Whether enter was pressed this frame
 }
 
 // NewInput creates a new Input instance with default values.
@@ -31,6 +33,7 @@ func NewInput() *Input {
 		backspace: false,
 		space:     false,
 		reload:    false,
+		enter:     false,
 	}
 }
 
@@ -43,6 +46,7 @@ func (i *Input) Update() {
 	i.backspace = inpututil.IsKeyJustPressed(ebiten.KeyBackspace)
 	i.space = inpututil.IsKeyJustPressed(ebiten.KeySpace)
 	i.reload = inpututil.IsKeyJustPressed(ebiten.KeyF5)
+	i.enter = inpututil.IsKeyJustPressed(ebiten.KeyEnter)
 }
 
 // Reset resets the Input state to its default values.
@@ -52,6 +56,7 @@ func (i *Input) Reset() {
 	i.backspace = false
 	i.space = false
 	i.reload = false
+	i.enter = false
 }
 
 // Quit returns whether the game should quit.
@@ -77,4 +82,9 @@ func (i *Input) Space() bool {
 // Reload reports if the F5 key was pressed since the last Update call.
 func (i *Input) Reload() bool {
 	return i.reload
+}
+
+// Enter reports if the enter key was pressed since the last Update call.
+func (i *Input) Enter() bool {
+	return i.enter
 }
