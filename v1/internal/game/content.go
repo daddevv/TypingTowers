@@ -12,9 +12,7 @@ import (
 var (
 	// assetPrefix allows tests to override asset path prefix.
 	assetPrefix = ""
-	// testFlag indicates if the package is running in test mode.
-	testFlag = false
-
+	
 	ImgBackgroundBasicTiles *ebiten.Image
 	ImgBackgroundTile       *ebiten.Image
 	ImgHighlightTile        *ebiten.Image

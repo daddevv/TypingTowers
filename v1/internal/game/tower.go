@@ -50,7 +50,7 @@ func NewTower(g *Game, x, y float64) *Tower {
 		damage:       DefaultConfig.TowerDamage,
 		projectiles:  DefaultConfig.TowerProjectiles,
 		bounce:       DefaultConfig.TowerBounce,
-		reloadTime:   0,
+		reloadTime:   DefaultConfig.TowerReloadRate,
 		jammed:       false,
 	}
 	t.rangeImg = generateRangeImage(t.rangeDst)
