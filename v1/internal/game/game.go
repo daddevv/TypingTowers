@@ -210,9 +210,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 
 	if g.shopOpen {
-		ebitenutil.DebugPrintAt(g.screen, "-- SHOP -- press Enter", 850, 520)
-		g.renderFrame(screen)
-		return
+		// The main shop interface is now drawn by the HUD.
+		// We can keep a minimal centered message or remove it entirely.
+		// For now, let's remove the old one:
+		// ebitenutil.DebugPrintAt(g.screen, "-- SHOP -- press Enter", 850, 520) 
+		// The HUD will display shop details.
 	}
 
 	g.base.Draw(g.screen)

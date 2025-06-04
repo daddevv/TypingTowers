@@ -7,7 +7,7 @@
 ├── ROADMAP.md            - future features
 ├── v1/                   - main game module
 │   ├── cmd/game          - entry point for the Ebiten application
-│   ├── internal/game     - game logic packages
+│   ├── internal/game     - game logic packages (tower upgrades, shop logic, etc.)
 │   └── assets            - sprites and other resources
 ```
 

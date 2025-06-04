@@ -10,12 +10,12 @@
 - [x] ~~Implement bouncing projectile mechanics~~
 - [x] ~~Add real-time configuration reloading system~~
 - [x] ~~Implement functional upgrade purchasing with gold~~
+- [x] Add tower damage, range, and fire rate upgrades
 
 ## High Priority (Next Sprint)
 
 ### Enhanced Shop System
 
-- [ ] Add tower damage, range, and fire rate upgrades
 - [ ] Create upgrade UI with keyboard navigation
 - [ ] Add visual feedback for purchased upgrades
 

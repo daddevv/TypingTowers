@@ -10,6 +10,11 @@ TypingTowers is a keyboard-controlled tower defense game built with [Ebiten](htt
 - **Jamming System**: Typing incorrect letters jams the tower, requiring backspace to clear
 - **Progressive Difficulty**: Each wave spawns more enemies with increased health
 - **Upgrade Purchasing**: Spend gold earned from defeating enemies to upgrade tower damage, range, and fire rate between waves
+    - Press [1] to upgrade damage (+1)
+    - Press [2] to upgrade range (+50)
+    - Press [3] to upgrade fire rate (faster)
+    - Each upgrade costs 5 gold and applies to the selected tower
+    - Upgrades are available in the shop between waves and are covered by automated unit tests
 
 ## Controls
 
@@ -62,7 +67,7 @@ Code should be formatted with `gofmt` and accompanied by unit tests when possibl
 - Real-time configuration reloading
 - Projectile intercept calculations for moving targets
 - Bouncing projectile mechanics
-- Upgrade purchasing system using gold between waves
+- Upgrade purchasing system using gold between waves (damage, range, fire rate upgrades implemented and tested)
 
 ## Automation
 

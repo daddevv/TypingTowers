@@ -2,9 +2,11 @@ package game
 
 import (
 	"fmt"
+	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 // HUD displays simple text information about the tower state.
@@ -17,38 +19,72 @@ func NewHUD(g *Game) *HUD {
 	return &HUD{game: g}
 }
 
-// Draw renders ammo count and reload prompts.
+// Draw renders ammo count, tower stats, reload prompts, and shop interface.
 func (h *HUD) Draw(screen *ebiten.Image) {
+	var lines []string
+	textX := 10
+	initialY := 30 // Start HUD lower to avoid overlap with mouse/tile debug info
+	lineHeight := 14
+	padding := 5.0
+
 	if h.game.shopOpen {
 		gold := h.game.gold
-		msg := "-- SHOP --\n"
-		msg += fmt.Sprintf("Gold: %d\n", gold)
-		msg += "[1] Upgrade Damage (+1): 5 gold\n"
-		msg += "[2] Upgrade Range (+50): 5 gold\n"
-		msg += "[3] Upgrade Fire Rate (faster): 5 gold\n"
-		msg += "Press Enter to start next wave"
-		ebitenutil.DebugPrintAt(screen, msg, 700, 300)
-		return
-	}
-	if len(h.game.towers) == 0 {
-		return
-	}
-	t := h.game.towers[0]
-	ammo := fmt.Sprintf("Ammo: %d/%d", len(t.ammo), t.ammoCapacity)
-	ebitenutil.DebugPrintAt(screen, ammo, 10, 40)
-	if t.reloading {
-		prompt := fmt.Sprintf("Reload in: %d", t.reloadTimer)
-		if t.reloadTimer <= 0 {
-			prompt = fmt.Sprintf("Type '%c'", t.reloadLetter)
+		lines = append(lines, "-- SHOP --")
+		lines = append(lines, fmt.Sprintf("Gold: %d", gold))
+		lines = append(lines, "[1] Upgrade Damage (+1): 5 gold")
+		lines = append(lines, "[2] Upgrade Range (+50): 5 gold")
+		lines = append(lines, "[3] Upgrade Fire Rate (faster): 5 gold")
+		lines = append(lines, "Press Enter to start next wave")
+	} else {
+		if len(h.game.towers) > 0 {
+			t := h.game.towers[0]
+			lines = append(lines, fmt.Sprintf("Ammo: %d/%d", len(t.ammo), t.ammoCapacity))
+			lines = append(lines, fmt.Sprintf("Damage: %d", t.damage))
+			lines = append(lines, fmt.Sprintf("Range: %.0f", t.rangeDst))
+
+			sps := 0.0
+			if t.rate > 0 {
+				// Assuming game runs at 60 Ticks Per Second (Ebiten default)
+				sps = 60.0 / float64(t.rate)
+			}
+			lines = append(lines, fmt.Sprintf("Fire Speed: %.2f/s (Cooldown: %d)", sps, t.rate))
+
+			if t.reloading {
+				prompt := fmt.Sprintf("Reload in: %d", t.reloadTimer)
+				if t.reloadTimer <= 0 {
+					prompt = fmt.Sprintf("Type '%c'", t.reloadLetter)
+				}
+				lines = append(lines, prompt)
+			} else if t.jammed {
+				lines = append(lines, "Jammed! Press Backspace")
+			}
 		}
-		ebitenutil.DebugPrintAt(screen, prompt, 10, 52)
-	} else if t.jammed {
-		ebitenutil.DebugPrintAt(screen, "Jammed! backspace", 10, 52)
+
+		if h.game.base != nil {
+			lines = append(lines, fmt.Sprintf("Base HP: %d", h.game.base.Health()))
+		}
+		lines = append(lines, fmt.Sprintf("Wave %d | Gold %d | Mobs %d", h.game.currentWave, h.game.gold, len(h.game.mobs)))
 	}
 
-	base := fmt.Sprintf("Base HP: %d", h.game.base.Health())
-	ebitenutil.DebugPrintAt(screen, base, 10, 28)
+	if len(lines) == 0 {
+		return
+	}
 
-	wave := fmt.Sprintf("Wave %d | Gold %d | Mobs %d", h.game.currentWave, h.game.gold, len(h.game.mobs))
-	ebitenutil.DebugPrintAt(screen, wave, 10, 64)
+	// Define background properties
+	bgX := float64(textX) - padding
+	bgY := float64(initialY) - padding
+	bgWidth := 240.0 // Fixed width for the background quad
+	// Calculate height based on number of lines and line height, plus padding
+	bgHeight := float64(len(lines)*lineHeight) + (padding * 2.0) - (float64(lineHeight) - 10.0) // 10 is approx font char height
+
+	// Draw background rectangle
+	bgColor := color.RGBA{0, 0, 0, 180} // Semi-transparent black
+	vector.DrawFilledRect(screen, float32(bgX), float32(bgY), float32(bgWidth), float32(bgHeight), bgColor, false)
+
+	// Draw text lines
+	currentY := initialY
+	for _, line := range lines {
+		ebitenutil.DebugPrintAt(screen, line, textX, currentY)
+		currentY += lineHeight
+	}
 }
