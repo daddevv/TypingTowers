@@ -36,6 +36,25 @@ type Config struct {
 	X float64
 	Y float64
 	Z float64
+
+	// Explicitly named parameters used throughout the game. All values are
+	// optional when loading from JSON; zero values fall back to defaults.
+	TowerDamage       int     `json:"tower_damage"`
+	TowerRange        float64 `json:"tower_range"`
+	TowerFireRate     int     `json:"tower_fire_rate"`
+	TowerAmmoCapacity int     `json:"tower_ammo_capacity"`
+	TowerProjectiles  int     `json:"tower_projectiles_per_shot"`
+	TowerBounce       int     `json:"tower_bounce_count"`
+
+	ProjectileSpeed float64 `json:"projectile_speed"`
+
+	BaseHealth int `json:"base_health"`
+
+	MobSpeed       float64 `json:"mob_speed"`
+	MobBaseHealth  int     `json:"mob_base_health"`
+	MobsPerWave    int     `json:"mobs_per_wave_base"`
+	MobsPerWaveInc int     `json:"mobs_per_wave_growth"`
+	SpawnInterval  int     `json:"spawn_interval"`
 }
 
 // DefaultConfig provides baseline parameters used when a new game starts.
@@ -66,6 +85,24 @@ var DefaultConfig = Config{
 	X: 1,
 	Y: 1,
 	Z: 1,
+
+	// Defaults for the new explicit parameters
+	TowerDamage:       1,
+	TowerRange:        500,
+	TowerFireRate:     100,
+	TowerAmmoCapacity: 5,
+	TowerProjectiles:  1,
+	TowerBounce:       0,
+
+	ProjectileSpeed: 5.0,
+
+	BaseHealth: 10,
+
+	MobSpeed:       1.0,
+	MobBaseHealth:  1,
+	MobsPerWave:    3,
+	MobsPerWaveInc: 3,
+	SpawnInterval:  60,
 }
 
 // LoadConfig reads configuration values from the given JSON file.

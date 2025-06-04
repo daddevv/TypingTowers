@@ -24,5 +24,22 @@
   "W": 1,
   "X": 1,
   "Y": 1,
-  "Z": 1
+  "Z": 1,
+
+  "tower_damage": 1,
+  "tower_range": 500,
+  "tower_fire_rate": 100,
+  "tower_ammo_capacity": 5,
+  "tower_projectiles_per_shot": 1,
+  "tower_bounce_count": 0,
+
+  "projectile_speed": 5.0,
+
+  "base_health": 10,
+
+  "mob_speed": 1.0,
+  "mob_base_health": 1,
+  "mobs_per_wave_base": 3,
+  "mobs_per_wave_growth": 3,
+  "spawn_interval": 60
 }
