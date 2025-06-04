@@ -4,8 +4,8 @@
 Summarize completed TODOs, remove them from the list, and then reorganize, condense, and fill in any gaps as if you are the project manager.
 
 ## Instructions
-- Review the current `TODO.md` file.
-- Summarize all completed tasks (checked items) in a separate `CHANGELOG.md` file.
+- Review the current `docs/TODO.md` file.
+- Summarize all completed tasks (checked items) in a separate `docs/CHANGELOG.md` file.
 - Remove completed tasks from the main TODO list to keep it focused and actionable.
 - Reorganize the remaining tasks for clarity and logical grouping. Condense similar or redundant items.
 - Identify and fill in any gaps or missing steps in the TODOs, ensuring the list is comprehensive and actionable for the team.

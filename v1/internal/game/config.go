@@ -42,6 +42,7 @@ type Config struct {
 	TowerDamage       int     `json:"tower_damage"`
 	TowerRange        float64 `json:"tower_range"`
 	TowerFireRate     int     `json:"tower_fire_rate"`
+	TowerReloadRate   int     `json:"tower_reload_rate"` // in frames
 	TowerAmmoCapacity int     `json:"tower_ammo_capacity"`
 	TowerProjectiles  int     `json:"tower_projectiles_per_shot"`
 	TowerBounce       int     `json:"tower_bounce_count"`

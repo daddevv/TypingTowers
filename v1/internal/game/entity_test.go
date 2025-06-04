@@ -16,7 +16,7 @@ func TestBaseEntityBounds(t *testing.T) {
 	if bx != 1 || by != 2 || w != 3 || h != 4 {
 		t.Errorf("bounds mismatch")
 	}
-	if !e.Static() {
+	if e.Static() {
 		t.Errorf("expected default static false")
 	}
 	e.static = true
