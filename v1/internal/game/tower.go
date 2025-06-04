@@ -25,6 +25,7 @@ type Tower struct {
 	damage       int
 	projectiles  int
 	bounce       int
+	level        int
 	jammed       bool
 	jammedLetter rune // preserve letter when jammed
 	foresight    int  // number of reload letters to preview
@@ -41,6 +42,17 @@ type Tower struct {
 
 // NewTower creates a new Tower at the given position.
 func NewTower(g *Game, x, y float64) *Tower {
+	return NewTowerWithLevel(g, x, y, 1)
+}
+
+// NewTowerWithLevel creates a new Tower at the given position and level.
+func NewTowerWithLevel(g *Game, x, y float64, level int) *Tower {
+	if level < 1 {
+		level = 1
+	}
+	if level > 5 {
+		level = 5
+	}
 	w, h := ImgTower.Bounds().Dx(), ImgTower.Bounds().Dy()
 	t := &Tower{
 		BaseEntity: BaseEntity{
@@ -59,10 +71,13 @@ func NewTower(g *Game, x, y float64) *Tower {
 		damage:       DefaultConfig.TowerDamage,
 		projectiles:  DefaultConfig.TowerProjectiles,
 		bounce:       DefaultConfig.TowerBounce,
+		level:        level,
 		jammed:       false,
 		foresight:    5,
 		damageBonus:  0,
 	}
+
+	t.applyLevel()
 
 	// Initialize ammo queue with full capacity
 	t.ammoQueue = make([]bool, t.ammoCapacity)
@@ -76,6 +91,33 @@ func NewTower(g *Game, x, y float64) *Tower {
 		t.ApplyConfig(*g.cfg)
 	}
 	return t
+}
+
+// applyLevel adjusts base stats according to the tower's level.
+func (t *Tower) applyLevel() {
+	switch t.level {
+	case 2:
+		t.damage++
+		t.rangeDst += 50
+		t.rate *= 0.9
+		t.ammoCapacity++
+	case 3:
+		t.damage += 2
+		t.rangeDst += 100
+		t.rate *= 0.8
+		t.ammoCapacity += 2
+	case 4:
+		t.damage += 3
+		t.rangeDst += 150
+		t.rate *= 0.7
+		t.ammoCapacity += 3
+	case 5:
+		t.damage += 4
+		t.rangeDst += 200
+		t.rate *= 0.6
+		t.ammoCapacity += 4
+	}
+	t.rangeImg = generateRangeImage(t.rangeDst)
 }
 
 func (t *Tower) randomReloadLetter() rune {
@@ -93,6 +135,36 @@ func (t *Tower) randomReloadLetter() rune {
 	}
 	return 'j'
 }
+
+// ApplyModifiers multiplies tower stats according to the provided modifiers.
+func (t *Tower) ApplyModifiers(mod TowerModifiers) {
+	if mod.DamageMult != 0 {
+		t.damage = int(float64(t.damage) * mod.DamageMult)
+	}
+	if mod.RangeMult != 0 {
+		t.rangeDst *= mod.RangeMult
+		t.rangeImg = generateRangeImage(t.rangeDst)
+	}
+	if mod.FireRateMult != 0 {
+		t.rate *= mod.FireRateMult
+		if t.rate < 0.01 {
+			t.rate = 0.01
+		}
+	}
+	if mod.AmmoAdd != 0 {
+		t.ammoCapacity += mod.AmmoAdd
+		if t.ammoCapacity < 1 {
+			t.ammoCapacity = 1
+		}
+		newAmmo := make([]bool, t.ammoCapacity)
+		for i := 0; i < t.ammoCapacity && i < len(t.ammoQueue); i++ {
+			newAmmo[i] = t.ammoQueue[i]
+		}
+		for i := len(t.ammoQueue); i < t.ammoCapacity; i++ {
+			newAmmo[i] = true
+		}
+		t.ammoQueue = newAmmo
+	}
 
 // SetReloadSequence sets a fixed reload sequence for the tower.
 func (t *Tower) SetReloadSequence(seq []rune) {
