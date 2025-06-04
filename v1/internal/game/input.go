@@ -21,6 +21,8 @@ type InputHandler interface {
 	Up() bool
 	Down() bool
 	Build() bool
+	Save() bool
+	Load() bool
 }
 
 type Input struct {
@@ -35,7 +37,8 @@ type Input struct {
 	up        bool
 	down      bool
 	build     bool
-
+	save      bool
+	load      bool
 }
 
 // NewInput creates a new Input instance with default values.
@@ -52,7 +55,8 @@ func NewInput() *Input {
 		up:        false,
 		down:      false,
 		build:     false,
-
+		save:      false,
+		load:      false,
 	}
 }
 
@@ -65,6 +69,8 @@ func (i *Input) Update() {
 	i.backspace = inpututil.IsKeyJustPressed(ebiten.KeyBackspace)
 	i.space = inpututil.IsKeyJustPressed(ebiten.KeySpace)
 	i.reload = inpututil.IsKeyJustPressed(ebiten.KeyF5)
+	i.save = inpututil.IsKeyJustPressed(ebiten.KeyF2)
+	i.load = inpututil.IsKeyJustPressed(ebiten.KeyF3)
 	i.enter = inpututil.IsKeyJustPressed(ebiten.KeyEnter)
 
 	i.left = inpututil.IsKeyJustPressed(ebiten.KeyH) || inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft)
@@ -87,6 +93,8 @@ func (i *Input) Reset() {
 	i.up = false
 	i.down = false
 	i.build = false
+	i.save = false
+	i.load = false
 }
 
 // Quit returns whether the game should quit.
@@ -124,3 +132,5 @@ func (i *Input) Right() bool { return i.right }
 func (i *Input) Up() bool    { return i.up }
 func (i *Input) Down() bool  { return i.down }
 func (i *Input) Build() bool { return i.build }
+func (i *Input) Save() bool  { return i.save }
+func (i *Input) Load() bool  { return i.load }
