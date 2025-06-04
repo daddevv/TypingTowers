@@ -2,14 +2,15 @@ package game
 
 import (
 	"fmt"
+	"image/color"
 	"math"
 	"math/rand"
 	"strconv"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
 var (
@@ -221,7 +222,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	drawBackgroundTilemap(g.screen)
 
 	if g.gameOver {
-		ebitenutil.DebugPrintAt(g.screen, "Game Over", 900, 540)
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(900, 540)
+		opts.ColorScale.ScaleWithColor(color.White)
+		text.Draw(g.screen, "Game Over", BoldFont, opts)
 		g.renderFrame(screen)
 		return
 	}
@@ -247,7 +251,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 
 	if g.paused {
-		ebitenutil.DebugPrintAt(g.screen, "-- PAUSED --", 900, 520)
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(900, 520)
+		opts.ColorScale.ScaleWithColor(color.White)
+		text.Draw(g.screen, "-- PAUSED --", BoldFont, opts)
 		g.renderFrame(screen)
 		return
 	}
@@ -454,11 +461,7 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 		screen.DrawImage(ImgHouseTile, op)
 	}
 
-	ebitenutil.DebugPrintAt(screen, "Hovering over tile: "+strconv.Itoa(tileX)+", "+strconv.Itoa(tileY), 10, 2)
-	ebitenutil.DebugPrintAt(screen, "Mouse Position: "+strconv.Itoa(mouseX)+", "+strconv.Itoa(mouseY), 10, 14)
-	if mousePressed {
-		ebitenutil.DebugPrintAt(screen, "Dragging from: "+strconv.Itoa(clickedTileX)+", "+strconv.Itoa(clickedTileY), 190, 2)
-	}
+	// Placeholder for additional debug UI if needed in the future.
 }
 
 // reloadConfig loads a Config from the given file and applies it to the game.

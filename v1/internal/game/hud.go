@@ -5,11 +5,11 @@ import (
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
-// HUD displays simple text information about the tower state.
+// HUD displays placeholder UI elements with basic game information.
 type HUD struct {
 	game *Game
 }
@@ -24,7 +24,7 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 	var lines []string
 	textX := 10
 	initialY := 30 // Start HUD lower to avoid overlap with mouse/tile debug info
-	lineHeight := 14
+	lineHeight := 18
 	padding := 5.0
 
 	if h.game.shopOpen {
@@ -104,10 +104,13 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 	bgColor := color.RGBA{0, 0, 0, 180} // Semi-transparent black
 	vector.DrawFilledRect(screen, float32(bgX), float32(bgY), float32(bgWidth), float32(bgHeight), bgColor, false)
 
-	// Draw text lines
+	// Draw text lines using the game's font
 	currentY := initialY
 	for _, line := range lines {
-		ebitenutil.DebugPrintAt(screen, line, textX, currentY)
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(float64(textX), float64(currentY))
+		opts.ColorScale.ScaleWithColor(color.White)
+		text.Draw(screen, line, NormalFont, opts)
 		currentY += lineHeight
 	}
 }
