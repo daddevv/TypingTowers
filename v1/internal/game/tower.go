@@ -12,8 +12,8 @@ import (
 // Tower represents a stationary auto-firing tower.
 type Tower struct {
 	BaseEntity
-	cooldown float64
-	rate     float64
+	cooldown float64 // seconds
+	rate     float64 // seconds between shots
 	rangeDst float64
 	game     *Game
 	rangeImg *ebiten.Image
@@ -22,13 +22,9 @@ type Tower struct {
 	ammoQueue    []bool // ready-to-fire ammunition (true = loaded, false = empty)
 	reloadQueue  []rune // letters that need to be typed to reload
 	ammoCapacity int    // maximum size of ammoQueue
-
 	damage       int
 	projectiles  int
 	bounce       int
-	reloadTime   float64
-	reloadTimer  float64
-	reloading    bool
 	jammed       bool
 	jammedLetter rune // preserve letter when jammed
 }
@@ -46,14 +42,13 @@ func NewTower(g *Game, x, y float64) *Tower {
 			frameAnchorY: float64(h) / 2,
 			static:       true,
 		},
-		rate:         DefaultConfig.TowerFireRate,
+		rate:         DefaultConfig.TowerFireRate, // seconds
 		rangeDst:     DefaultConfig.TowerRange,
 		game:         g,
 		ammoCapacity: DefaultConfig.TowerAmmoCapacity,
 		damage:       DefaultConfig.TowerDamage,
 		projectiles:  DefaultConfig.TowerProjectiles,
 		bounce:       DefaultConfig.TowerBounce,
-		reloadTime:   DefaultConfig.TowerReloadRate,
 		jammed:       false,
 	}
 
@@ -82,7 +77,7 @@ func randomReloadLetter() rune {
 // ApplyConfig updates tower parameters based on the provided config.
 func (t *Tower) ApplyConfig(cfg Config) {
 	if cfg.TowerFireRate > 0 {
-		t.rate = cfg.TowerFireRate
+		t.rate = cfg.TowerFireRate / 1000.0 // convert ms to seconds
 	}
 	if cfg.F > 0 {
 		r := t.rate / cfg.F
@@ -96,15 +91,11 @@ func (t *Tower) ApplyConfig(cfg Config) {
 		t.rangeImg = generateRangeImage(t.rangeDst)
 	}
 	if cfg.TowerAmmoCapacity > 0 {
-		// oldCapacity := t.ammoCapacity
 		t.ammoCapacity = cfg.TowerAmmoCapacity
-
-		// Resize ammo queue while preserving existing ammo
 		newAmmoQueue := make([]bool, t.ammoCapacity)
 		for i := 0; i < t.ammoCapacity && i < len(t.ammoQueue); i++ {
 			newAmmoQueue[i] = t.ammoQueue[i]
 		}
-		// Fill any new slots with ammo if we increased capacity
 		for i := len(t.ammoQueue); i < t.ammoCapacity; i++ {
 			newAmmoQueue[i] = true
 		}
@@ -183,39 +174,30 @@ func (t *Tower) Update(dt float64) {
 
 	// Handle reload typing (only if not jammed and reload queue has letters)
 	if !t.jammed && len(t.reloadQueue) > 0 {
-		if t.reloadTimer > 0 {
-			t.reloadTimer -= dt
-			if t.reloadTimer < 0 {
-				t.reloadTimer = 0
-			}
-		} else {
-			for _, r := range typed {
-				if len(t.reloadQueue) > 0 && unicode.ToLower(r) == t.reloadQueue[0] {
-					// Successfully typed the first letter in reload queue
-					t.reloadQueue = t.reloadQueue[1:] // Remove the typed letter
+		for _, r := range typed {
+			if len(t.reloadQueue) > 0 && unicode.ToLower(r) == t.reloadQueue[0] {
+				// Successfully typed the first letter in reload queue
+				t.reloadQueue = t.reloadQueue[1:]
 
-					// Add ammo to first empty slot
-					for i := range t.ammoQueue {
-						if !t.ammoQueue[i] {
-							t.ammoQueue[i] = true
-							break
-						}
+				// Add ammo to first empty slot
+				for i := range t.ammoQueue {
+					if !t.ammoQueue[i] {
+						t.ammoQueue[i] = true
+						break
 					}
-
-					t.reloadTimer = t.reloadTime
-					break
-				} else if len(t.reloadQueue) > 0 {
-					// Wrong letter - jam the tower
-					t.jammed = true
-					t.jammedLetter = t.reloadQueue[0] // preserve current letter
-					break
 				}
+				break
+			} else if len(t.reloadQueue) > 0 {
+				// Wrong letter - jam the tower
+				t.jammed = true
+				t.jammedLetter = t.reloadQueue[0] // preserve current letter
+				break
 			}
 		}
 	}
 
 	// Early return if cooldown or reload timer is active
-	if t.cooldown > 0 || t.reloadTimer > 0 {
+	if t.cooldown > 0 {
 		return
 	}
 
@@ -319,7 +301,7 @@ func (t *Tower) GetReloadStatus() (bool, rune, []rune, float64, bool) {
 		previewQueue = append(previewQueue, t.reloadQueue[i])
 	}
 
-	return reloading, currentLetter, previewQueue, t.reloadTimer, t.jammed
+	return reloading, currentLetter, previewQueue, 0, t.jammed // timer always 0 now
 }
 
 // UpgradeAmmoCapacity increases the tower's ammunition capacity

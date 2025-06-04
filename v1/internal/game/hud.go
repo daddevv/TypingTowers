@@ -96,9 +96,17 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 	// Define background properties
 	bgX := float64(textX) - padding
 	bgY := float64(initialY) - padding
-	bgWidth := 300.0 // Increased width for longer shop text
+	// Dynamically calculate width based on longest line, fallback to min width
+	minWidth := 520.0 // Increased from 420.0 for more space
+	bgWidth := minWidth
+	for _, line := range lines {
+		w := float64(len(line)) * 13.0 // crude estimate: 13px per char, was 10.0
+		if w+padding*2 > bgWidth {
+			bgWidth = w + padding*2
+		}
+	}
 	// Calculate height based on number of lines and line height, plus padding
-	bgHeight := float64(len(lines)*lineHeight) + (padding * 2.0) - (float64(lineHeight) - 10.0) // 10 is approx font char height
+	bgHeight := float64(len(lines)*lineHeight) + (padding * 2.0) + 18.0 // add extra height for clarity
 
 	// Draw background rectangle
 	bgColor := color.RGBA{0, 0, 0, 180} // Semi-transparent black

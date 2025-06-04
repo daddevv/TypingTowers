@@ -41,8 +41,7 @@ type Config struct {
 	// optional when loading from JSON; zero values fall back to defaults.
 	TowerDamage       int     `json:"tower_damage"`
 	TowerRange        float64 `json:"tower_range"`
-	TowerFireRate     float64 `json:"tower_fire_rate"`   // seconds between shots
-	TowerReloadRate   float64 `json:"tower_reload_rate"` // seconds per reload letter
+	TowerFireRate     float64 `json:"tower_fire_rate"`   // milliseconds between shots
 	TowerAmmoCapacity int     `json:"tower_ammo_capacity"`
 	TowerProjectiles  int     `json:"tower_projectiles_per_shot"`
 	TowerBounce       int     `json:"tower_bounce_count"`
@@ -55,7 +54,7 @@ type Config struct {
 	MobBaseHealth  int     `json:"mob_base_health"`
 	MobsPerWave    int     `json:"mobs_per_wave_base"`
 	MobsPerWaveInc int     `json:"mobs_per_wave_growth"`
-	SpawnInterval  float64 `json:"spawn_interval"` // seconds between spawns
+	SpawnInterval  float64 `json:"spawn_interval"` // milliseconds between spawns
 }
 
 // DefaultConfig provides baseline parameters used when a new game starts.
@@ -90,7 +89,7 @@ var DefaultConfig = Config{
 	// Defaults for the new explicit parameters
 	TowerDamage:       1,
 	TowerRange:        500,
-	TowerFireRate:     1.6,
+	TowerFireRate:     1600, // ms
 	TowerAmmoCapacity: 5,
 	TowerProjectiles:  1,
 	TowerBounce:       0,
@@ -103,7 +102,7 @@ var DefaultConfig = Config{
 	MobBaseHealth:  1,
 	MobsPerWave:    3,
 	MobsPerWaveInc: 3,
-	SpawnInterval:  1.0,
+	SpawnInterval:  1000, // ms
 }
 
 // LoadConfig reads configuration values from the given JSON file.
@@ -117,5 +116,8 @@ func LoadConfig(path string) (Config, error) {
 	if err := json.Unmarshal(data, &cfg); err != nil {
 		return DefaultConfig, err
 	}
+	// Convert ms to seconds for all time-based fields
+	cfg.TowerFireRate = cfg.TowerFireRate / 1000.0
+	cfg.SpawnInterval = cfg.SpawnInterval / 1000.0
 	return cfg, nil
 }

@@ -5,7 +5,6 @@ import (
 	"image/color"
 	"math"
 	"math/rand"
-	"strconv"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -64,7 +63,7 @@ func NewGameWithConfig(cfg Config) *Game {
 		gold:          0,
 		shopOpen:      false,
 		currentWave:   1,
-		spawnInterval: cfg.SpawnInterval,
+		spawnInterval: cfg.SpawnInterval, // already in seconds
 		spawnTicker:   0,
 		mobsToSpawn:   cfg.MobsPerWave,
 		cfg:           &cfg,
@@ -320,11 +319,7 @@ func (g *Game) startWave() {
 	}
 	inc := g.cfg.MobsPerWaveInc
 	g.mobsToSpawn = base + inc*(g.currentWave-1)
-	if g.cfg.SpawnInterval > 0 {
-		g.spawnInterval = g.cfg.SpawnInterval
-	} else {
-		g.spawnInterval = DefaultConfig.SpawnInterval
-	}
+	g.spawnInterval = g.cfg.SpawnInterval // already in seconds
 }
 
 // highlightHoverAndClickAndDrag highlights the tile under the mouse cursor.

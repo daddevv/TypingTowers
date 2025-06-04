@@ -42,5 +42,5 @@
   "mob_base_health": 10,
   "mobs_per_wave_base": 3,
   "mobs_per_wave_growth": 3,
-  "spawn_interval": 500
+  "spawn_interval": 1000
 }
