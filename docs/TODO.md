@@ -14,49 +14,37 @@
 - [x] ~~Implement two-queue ammo system (firing queue + reload queue)~~
 - [x] ~~Add ammo capacity upgrades to shop~~
 - [x] ~~Show reload queue preview in HUD~~
+- [x] ~~Track typing accuracy for reloads/targeting.~~
+- [x] ~~Track typing speed (WPM or similar metric).~~
+- [x] ~~Implement: bonuses for fast/accurate typing.~~
+- [x] ~~Implement: Penalties for slow/inaccurate typing (e.g., increased reload time, temporary jam).~~
+- [x] ~~UI: Display basic typing stats (accuracy, WPM) in HUD.~~
 
-## Core Gameplay Loop (Next Sprint)
+## Next Sprint: Enhanced Shop Functionality (Vim/Qutebrowser Navigation)
 
-### 1. Multiple Tower Placement & Management (Vim/Qutebrowser Navigation)
+- [x] **Backend:** Modify upgrade logic to apply to the currently *selected* tower (selected via Vim-style navigation).
+- [x] **UI:** Update HUD to clearly show which tower is selected (keyboard highlight/cursor).
+- [x] **UI:** Shop upgrade options should be navigable and activated via Vim/Qutebrowser keys (e.g., `j/k` to move, `Enter` to select, `1-5` for upgrades).
+- [x] **Feature:** "Foresight" upgrade:
+  - [x] **Backend:** Increase the number of reload queue letters shown.
+  - [x] **UI:** Update HUD to display more reload queue letters.
+  - [x] **Shop:** Add "Foresight" as a purchasable upgrade (e.g., key '5').
+- [x] **UI:** Add visual feedback for purchased upgrades (updated stats in HUD/Shop UI).
+- [x] **UI:** All shop and upgrade navigation must be fully keyboard-driven, with no mouse dependency.
 
-- [ ] **Backend:** Implement logic to place new towers on the grid using keyboard input (no mouse; Vim-style navigation)
-  - [ ] Define valid placement areas (e.g., specific tile types).
-  - [ ] Add a cost for building new towers (`TowerConstructionCost`).
-  - [ ] Deduct gold when a tower is placed.
-- [ ] **UI:** Visual indicator for valid/invalid tower placement locations (keyboard-driven, e.g., highlight with Vim-style cursor).
-- [ ] **UI:** Tower selection mechanism using Vim/Qutebrowser keys (`h/j/k/l`, `gg/G`, `/`, etc.) to move/select towers.
-- [ ] **Config:** Add `TowerConstructionCost` to `config.json`.
-- [ ] **UI:** Implement modal navigation (normal/insert/command mode) for all in-game menus and overlays.
-- [ ] **UI:** Display keyboard hints/overlays for available actions (e.g., `[h/j/k/l] move`, `[d] delete`, `[u] upgrade`, `[q] quit`).
+## Core Gameplay Loop
 
-### 2. Enhanced Shop Functionality (Vim/Qutebrowser Navigation)
+### Multiple Tower Placement & Management (Vim/Qutebrowser Navigation)
 
-- [ ] **Backend:** Modify upgrade logic to apply to the currently *selected* tower (selected via Vim-style navigation).
-- [ ] **UI:** Update HUD to clearly show which tower is selected (keyboard highlight/cursor).
-- [ ] **UI:** Shop upgrade options should be navigable and activated via Vim/Qutebrowser keys (e.g., `j/k` to move, `Enter` to select, `1-5` for upgrades).
-- [ ] **Feature:** "Foresight" upgrade:
-  - [ ] **Backend:** Increase the number of reload queue letters shown.
-  - [ ] **UI:** Update HUD to display more reload queue letters.
-  - [ ] **Shop:** Add "Foresight" as a purchasable upgrade (e.g., key '5').
-- [ ] **UI:** Add visual feedback for purchased upgrades (updated stats in HUD/Shop UI).
-- [ ] **UI:** All shop and upgrade navigation must be fully keyboard-driven, with no mouse dependency.
-
-## Advanced Mechanics & Systems
-
-### Word-Based Reloading
-
-- [ ] Design: Define short words for reloading (e.g., "ammo", "load", "zap").
-- [ ] Implement: Replace single-letter reload prompts with word prompts.
-- [ ] Implement: Logic for typing words correctly for reload.
-- [ ] UI: Update HUD to display word prompts.
-
-### Typing Performance Modifiers
-
-- [x] Track typing accuracy for reloads/targeting.
-- [x] Track typing speed (WPM or similar metric).
-- [x] Implement: Reload speed bonuses for fast/accurate typing.
-- [x] Implement: Penalties for slow/inaccurate typing (e.g., increased reload time, temporary jam).
-- [x] UI: Display basic typing stats (accuracy, WPM) in HUD.
+- [x] **Backend:** Implement logic to place new towers on the grid using keyboard input (no mouse; Vim-style navigation)
+  - [x] Define valid placement areas (e.g., specific tile types).
+  - [x] Add a cost for building new towers (`TowerConstructionCost`).
+  - [x] Deduct gold when a tower is placed.
+- [x] **UI:** Visual indicator for valid/invalid tower placement locations (keyboard-driven, e.g., highlight with Vim-style cursor).
+- [x] **UI:** Tower selection mechanism using Vim/Qutebrowser keys (`h/j/k/l`, `gg/G`, `/`, etc.) to move/select towers.
+- [x] **Config:** Add `TowerConstructionCost` to `config.json`.
+- [x] **UI:** Implement modal navigation (normal/insert/command mode) for all in-game menus and overlays.
+- [x] **UI:** Display keyboard hints/overlays for available actions (e.g., `[h/j/k/l] move`, `[d] delete`, `[u] upgrade`, `[q] quit`).
 
 ### Letter Pool Progression
 
@@ -118,7 +106,6 @@
 ## Testing
 
 - [ ] Write comprehensive unit tests for new systems:
-  - [ ] Letter-based enemy targeting logic.
   - [ ] Multiple tower placement, selection, and gold deduction.
   - [ ] Shop upgrades for selected towers.
   - [ ] Word-based reloading.
