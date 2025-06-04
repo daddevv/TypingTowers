@@ -16,13 +16,18 @@ Note: Each parameter has a base value and a multiplier that can be applied to sc
 - Wave Growth: `MobsPerWaveGrowth`
 - Healing: `MobBaseHealing` * `MobHealingMultiplier`
 
-## Towers
+### Towers
 
 - Damage: `TowerBaseDamage` * `TowerDamageMultiplier`
 - Fire Rate: `TowerBaseFireRate` * `TowerFireRateMultiplier`
 - Ammo Capacity: `TowerBaseAmmoCapacity` * `TowerAmmoCapacityMultiplier`
 - Projectile Speed: `TowerBaseProjectileSpeed` * `TowerProjectileSpeedMultiplier`
 - Range: `TowerBaseRange` * `TowerRangeMultiplier`
+
+### Economy
+
+- Currency Gain: `CurrencyGainBase` * `CurrencyGainMultiplier`
+- Upgrade Cost: `UpgradeCostBase` * `UpgradeCostMultiplier`
 
 ## Important Metrics
 
