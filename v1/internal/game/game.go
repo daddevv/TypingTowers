@@ -49,6 +49,7 @@ type Game struct {
 	unlockStage  int
 	techTree     *TechTree
 	achievements []string
+	towerMods    TowerModifiers
 
 	cursorX int
 	cursorY int
@@ -90,6 +91,7 @@ func NewGameWithConfig(cfg Config) *Game {
 		unlockStage:  0,
 		techTree:     DefaultTechTree(),
 		achievements: make([]string, 0),
+		towerMods:    TowerModifiers{DamageMult: 1, RangeMult: 1, FireRateMult: 1},
 		typing:       NewTypingStats(),
 		cursorX:      2,
 		cursorY:      16,
@@ -107,6 +109,7 @@ func NewGameWithConfig(cfg Config) *Game {
 
 	tx, ty = tilePosition(2, 16)
 	tower := NewTower(g, float64(tx+16), float64(ty+16))
+	tower.ApplyModifiers(g.towerMods)
 	g.towers = []*Tower{tower}
 	g.startWave()
 	g.lastUpdate = time.Now()
@@ -474,6 +477,7 @@ func (g *Game) buildTowerAtCursor() {
 	}
 	tx, ty := tilePosition(g.cursorX, g.cursorY)
 	t := NewTower(g, float64(tx+TileSize/2), float64(ty+TileSize/2))
+	t.ApplyModifiers(g.towerMods)
 	g.towers = append(g.towers, t)
 	g.gold -= cost
 }
@@ -489,9 +493,9 @@ func (g *Game) startWave() {
 	g.mobsToSpawn = base + inc*(g.currentWave-1)
 	g.spawnInterval = g.cfg.SpawnInterval // already in seconds
 
-	// Unlock new tech node for additional letters
+	// Unlock new tech node for additional letters and tower bonuses
 	if g.techTree != nil {
-		letters, ach := g.techTree.UnlockNext()
+		letters, ach, mods := g.techTree.UnlockNext()
 		if len(letters) > 0 {
 			existing := make(map[rune]struct{})
 			for _, r := range g.letterPool {
@@ -502,9 +506,15 @@ func (g *Game) startWave() {
 					g.letterPool = append(g.letterPool, r)
 				}
 			}
-			if ach != "" {
-				g.achievements = append(g.achievements, ach)
+		}
+		if mods != (TowerModifiers{}) {
+			g.towerMods = g.towerMods.Merge(mods)
+			for _, t := range g.towers {
+				t.ApplyModifiers(mods)
 			}
+		}
+		if ach != "" {
+			g.achievements = append(g.achievements, ach)
 		}
 	}
 }

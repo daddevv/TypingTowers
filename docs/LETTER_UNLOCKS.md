@@ -20,4 +20,4 @@ Additional waves after the final stage continue using the full unlocked pool. Fu
 
 ## Tech Tree System
 
-The letter unlock sequence is now driven by a simple technology tree. Each wave unlocks the next node, adding its letters to the global pool and granting an achievement. This provides a foundation for more advanced tech upgrades in the future.
+The letter unlock sequence is now driven by a technology tree. Each wave unlocks the next node, adding its letters to the global pool and granting an achievement. Nodes can also grant global tower upgrades such as bonus damage, range, or ammo. Towers have levels 1&ndash;5 for their base stats, and tech upgrades modify these stats further across all towers.

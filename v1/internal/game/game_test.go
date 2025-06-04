@@ -15,7 +15,7 @@ func TestNewGame(t *testing.T) {
 func TestLetterUnlocking(t *testing.T) {
 	g := NewGameWithConfig(DefaultConfig)
 	tree := DefaultTechTree()
-	firstLetters, _ := tree.UnlockNext()
+	firstLetters, _, _ := tree.UnlockNext()
 	if len(g.letterPool) != len(firstLetters) {
 		t.Fatalf("expected initial letter pool %d got %d", len(firstLetters), len(g.letterPool))
 	}
@@ -24,7 +24,7 @@ func TestLetterUnlocking(t *testing.T) {
 	g.startWave()
 	tree = DefaultTechTree()
 	tree.UnlockNext() // first stage
-	secondLetters, _ := tree.UnlockNext()
+	secondLetters, _, _ := tree.UnlockNext()
 	expected := len(firstLetters) + len(secondLetters)
 	if len(g.letterPool) != expected {
 		t.Errorf("expected letter pool size %d after second wave got %d", expected, len(g.letterPool))
