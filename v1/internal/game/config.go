@@ -41,10 +41,12 @@ type Config struct {
 	// optional when loading from JSON; zero values fall back to defaults.
 	TowerDamage       int     `json:"tower_damage"`
 	TowerRange        float64 `json:"tower_range"`
-	TowerFireRate     float64 `json:"tower_fire_rate"`   // milliseconds between shots
+	TowerFireRate     float64 `json:"tower_fire_rate"` // milliseconds between shots
 	TowerAmmoCapacity int     `json:"tower_ammo_capacity"`
 	TowerProjectiles  int     `json:"tower_projectiles_per_shot"`
 	TowerBounce       int     `json:"tower_bounce_count"`
+
+	TowerConstructionCost int `json:"tower_construction_cost"`
 
 	ProjectileSpeed float64 `json:"projectile_speed"`
 
@@ -93,6 +95,8 @@ var DefaultConfig = Config{
 	TowerAmmoCapacity: 5,
 	TowerProjectiles:  1,
 	TowerBounce:       0,
+
+	TowerConstructionCost: 20,
 
 	ProjectileSpeed: 5.0,
 
