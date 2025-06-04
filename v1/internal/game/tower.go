@@ -9,6 +9,15 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+// TowerType represents the variety of tower with unique stats.
+type TowerType int
+
+const (
+	TowerBasic TowerType = iota
+	TowerSniper
+	TowerRapid
+)
+
 // Tower represents a stationary auto-firing tower.
 type Tower struct {
 	BaseEntity
@@ -17,6 +26,9 @@ type Tower struct {
 	rangeDst float64
 	game     *Game
 	rangeImg *ebiten.Image
+
+	// Type of tower (basic, sniper, rapid-fire)
+	towerType TowerType
 
 	// Two-queue ammo system
 	ammoQueue    []bool // ready-to-fire ammunition (true = loaded, false = empty)
@@ -40,13 +52,23 @@ type Tower struct {
 	damageBonus     int
 }
 
-// NewTower creates a new Tower at the given position.
+// NewTower creates a basic tower at the given position.
 func NewTower(g *Game, x, y float64) *Tower {
-	return NewTowerWithLevel(g, x, y, 1)
+	return NewTowerWithTypeAndLevel(g, x, y, TowerBasic, 1)
 }
 
-// NewTowerWithLevel creates a new Tower at the given position and level.
+// NewTowerWithLevel creates a basic Tower at the given position and level.
 func NewTowerWithLevel(g *Game, x, y float64, level int) *Tower {
+	return NewTowerWithTypeAndLevel(g, x, y, TowerBasic, level)
+}
+
+// NewTowerWithType creates a tower of the specified type at the given position.
+func NewTowerWithType(g *Game, x, y float64, tt TowerType) *Tower {
+	return NewTowerWithTypeAndLevel(g, x, y, tt, 1)
+}
+
+// NewTowerWithTypeAndLevel creates a tower of the specified type and level.
+func NewTowerWithTypeAndLevel(g *Game, x, y float64, tt TowerType, level int) *Tower {
 	if level < 1 {
 		level = 1
 	}
@@ -75,6 +97,23 @@ func NewTowerWithLevel(g *Game, x, y float64, level int) *Tower {
 		jammed:       false,
 		foresight:    5,
 		damageBonus:  0,
+		towerType:    tt,
+	}
+
+	// Apply base stats based on tower type
+	switch tt {
+	case TowerSniper:
+		t.damage *= 3
+		t.rangeDst *= 1.5
+		t.rate *= 2
+		t.ammoCapacity = 3
+	case TowerRapid:
+		if t.damage > 1 {
+			t.damage /= 2
+		}
+		t.rangeDst *= 0.7
+		t.rate *= 0.5
+		t.ammoCapacity = 6
 	}
 
 	t.applyLevel()
@@ -358,16 +397,17 @@ func (t *Tower) Update(dt float64) {
 
 	// Find all targets in range, sorted by distance
 	type mobDist struct {
-		m *Mob
+		m Enemy
 		d float64
 	}
 	var targets []mobDist
 	for _, m := range t.game.mobs {
-		if !m.alive {
+		if !m.Alive() {
 			continue
 		}
-		dx := m.pos.X - t.pos.X
-		dy := m.pos.Y - t.pos.Y
+		mx, my := m.Position()
+		dx := mx - t.pos.X
+		dy := my - t.pos.Y
 		d := math.Hypot(dx, dy)
 		if d < t.rangeDst {
 			targets = append(targets, mobDist{m, d})
@@ -413,7 +453,7 @@ func (t *Tower) Update(dt float64) {
 	shotsFired := 0
 	for i := 0; i < shots && i < len(targets); i++ {
 		targetMob := targets[i].m
-		if targetMob == nil || !targetMob.alive {
+		if targetMob == nil || !targetMob.Alive() {
 			continue
 		}
 

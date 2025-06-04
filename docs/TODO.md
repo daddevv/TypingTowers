@@ -10,10 +10,10 @@
 
 ### Enhanced Enemy Variety
 
-- [ ] Create enemy types with varying health, speed, and abilities (armor, shields, speed bursts).
-- [ ] Add special enemies requiring specific letter combinations or words.
-- [ ] Design and implement boss enemies for milestone waves.
-- [ ] Abstract enemy creation for extensibility.
+- [x] Create enemy types with varying health, speed, and abilities (armor, shields, speed bursts).
+- [x] Add special enemies requiring specific letter combinations or words.
+- [x] Design and implement boss enemies for milestone waves.
+- [x] Abstract enemy creation for extensibility.
 
 ### Typing Performance & Metrics
 

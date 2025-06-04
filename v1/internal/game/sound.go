@@ -9,6 +9,17 @@ import (
 
 const sampleRate = 22050
 
+var (
+	audioCtx *audio.Context
+)
+
+func getAudioContext() *audio.Context {
+	if audioCtx == nil {
+		audioCtx = audio.NewContext(sampleRate)
+	}
+	return audioCtx
+}
+
 // SoundManager handles basic sound effects and music.
 type SoundManager struct {
 	ctx  *audio.Context
@@ -17,8 +28,7 @@ type SoundManager struct {
 
 // NewSoundManager creates a SoundManager with an audio context.
 func NewSoundManager() *SoundManager {
-	ctx := audio.NewContext(sampleRate)
-	return &SoundManager{ctx: ctx}
+	return &SoundManager{ctx: getAudioContext()}
 }
 
 // ToggleMute enables or disables all sound output.

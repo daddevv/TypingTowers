@@ -44,7 +44,7 @@ type Game struct {
 	screen      *ebiten.Image
 	input       InputHandler
 	towers      []*Tower
-	mobs        []*Mob
+	mobs        []Enemy
 	projectiles []*Projectile
 	base        *Base
 	hud         *HUD
@@ -85,6 +85,9 @@ type Game struct {
 	settingsOpen   bool
 	settingsCursor int
 
+	buildMenuOpen bool
+	buildCursor   int
+
 	sound    *SoundManager
 	settings Settings
 }
@@ -107,33 +110,35 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 	// ebiten.SetFullscreen(true)
 
 	g := &Game{
-		screen:          ebiten.NewImage(1920, 1080),
-		input:           NewInput(),
-		paused:          false,
-		gold:            0,
-		shopOpen:        false,
-		selectedTower:   0,
-		shopCursor:      0,
-		currentWave:     1,
-		spawnInterval:   cfg.SpawnInterval, // already in seconds
-		spawnTicker:     0,
-		mobsToSpawn:     cfg.MobsPerWave,
-		cfg:             &cfg,
-		mobs:            make([]*Mob, 0),
-		projectiles:     make([]*Projectile, 0),
-		letterPool:      make([]rune, 0),
-		unlockStage:     0,
-		techTree:        DefaultTechTree(),
-		achievements:    make([]string, 0),
-		towerMods:       TowerModifiers{DamageMult: 1, RangeMult: 1, FireRateMult: 1},
-		typing:          NewTypingStats(),
 		history:         hist,
 		score:           0,
 		gameOverHandled: false,
-		cursorX:         2,
-		cursorY:         16,
-		sound:           NewSoundManager(),
-		settings:        DefaultSettings(),
+		screen:        ebiten.NewImage(1920, 1080),
+		input:         NewInput(),
+		paused:        false,
+		gold:          0,
+		shopOpen:      false,
+		selectedTower: 0,
+		shopCursor:    0,
+		currentWave:   1,
+		spawnInterval: cfg.SpawnInterval, // already in seconds
+		spawnTicker:   0,
+		mobsToSpawn:   cfg.MobsPerWave,
+		cfg:           &cfg,
+		mobs:          make([]Enemy, 0),
+		projectiles:   make([]*Projectile, 0),
+		letterPool:    make([]rune, 0),
+		unlockStage:   0,
+		techTree:      DefaultTechTree(),
+		achievements:  make([]string, 0),
+		towerMods:     TowerModifiers{DamageMult: 1, RangeMult: 1, FireRateMult: 1},
+		typing:        NewTypingStats(),
+		cursorX:       2,
+		cursorY:       16,
+		sound:         NewSoundManager(),
+		settings:      DefaultSettings(),
+		buildMenuOpen: false,
+		buildCursor:   0,
 	}
 
 	tx, ty := tilePosition(1, 16)
@@ -166,6 +171,43 @@ func (g *Game) Update() error {
 	g.lastUpdate = now
 	g.input.Update()
 
+	if g.buildMenuOpen {
+		const optionsCount = 4
+		if g.input.Down() {
+			g.buildCursor = (g.buildCursor + 1) % optionsCount
+		}
+		if g.input.Up() {
+			g.buildCursor = (g.buildCursor - 1 + optionsCount) % optionsCount
+		}
+		if inpututil.IsKeyJustPressed(ebiten.Key1) {
+			g.buildTowerAtCursorType(TowerBasic)
+			g.buildMenuOpen = false
+		}
+		if inpututil.IsKeyJustPressed(ebiten.Key2) {
+			g.buildTowerAtCursorType(TowerSniper)
+			g.buildMenuOpen = false
+		}
+		if inpututil.IsKeyJustPressed(ebiten.Key3) {
+			g.buildTowerAtCursorType(TowerRapid)
+			g.buildMenuOpen = false
+		}
+		if g.input.Enter() {
+			switch g.buildCursor {
+			case 0:
+				g.buildTowerAtCursorType(TowerBasic)
+			case 1:
+				g.buildTowerAtCursorType(TowerSniper)
+			case 2:
+				g.buildTowerAtCursorType(TowerRapid)
+			}
+			g.buildMenuOpen = false
+		}
+		if g.input.Build() {
+			g.buildMenuOpen = false
+		}
+		return nil
+	}
+
 	if !g.shopOpen {
 		if g.input.Left() {
 			g.cursorX--
@@ -192,7 +234,8 @@ func (g *Game) Update() error {
 			g.cursorY = 33
 		}
 		if g.input.Build() {
-			g.buildTowerAtCursor()
+			g.buildMenuOpen = true
+			g.buildCursor = 0
 		}
 	}
 
@@ -401,13 +444,15 @@ func (g *Game) Update() error {
 		m := g.mobs[i]
 		m.Update(dt)
 		bx, by, bw, bh := g.base.Bounds()
-		dx := m.pos.X - float64(bx+bw/2)
-		dy := m.pos.Y - float64(by+bh/2)
-		if math.Hypot(dx, dy) < float64(m.width/2+bw/2) {
+		mx, my := m.Position()
+		_, _, mw, _ := m.Bounds()
+		dx := mx - float64(bx+bw/2)
+		dy := my - float64(by+bh/2)
+		if math.Hypot(dx, dy) < float64(mw/2+bw/2) {
 			g.base.Damage(1)
-			m.alive = false
+			m.Damage(mw) // force kill
 		}
-		if !m.alive {
+		if !m.Alive() {
 			g.mobs = append(g.mobs[:i], g.mobs[i+1:]...)
 			mult := g.typing.ScoreMultiplier()
 			reward := int(mult)
@@ -585,7 +630,19 @@ func (g *Game) spawnMob() {
 	if speed == 0 {
 		speed = DefaultConfig.MobSpeed
 	}
-	m := NewMob(float64(x+16), float64(y+16), g.base, hp, speed)
+	var m Enemy
+	if g.currentWave%5 == 0 && g.mobsToSpawn == 1 {
+		m = NewBossMob(float64(x+16), float64(y+16), g.base, hp*5, speed*0.5)
+	} else {
+		switch rand.Intn(3) {
+		case 0:
+			m = NewMob(float64(x+16), float64(y+16), g.base, hp, speed)
+		case 1:
+			m = NewArmoredMob(float64(x+16), float64(y+16), g.base, hp, 2, speed)
+		default:
+			m = NewFastMob(float64(x+16), float64(y+16), g.base, hp, speed, 2)
+		}
+	}
 	g.mobs = append(g.mobs, m)
 }
 
@@ -610,6 +667,10 @@ func (g *Game) validTowerPosition(tileX, tileY int) bool {
 }
 
 func (g *Game) buildTowerAtCursor() {
+	g.buildTowerAtCursorType(TowerBasic)
+}
+
+func (g *Game) buildTowerAtCursorType(tt TowerType) {
 	if g.cfg == nil {
 		return
 	}
@@ -624,7 +685,7 @@ func (g *Game) buildTowerAtCursor() {
 		return
 	}
 	tx, ty := tilePosition(g.cursorX, g.cursorY)
-	t := NewTower(g, float64(tx+TileSize/2), float64(ty+TileSize/2))
+	t := NewTowerWithType(g, float64(tx+TileSize/2), float64(ty+TileSize/2), tt)
 	t.ApplyModifiers(g.towerMods)
 	g.towers = append(g.towers, t)
 	g.gold -= cost

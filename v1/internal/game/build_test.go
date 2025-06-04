@@ -10,11 +10,14 @@ func TestBuildTowerCostsGold(t *testing.T) {
 	g.cursorX = 4
 	g.cursorY = 4
 	initial := len(g.towers)
-	g.buildTowerAtCursor()
+	g.buildTowerAtCursorType(TowerSniper)
 	if len(g.towers) != initial+1 {
 		t.Fatalf("expected tower count %d got %d", initial+1, len(g.towers))
 	}
 	if g.gold != 5 {
 		t.Fatalf("expected gold 5 got %d", g.gold)
+	}
+	if g.towers[0].towerType != TowerSniper {
+		t.Fatalf("expected sniper tower type")
 	}
 }
