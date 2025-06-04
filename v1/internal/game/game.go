@@ -63,6 +63,8 @@ type Game struct {
 	unlockStage int
 
 	lastUpdate time.Time
+
+	typing TypingStats
 }
 
 // NewGame creates a new instance of the Game.
@@ -93,6 +95,7 @@ func NewGameWithConfig(cfg Config) *Game {
 		projectiles: make([]*Projectile, 0),
 		letterPool:  make([]rune, 0),
 		unlockStage: 0,
+		typing:      NewTypingStats(),
 	}
 
 	tx, ty := tilePosition(1, 16)

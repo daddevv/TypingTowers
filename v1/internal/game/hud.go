@@ -87,6 +87,9 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 			lines = append(lines, fmt.Sprintf("Base HP: %d", h.game.base.Health()))
 		}
 		lines = append(lines, fmt.Sprintf("Wave %d | Gold %d | Mobs %d", h.game.currentWave, h.game.gold, len(h.game.mobs)))
+		acc := h.game.typing.Accuracy() * 100
+		wpm := h.game.typing.WPM()
+		lines = append(lines, fmt.Sprintf("Accuracy: %.0f%% | WPM: %.1f", acc, wpm))
 	}
 
 	if len(lines) == 0 {

@@ -83,6 +83,7 @@ Code should be formatted with `gofmt` and accompanied by unit tests when possibl
 - Bouncing projectile mechanics
 - Upgrade purchasing system using gold between waves (damage, range, fire rate upgrades implemented and tested)
 - **Keyboard-driven navigation for all menus and gameplay**
+- Typing accuracy and WPM tracking with bonuses and penalties
 
 ## Automation
 
