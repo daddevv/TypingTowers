@@ -3,10 +3,6 @@ package game
 import "testing"
 
 
-func init() {
-	TESTING = true
-}
-
 func TestInputReset(t *testing.T) {
     in := NewInput()
     in.quit = true

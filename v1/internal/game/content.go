@@ -13,7 +13,7 @@ var (
 	// assetPrefix allows tests to override asset path prefix.
 	assetPrefix = ""
 	// Testing indicates if the package is running in test mode.
-	Testing = true
+	Testing = false
 
 	ImgBackgroundBasicTiles = generateBackground()
 	ImgBackgroundTile       = loadImage("assets/basic_tile_32.png")

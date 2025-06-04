@@ -3,10 +3,6 @@ package game
 import "testing"
 
 
-func init() {
-	TESTING = true
-}
-
 func TestPointDistance(t *testing.T) {
     p1 := NewPoint(0, 0)
     p2 := NewPoint(3, 4)

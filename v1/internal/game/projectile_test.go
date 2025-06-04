@@ -3,10 +3,6 @@ package game
 import "testing"
 
 
-func init() {
-	TESTING = true
-}
-
 func TestProjectileIntercept(t *testing.T) {
 	mob := NewMob(200, 100, nil, 1)
 	p := NewProjectile(100, 100, mob)

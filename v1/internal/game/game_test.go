@@ -2,10 +2,6 @@ package game
 
 import "testing"
 
-func init() {
-	TESTING = true
-}
-
 func TestNewGame(t *testing.T) {
 	g := NewGame()
 	if g.screen.Bounds().Dx() != 1920 || g.screen.Bounds().Dy() != 1080 {
