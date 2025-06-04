@@ -31,14 +31,32 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 		gold := h.game.gold
 		lines = append(lines, "-- SHOP --")
 		lines = append(lines, fmt.Sprintf("Gold: %d", gold))
-		lines = append(lines, "[1] Upgrade Damage (+1): 5 gold")
-		lines = append(lines, "[2] Upgrade Range (+50): 5 gold")
-		lines = append(lines, "[3] Upgrade Fire Rate (faster): 5 gold")
-		lines = append(lines, "[4] Upgrade Ammo Capacity (+2): 10 gold")
-		lines = append(lines, "Press Enter to start next wave")
+
+		var foresight int
+		if len(h.game.towers) > 0 {
+			foresight = h.game.towers[h.game.selectedTower].foresight
+		}
+
+		options := []string{
+			"[1] Upgrade Damage (+1): 5 gold",
+			"[2] Upgrade Range (+50): 5 gold",
+			"[3] Upgrade Fire Rate (faster): 5 gold",
+			"[4] Upgrade Ammo Capacity (+2): 10 gold",
+			fmt.Sprintf("[5] Foresight (+2 letters) [%d]", foresight),
+			"Start Next Wave",
+		}
+
+		for i, opt := range options {
+			prefix := "  "
+			if i == h.game.shopCursor {
+				prefix = "> "
+			}
+			lines = append(lines, prefix+opt)
+		}
 	} else {
 		if len(h.game.towers) > 0 {
-			t := h.game.towers[0]
+			t := h.game.towers[h.game.selectedTower]
+			lines = append(lines, fmt.Sprintf("Selected Tower: %d", h.game.selectedTower+1))
 			currentAmmo, maxAmmo := t.GetAmmoStatus()
 			lines = append(lines, fmt.Sprintf("Ammo: %d/%d", currentAmmo, maxAmmo))
 			lines = append(lines, fmt.Sprintf("Damage: %d", t.damage))
@@ -56,11 +74,10 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 				lines = append(lines, fmt.Sprintf("Stuck on: '%c'", currentLetter))
 			} else if reloading {
 				if timer <= 0 {
-					// Show current letter and preview queue
 					queueStr := ""
 					for i, letter := range previewQueue {
 						if i == 0 {
-							queueStr += fmt.Sprintf("[%c]", letter) // Current letter in brackets
+							queueStr += fmt.Sprintf("[%c]", letter)
 						} else {
 							queueStr += fmt.Sprintf(" %c", letter)
 						}

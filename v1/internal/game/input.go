@@ -11,6 +11,8 @@ type InputHandler interface {
 	Reset()             // Reset resets the Input state to its default values
 	Backspace() bool    // Backspace reports if backspace was pressed since the last Update call
 	Space() bool        // Space reports if the space bar was pressed since the last Update call
+	Up() bool           // Up reports if the 'k' key or up arrow was pressed
+	Down() bool         // Down reports if the 'j' key or down arrow was pressed
 	Quit() bool         // Quit returns whether the game should quit
 	Reload() bool       // Reload returns whether config reload was requested
 	Enter() bool        // Enter reports if the enter key was pressed
@@ -23,6 +25,8 @@ type Input struct {
 	space     bool   // Whether space was pressed this frame
 	reload    bool   // Whether F5 was pressed this frame
 	enter     bool   // Whether enter was pressed this frame
+	up        bool   // Whether 'k' or up arrow was pressed this frame
+	down      bool   // Whether 'j' or down arrow was pressed this frame
 }
 
 // NewInput creates a new Input instance with default values.
@@ -34,6 +38,8 @@ func NewInput() *Input {
 		space:     false,
 		reload:    false,
 		enter:     false,
+		up:        false,
+		down:      false,
 	}
 }
 
@@ -47,6 +53,8 @@ func (i *Input) Update() {
 	i.space = inpututil.IsKeyJustPressed(ebiten.KeySpace)
 	i.reload = inpututil.IsKeyJustPressed(ebiten.KeyF5)
 	i.enter = inpututil.IsKeyJustPressed(ebiten.KeyEnter)
+	i.up = inpututil.IsKeyJustPressed(ebiten.KeyK) || inpututil.IsKeyJustPressed(ebiten.KeyArrowUp)
+	i.down = inpututil.IsKeyJustPressed(ebiten.KeyJ) || inpututil.IsKeyJustPressed(ebiten.KeyArrowDown)
 }
 
 // Reset resets the Input state to its default values.
@@ -57,6 +65,8 @@ func (i *Input) Reset() {
 	i.space = false
 	i.reload = false
 	i.enter = false
+	i.up = false
+	i.down = false
 }
 
 // Quit returns whether the game should quit.
@@ -87,4 +97,14 @@ func (i *Input) Reload() bool {
 // Enter reports if the enter key was pressed since the last Update call.
 func (i *Input) Enter() bool {
 	return i.enter
+}
+
+// Up reports if the 'k' key or up arrow was pressed since the last Update call.
+func (i *Input) Up() bool {
+	return i.up
+}
+
+// Down reports if the 'j' key or down arrow was pressed since the last Update call.
+func (i *Input) Down() bool {
+	return i.down
 }
