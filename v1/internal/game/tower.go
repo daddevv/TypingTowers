@@ -19,6 +19,9 @@ type Tower struct {
 	rangeImg     *ebiten.Image
 	ammo         []struct{}
 	ammoCapacity int
+	damage       int
+	projectiles  int
+	bounce       int
 	reloadTime   int
 	reloadTimer  int
 	reloading    bool
@@ -39,11 +42,14 @@ func NewTower(g *Game, x, y float64) *Tower {
 			frameAnchorY: float64(h) / 2,
 			static:       true,
 		},
-		rate:         100,
-		rangeDst:     500,
+		rate:         DefaultConfig.TowerFireRate,
+		rangeDst:     DefaultConfig.TowerRange,
 		game:         g,
-		ammoCapacity: 5,
-		ammo:         make([]struct{}, 5),
+		ammoCapacity: DefaultConfig.TowerAmmoCapacity,
+		ammo:         make([]struct{}, DefaultConfig.TowerAmmoCapacity),
+		damage:       DefaultConfig.TowerDamage,
+		projectiles:  DefaultConfig.TowerProjectiles,
+		bounce:       DefaultConfig.TowerBounce,
 		reloadTime:   0,
 		jammed:       false,
 	}
@@ -64,14 +70,37 @@ func randomReloadLetter() rune {
 
 // ApplyConfig updates tower parameters based on the provided config.
 func (t *Tower) ApplyConfig(cfg Config) {
-	rate := 100
+	if cfg.TowerFireRate > 0 {
+		t.rate = cfg.TowerFireRate
+	}
 	if cfg.F > 0 {
-		rate = int(float64(rate) / cfg.F)
-		if rate < 1 {
-			rate = 1
+		r := int(float64(t.rate) / cfg.F)
+		if r < 1 {
+			r = 1
+		}
+		t.rate = r
+	}
+	if cfg.TowerRange > 0 {
+		t.rangeDst = cfg.TowerRange
+		t.rangeImg = generateRangeImage(t.rangeDst)
+	}
+	if cfg.TowerAmmoCapacity > 0 {
+		t.ammoCapacity = cfg.TowerAmmoCapacity
+		if len(t.ammo) > t.ammoCapacity {
+			t.ammo = t.ammo[:t.ammoCapacity]
+		} else if len(t.ammo) < t.ammoCapacity {
+			t.ammo = append(t.ammo, make([]struct{}, t.ammoCapacity-len(t.ammo))...)
 		}
 	}
-	t.rate = rate
+	if cfg.TowerDamage > 0 {
+		t.damage = cfg.TowerDamage
+	}
+	if cfg.TowerProjectiles > 0 {
+		t.projectiles = cfg.TowerProjectiles
+	}
+	if cfg.TowerBounce >= 0 {
+		t.bounce = cfg.TowerBounce
+	}
 }
 
 // Update handles tower firing logic.
@@ -131,10 +160,20 @@ func (t *Tower) Update() {
 		}
 	}
 	if target != nil && len(t.ammo) > 0 {
-		p := NewProjectile(t.pos.X, t.pos.Y, target)
-		t.game.projectiles = append(t.game.projectiles, p)
+		shots := t.projectiles
+		if shots < 1 {
+			shots = 1
+		}
+		speed := DefaultConfig.ProjectileSpeed
+		if t.game != nil && t.game.cfg != nil && t.game.cfg.ProjectileSpeed > 0 {
+			speed = t.game.cfg.ProjectileSpeed
+		}
+		for i := 0; i < shots && len(t.ammo) > 0; i++ {
+			p := NewProjectile(t.game, t.pos.X, t.pos.Y, target, t.damage, speed, t.bounce)
+			t.game.projectiles = append(t.game.projectiles, p)
+			t.ammo = t.ammo[1:]
+		}
 		t.cooldown = t.rate
-		t.ammo = t.ammo[1:]
 	}
 }
 

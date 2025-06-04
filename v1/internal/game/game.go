@@ -59,9 +59,9 @@ func NewGameWithConfig(cfg Config) *Game {
 		gold:          0,
 		shopOpen:      false,
 		currentWave:   1,
-		spawnInterval: 60,
+		spawnInterval: cfg.SpawnInterval,
 		spawnTicker:   0,
-		mobsToSpawn:   3,
+		mobsToSpawn:   cfg.MobsPerWave,
 		cfg:           &cfg,
 
 		mobs:        make([]*Mob, 0),
@@ -69,7 +69,10 @@ func NewGameWithConfig(cfg Config) *Game {
 	}
 
 	tx, ty := tilePosition(1, 16)
-	hp := int(cfg.J)
+	hp := cfg.BaseHealth
+	if hp == 0 {
+		hp = int(cfg.J)
+	}
 	if hp <= 0 {
 		hp = BaseStartingHealth
 	}
@@ -239,21 +242,38 @@ func drawBackgroundTilemap(screen *ebiten.Image) {
 func (g *Game) spawnMob() {
 	row := rand.Intn(32)
 	x, y := tilePosition(59, row)
-	hp := 1
+	hp := g.cfg.MobBaseHealth
+	if hp == 0 {
+		hp = 1
+	}
 	if g.cfg != nil {
-		hp = int(1 + float64(g.currentWave-1)*g.cfg.N)
+		hp = int(float64(hp) + float64(g.currentWave-1)*g.cfg.N)
 		if hp < 1 {
 			hp = 1
 		}
 	}
-	m := NewMob(float64(x+16), float64(y+16), g.base, hp)
+	speed := g.cfg.MobSpeed
+	if speed == 0 {
+		speed = DefaultConfig.MobSpeed
+	}
+	m := NewMob(float64(x+16), float64(y+16), g.base, hp, speed)
 	g.mobs = append(g.mobs, m)
 }
 
 // startWave initializes spawn counters for the next wave.
 func (g *Game) startWave() {
 	g.spawnTicker = 0
-	g.mobsToSpawn = g.currentWave * 3
+	base := g.cfg.MobsPerWave
+	if base == 0 {
+		base = DefaultConfig.MobsPerWave
+	}
+	inc := g.cfg.MobsPerWaveInc
+	g.mobsToSpawn = base + inc*(g.currentWave-1)
+	if g.cfg.SpawnInterval > 0 {
+		g.spawnInterval = g.cfg.SpawnInterval
+	} else {
+		g.spawnInterval = DefaultConfig.SpawnInterval
+	}
 }
 
 // highlightHoverAndClickAndDrag highlights the tile under the mouse cursor.
@@ -408,7 +428,10 @@ func (g *Game) reloadConfig(path string) error {
 	g.cfg = &cfg
 
 	// apply updated parameters
-	hp := int(cfg.J)
+	hp := cfg.BaseHealth
+	if hp == 0 {
+		hp = int(cfg.J)
+	}
 	if hp <= 0 {
 		hp = BaseStartingHealth
 	}
@@ -416,5 +439,13 @@ func (g *Game) reloadConfig(path string) error {
 	for _, t := range g.towers {
 		t.ApplyConfig(cfg)
 	}
+	if cfg.SpawnInterval > 0 {
+		g.spawnInterval = cfg.SpawnInterval
+	}
+	base := cfg.MobsPerWave
+	if base == 0 {
+		base = DefaultConfig.MobsPerWave
+	}
+	g.mobsToSpawn = base + cfg.MobsPerWaveInc*(g.currentWave-1)
 	return nil
 }

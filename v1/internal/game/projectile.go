@@ -49,11 +49,14 @@ type Projectile struct {
 	speed  float64
 	target *Mob
 	alive  bool
+
+	damage int
+	bounce int
+	game   *Game
 }
 
 // NewProjectile creates a new projectile aimed at the target.
-func NewProjectile(x, y float64, target *Mob) *Projectile {
-	speed := 5.0
+func NewProjectile(g *Game, x, y float64, target *Mob, dmg int, speed float64, bounce int) *Projectile {
 	vx, vy := calcIntercept(x, y, target, speed)
 	w, h := ImgProjectile.Bounds().Dx(), ImgProjectile.Bounds().Dy()
 	return &Projectile{
@@ -70,6 +73,9 @@ func NewProjectile(x, y float64, target *Mob) *Projectile {
 		speed:  speed,
 		target: target,
 		alive:  true,
+		damage: dmg,
+		bounce: bounce,
+		game:   g,
 	}
 }
 
@@ -81,9 +87,31 @@ func (p *Projectile) Update() {
 		dx := p.target.pos.X - p.pos.X
 		dy := p.target.pos.Y - p.pos.Y
 		if math.Hypot(dx, dy) < 16 {
-			p.target.health--
+			p.target.health -= p.damage
 			if p.target.health <= 0 {
 				p.target.alive = false
+			}
+			if p.bounce > 0 && p.game != nil {
+				p.bounce--
+				// pick new target: closest alive mob
+				var next *Mob
+				dist := math.MaxFloat64
+				for _, m := range p.game.mobs {
+					if m.alive && m != p.target {
+						dx := m.pos.X - p.pos.X
+						dy := m.pos.Y - p.pos.Y
+						d := math.Hypot(dx, dy)
+						if d < dist {
+							dist = d
+							next = m
+						}
+					}
+				}
+				if next != nil {
+					p.target = next
+					p.vx, p.vy = calcIntercept(p.pos.X, p.pos.Y, next, p.speed)
+					return
+				}
 			}
 			p.alive = false
 		}

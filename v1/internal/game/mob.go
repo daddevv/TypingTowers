@@ -14,7 +14,7 @@ type Mob struct {
 }
 
 // NewMob returns a new mob at the given position.
-func NewMob(x, y float64, target *Base, hp int) *Mob {
+func NewMob(x, y float64, target *Base, hp int, speed float64) *Mob {
 	w, h := ImgMobA.Bounds().Dx(), ImgMobA.Bounds().Dy()
 	return &Mob{
 		BaseEntity: BaseEntity{
@@ -25,7 +25,7 @@ func NewMob(x, y float64, target *Base, hp int) *Mob {
 			frameAnchorX: float64(w) / 2,
 			frameAnchorY: float64(h) / 2,
 		},
-		speed:  1,
+		speed:  speed,
 		alive:  true,
 		target: target,
 		health: hp,
