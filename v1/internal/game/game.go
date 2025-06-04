@@ -11,7 +11,6 @@ import (
 )
 
 var (
-	TESTING 			   = Testing // Tests set this to true to make tweaks for testing purposes
 	mousePressed bool
 	clickedTileX int
 	clickedTileY int

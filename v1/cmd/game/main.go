@@ -12,6 +12,7 @@ func init() {
 }
 
 func main() {
+	game.InitImages()
 	cfg, err := game.LoadConfig(game.ConfigFile)
 	if err != nil {
 		log.Println("using default config:", err)

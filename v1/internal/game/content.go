@@ -12,28 +12,36 @@ import (
 var (
 	// assetPrefix allows tests to override asset path prefix.
 	assetPrefix = ""
-	// Testing indicates if the package is running in test mode.
-	Testing = false
+	// testFlag indicates if the package is running in test mode.
+	testFlag = false
 
-	ImgBackgroundBasicTiles = generateBackground()
-	ImgBackgroundTile       = loadImage("assets/basic_tile_32.png")
-	ImgHighlightTile        = loadImage("assets/basic_tile_highlight_32.png")
-	ImgHouseTile            = loadImage("assets/blue_house_32.png")
-	ImgBase                 = generateBaseImage()
-	ImgTower                = generateTowerImage()
-	ImgMobA                 = generateMobImage(color.RGBA{255, 0, 0, 255})
-	ImgMobB                 = generateMobImage(color.RGBA{255, 128, 0, 255})
-	ImgProjectile           = generateProjectileImage()
+	ImgBackgroundBasicTiles *ebiten.Image
+	ImgBackgroundTile       *ebiten.Image
+	ImgHighlightTile        *ebiten.Image
+	ImgHouseTile            *ebiten.Image
+	ImgBase                 *ebiten.Image
+	ImgTower                *ebiten.Image
+	ImgMobA                 *ebiten.Image
+	ImgMobB                 *ebiten.Image
+	ImgProjectile           *ebiten.Image
 )
+
+// InitImages loads all image assets. Must be called after setting assetPrefix.
+func InitImages() {
+	ImgBackgroundTile = loadImage("assets/basic_tile_32.png")
+	ImgHighlightTile = loadImage("assets/basic_tile_highlight_32.png")
+	ImgHouseTile = loadImage("assets/blue_house_32.png")
+	ImgBase = generateBaseImage()
+	ImgTower = generateTowerImage()
+	ImgMobA = generateMobImage(color.RGBA{255, 0, 0, 255})
+	ImgMobB = generateMobImage(color.RGBA{255, 128, 0, 255})
+	ImgProjectile = generateProjectileImage()
+	ImgBackgroundBasicTiles = generateBackground()
+}
 
 // loadImage is the utility function to load an image from a file path.
 func loadImage(path string) *ebiten.Image {
-	if Testing {
-		log.Println("Loading image for testing:", path)
-		path = "../../" + path
-	}
-
-	path = filepath.FromSlash(path) // Ensure the path is in the correct format for the OS
+	path = filepath.FromSlash(assetPrefix + path) // Ensure the path is in the correct format for the OS
 	img, _, err := ebitenutil.NewImageFromFile(path)
 	if err != nil {
 		panic(err)

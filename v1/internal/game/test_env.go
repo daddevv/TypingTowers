@@ -2,4 +2,4 @@
 
 package game
 
-var Testing = true
+var testFlag = true
