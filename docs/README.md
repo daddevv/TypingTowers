@@ -25,6 +25,11 @@ All UI and gameplay interactions are designed for Vim/Qutebrowser-style keyboard
   - Press [3] to upgrade fire rate (faster)
   - Each upgrade costs 5 gold and applies to the selected tower
   - Upgrades are available in the shop between waves and are covered by automated unit tests
+- **Enemy Variety**: Multiple enemy types are implemented and tested, including:
+  - **Armored mobs**: Take reduced damage from attacks
+  - **Fast mobs**: Periodically move at burst speed
+  - **Boss mobs**: Appear on milestone waves with high health and unique stats
+  - All mob types are covered by unit tests for instantiation and special abilities
 
 ## Controls
 

@@ -39,6 +39,11 @@ func getFontSource(font string) (*text.GoTextFaceSource, error) {
 }
 
 func loadFont(path string) {
+	//if testing add ../../ to path
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		// If the file does not exist, try to load it from a relative path.
+		path = "../../" + path
+	}
 	// Read the .ttf file into a byte slice.
 	data, err := os.ReadFile(path)
 	if err != nil {

@@ -4,9 +4,11 @@
 
 ### Multiple Tower Placement & Management (Vim/Qutebrowser Navigation)
 
-- [ ] Implement additional tower types (sniper, rapid-fire) with unique mechanics and balance for strategic variety.
+- [x] Implement additional tower types (sniper, rapid-fire) with unique mechanics and balance for strategic variety.
+- [x] Ensure sniper tower has longer range and rapid-fire tower has faster fire rate than basic tower. Add/verify unit tests for these properties.
 - [ ] Implement tower type selection in shop/build menu (keyboard-driven).
-- [ ] Refactor tower creation to efficiently support multiple tower types.
+- [x] Refactor tower creation to efficiently support multiple tower types.
+- [x] Fix and expand unit tests to verify correct tower type is built and gold is deducted appropriately.
 
 ### Enhanced Enemy Variety
 
@@ -14,6 +16,8 @@
 - [x] Add special enemies requiring specific letter combinations or words.
 - [x] Design and implement boss enemies for milestone waves.
 - [x] Abstract enemy creation for extensibility.
+- [x] Ensure new mob types (boss, armored, fast) are properly implemented and tested for unique behaviors and stats.
+- [x] Add/verify unit tests for mob type instantiation and special abilities.
 
 ### Typing Performance & Metrics
 
@@ -35,6 +39,8 @@
   - Shop upgrades for selected towers.
   - Word-based reloading.
   - Vim/Qutebrowser-style navigation for all UI/UX.
+  - Tower type properties (range, fire rate, etc.) and correct instantiation.
+  - Mob type properties (health, speed, abilities) and correct instantiation.
 - [ ] Add integration tests for complex interactions (e.g., multiple towers targeting, shop affecting game state).
 - [ ] Optimize performance for large numbers of entities.
 

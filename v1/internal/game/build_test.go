@@ -17,7 +17,7 @@ func TestBuildTowerCostsGold(t *testing.T) {
 	if g.gold != 5 {
 		t.Fatalf("expected gold 5 got %d", g.gold)
 	}
-	if g.towers[0].towerType != TowerSniper {
+	if g.towers[len(g.towers)-1].towerType != TowerSniper {
 		t.Fatalf("expected sniper tower type")
 	}
 }

@@ -42,8 +42,8 @@ func TestTypingStatsCombo(t *testing.T) {
 
 func TestScoreMultiplierAndHistory(t *testing.T) {
 	ts := NewTypingStats()
-	ts.start = ts.start.Add(-time.Minute)
-	for i := 0; i < 50; i++ {
+	ts.start = ts.start.Add(-10 * time.Second) // simulate 100 correct in 10 seconds (high WPM)
+	for i := 0; i < 100; i++ {
 		ts.Record(true)
 	}
 	if ts.ScoreMultiplier() <= 1 {

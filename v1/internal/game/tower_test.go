@@ -22,7 +22,7 @@ func TestTowerApplyConfig(t *testing.T) {
 }
 
 func TestTowerReloadQueue(t *testing.T) {
-	g := &Game{cfg: &DefaultConfig}
+	g := &Game{cfg: &DefaultConfig, input: NewInput(), typing: NewTypingStats()}
 	tower := NewTower(g, 0, 0)
 
 	// Consume all ammo to trigger reload queue
@@ -49,7 +49,7 @@ func TestTowerReloadQueue(t *testing.T) {
 }
 
 func TestTowerReloadSequence(t *testing.T) {
-	g := &Game{cfg: &DefaultConfig}
+	g := &Game{cfg: &DefaultConfig, input: NewInput(), typing: NewTypingStats()}
 	tower := NewTower(g, 0, 0)
 	tower.SetReloadSequence([]rune{'a', 'b', 'c'})
 	for i := 0; i < tower.ammoCapacity; i++ {
@@ -63,7 +63,7 @@ func TestTowerReloadSequence(t *testing.T) {
 }
 
 func TestTowerAmmoQueue(t *testing.T) {
-	g := &Game{cfg: &DefaultConfig}
+	g := &Game{cfg: &DefaultConfig, input: NewInput(), typing: NewTypingStats()}
 	tower := NewTower(g, 0, 0)
 
 	// Test initial ammo state
@@ -84,7 +84,7 @@ func TestTowerAmmoQueue(t *testing.T) {
 }
 
 func TestTowerAmmoCapacityUpgrade(t *testing.T) {
-	g := &Game{cfg: &DefaultConfig}
+	g := &Game{cfg: &DefaultConfig, input: NewInput(), typing: NewTypingStats()}
 	tower := NewTower(g, 0, 0)
 
 	initialCapacity := tower.ammoCapacity
@@ -103,7 +103,7 @@ func TestTowerAmmoCapacityUpgrade(t *testing.T) {
 }
 
 func TestTowerJamming(t *testing.T) {
-	g := &Game{}
+	g := &Game{input: NewInput(), typing: NewTypingStats()}
 	tower := NewTower(g, 0, 0)
 
 	// Consume ammo to trigger reload
@@ -135,7 +135,7 @@ func TestTowerJamming(t *testing.T) {
 }
 
 func TestUpgradePurchasing(t *testing.T) {
-	g := &Game{gold: 25, cfg: &DefaultConfig}
+	g := &Game{gold: 25, cfg: &DefaultConfig, input: NewInput(), typing: NewTypingStats()}
 	tower := NewTower(g, 0, 0)
 	g.towers = []*Tower{tower}
 
@@ -195,7 +195,7 @@ func TestUpgradePurchasing(t *testing.T) {
 }
 
 func TestSingleUpgradePurchase(t *testing.T) {
-	g := &Game{gold: 100, cfg: &DefaultConfig}
+	g := &Game{gold: 100, cfg: &DefaultConfig, input: NewInput(), typing: NewTypingStats()}
 	tower := NewTower(g, 0, 0)
 	g.towers = []*Tower{tower}
 
@@ -238,7 +238,7 @@ func TestSingleUpgradePurchase(t *testing.T) {
 }
 
 func TestNewTowerTypes(t *testing.T) {
-	g := &Game{cfg: &DefaultConfig}
+	g := &Game{cfg: &DefaultConfig, input: NewInput(), typing: NewTypingStats()}
 	sniper := NewTowerWithType(g, 0, 0, TowerSniper)
 	rapid := NewTowerWithType(g, 0, 0, TowerRapid)
 	if sniper.towerType != TowerSniper || rapid.towerType != TowerRapid {

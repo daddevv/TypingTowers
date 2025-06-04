@@ -116,3 +116,5 @@ After all letters are unlocked, waves can grow more challenging by reducing `spa
 ## Summary
 
 Balancing revolves around keeping the ratio of tower damage and firing speed ahead of mob health and spawn rate, while also accounting for projectile travel time, reload throughput, and overlapping spawns. By monitoring `TTK_total`, `Tsurvive`, and reload throughput, we can tune parameters so that any player who types each letter correctly can survive the wave. Difficulty can ramp up slowly through additional mobs per wave and moderate increases to health or speed, ensuring the game remains fun while serving as effective typing practice.
+
+All new mob types (armored, fast, boss) and their special abilities are implemented and covered by unit tests to ensure correct behaviors and stats.

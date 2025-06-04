@@ -67,7 +67,7 @@ func NewBossMob(x, y float64, target *Base, hp int, speed float64) *Mob {
 }
 
 // Update moves the mob and handles animation.
-func (m *Mob) Update(dt float64) {
+func (m *Mob) Update(dt float64) error {
 	spd := m.speed
 	if m.burst > 0 {
 		if m.burstCD > 0 {
@@ -98,6 +98,7 @@ func (m *Mob) Update(dt float64) {
 	} else {
 		m.frame = ImgMobB
 	}
+	return nil
 }
 
 // Velocity returns the mob's current velocity components.

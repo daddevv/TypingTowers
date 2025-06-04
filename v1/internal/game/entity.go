@@ -9,7 +9,7 @@ type Entity interface {
 	Frame() *ebiten.Image              // Get the current image frame of the entity (static or animated)
 	Update(dt float64) error           // Update the entity state using delta time
 	Draw(screen *ebiten.Image)         // Draw the entity to the screen
-	Position() (x, y int)              // Get the current position of the entity
+	Position() (x, y float64)          // Get the current position of the entity
 	Bounds() (x, y, width, height int) // Get the bounding box of the entity
 	Hitbox() (x, y, width, height int) // Get the hitbox of the entity
 	Static() bool                      // Check if the entity is static (does not move)

@@ -16,7 +16,8 @@ Note: Each parameter has a base value and a multiplier that can be applied to sc
 - Healing: `MobBaseHealing` * `MobHealingMultiplier`
 - Regeneration: `MobBaseRegen` * `MobRegenMultiplier`
 - Evasion: `MobBaseEvasion` * `MobEvasionMultiplier`
-- Special Abilities: (e.g., shield, split, spawn, flying, etc.)
+- Special Abilities: (e.g., shield, split, spawn, flying, etc.)  
+  - **Implemented and tested:** Armor, shield, burst (fast), boss
 - Spawn Interval: `MobBaseSpawnInterval` * `MobSpawnIntervalMultiplier`
 - Mobs per Wave: `MobsPerWaveBase` + (`WaveNumber` - 1) * `MobsPerWaveGrowth`
 - Wave Growth: `MobsPerWaveGrowth`
