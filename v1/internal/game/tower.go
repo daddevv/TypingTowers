@@ -40,7 +40,7 @@ func NewTower(g *Game, x, y float64) *Tower {
 			static:       true,
 		},
 		rate:         100,
-		rangeDst:     300,
+		rangeDst:     500,
 		game:         g,
 		ammoCapacity: 5,
 		ammo:         5,

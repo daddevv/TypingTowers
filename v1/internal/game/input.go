@@ -9,6 +9,8 @@ type InputHandler interface {
 	TypedChars() []rune // TypedChars returns any characters typed since the last Update call
 	Update()            // Update processes input events and updates the Input state
 	Reset()             // Reset resets the Input state to its default values
+	Backspace() bool    // Backspace reports if backspace was pressed since the last Update call
+	Space() bool        // Space reports if the space bar was pressed since the last Update call
 	Quit() bool         // Quit returns whether the game should quit
 	Reload() bool       // Reload returns whether config reload was requested
 }
