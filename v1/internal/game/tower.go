@@ -76,6 +76,13 @@ func NewTowerWithTypeAndLevel(g *Game, x, y float64, tt TowerType, level int) *T
 		level = 5
 	}
 	w, h := ImgTower.Bounds().Dx(), ImgTower.Bounds().Dy()
+
+	// Get config from game if available, otherwise use default
+	cfg := DefaultConfig
+	if g != nil && g.cfg != nil {
+		cfg = *g.cfg
+	}
+
 	t := &Tower{
 		BaseEntity: BaseEntity{
 			pos:          Point{x, y},
@@ -86,37 +93,19 @@ func NewTowerWithTypeAndLevel(g *Game, x, y float64, tt TowerType, level int) *T
 			frameAnchorY: float64(h) / 2,
 			static:       true,
 		},
-		rate:         DefaultConfig.TowerFireRate, // seconds
-		rangeDst:     DefaultConfig.TowerRange,
+		rate:         cfg.TowerFireRate, // seconds
+		rangeDst:     cfg.TowerRange,
 		game:         g,
-		ammoCapacity: DefaultConfig.TowerAmmoCapacity,
-		damage:       DefaultConfig.TowerDamage,
-		projectiles:  DefaultConfig.TowerProjectiles,
-		bounce:       DefaultConfig.TowerBounce,
+		ammoCapacity: cfg.TowerAmmoCapacity,
+		damage:       cfg.TowerDamage,
+		projectiles:  cfg.TowerProjectiles,
+		bounce:       cfg.TowerBounce,
 		level:        level,
 		jammed:       false,
 		foresight:    5,
 		damageBonus:  0,
 		towerType:    tt,
 	}
-
-	// Apply base stats based on tower type
-	switch tt {
-	case TowerSniper:
-		t.damage *= 3
-		t.rangeDst *= 1.5
-		t.rate *= 2
-		t.ammoCapacity = 3
-	case TowerRapid:
-		if t.damage > 1 {
-			t.damage /= 2
-		}
-		t.rangeDst *= 0.7
-		t.rate *= 0.5
-		t.ammoCapacity = 6
-	}
-
-	t.applyLevel()
 
 	// Initialize ammo queue with full capacity
 	t.ammoQueue = make([]bool, t.ammoCapacity)
@@ -125,10 +114,49 @@ func NewTowerWithTypeAndLevel(g *Game, x, y float64, tt TowerType, level int) *T
 	}
 	t.reloadQueue = make([]rune, 0)
 
+	// Generate range image
 	t.rangeImg = generateRangeImage(t.rangeDst)
+	
+	// Apply game config if available
 	if g.cfg != nil {
 		t.ApplyConfig(*g.cfg)
 	}
+	
+	// Apply tower type-specific stats AFTER config application
+	// to ensure tower types maintain their unique characteristics
+	switch tt {
+	case TowerSniper:
+		t.damage *= 3
+		t.rangeDst *= 2.0      // Ensure sniper has significantly longer range
+		t.rate *= 2.5          // slower fire rate (higher value = slower)
+		t.ammoCapacity = 3
+	case TowerRapid:
+		if t.damage > 1 {
+			t.damage /= 2
+		}
+		t.rangeDst *= 0.7
+		t.rate *= 0.4          // faster fire rate (lower value = faster)
+		t.ammoCapacity = 6
+	}
+
+	// Apply level upgrades after all type-specific modifications
+	t.applyLevel()
+	
+	// Regenerate range image with the final range distance
+	t.rangeImg = generateRangeImage(t.rangeDst)
+	
+	// Ensure ammo capacity is consistent with the queue size
+	if len(t.ammoQueue) != t.ammoCapacity {
+		newAmmoQueue := make([]bool, t.ammoCapacity)
+		for i := 0; i < t.ammoCapacity && i < len(t.ammoQueue); i++ {
+			newAmmoQueue[i] = t.ammoQueue[i]
+		}
+		for i := len(t.ammoQueue); i < t.ammoCapacity; i++ {
+			newAmmoQueue[i] = true
+		}
+		t.ammoQueue = newAmmoQueue
+	}
+	
 	return t
 }
 
@@ -156,7 +184,7 @@ func (t *Tower) applyLevel() {
 		t.rate *= 0.6
 		t.ammoCapacity += 4
 	}
-	t.rangeImg = generateRangeImage(t.rangeDst)
+	// Note: range image will be regenerated in the main constructor
 }
 
 func (t *Tower) randomReloadLetter() rune {

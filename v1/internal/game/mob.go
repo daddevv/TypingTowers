@@ -53,8 +53,8 @@ func NewArmoredMob(x, y float64, target *Base, hp, armor int, speed float64) *Mo
 func NewFastMob(x, y float64, target *Base, hp int, speed, burst float64) *Mob {
 	m := NewMob(x, y, target, hp, speed)
 	m.burst = burst
-	m.burstCD = 2
-	m.burstDur = 0.5
+	m.burstCD = 2.0  // Start with cooldown
+	m.burstDur = 0   // Not in burst phase initially
 	m.mobType = MobFast
 	return m
 }
@@ -69,18 +69,30 @@ func NewBossMob(x, y float64, target *Base, hp int, speed float64) *Mob {
 // Update moves the mob and handles animation.
 func (m *Mob) Update(dt float64) error {
 	spd := m.speed
+
+	// Handle burst mechanics for fast mobs
 	if m.burst > 0 {
 		if m.burstCD > 0 {
+			// Cooldown phase - decrement timer
 			m.burstCD -= dt
+			if m.burstCD <= 0 {
+				// Cooldown finished, start burst phase
+				m.burstCD = 0
+				m.burstDur = 0.5  // Set burst duration
+			}
 		} else if m.burstDur > 0 {
-			spd *= m.burst
+			// Burst phase - apply speed multiplier
+			spd = m.speed * m.burst
 			m.burstDur -= dt
 			if m.burstDur <= 0 {
-				m.burstCD = 2
-				m.burstDur = 0.5
+				// Burst finished, reset to cooldown
+				m.burstDur = 0
+				m.burstCD = 2.0  // Reset cooldown
 			}
 		}
 	}
+
+	// Calculate velocity based on target direction and current speed
 	if m.target != nil {
 		dx := m.target.pos.X - m.pos.X
 		dy := m.target.pos.Y - m.pos.Y
@@ -90,8 +102,12 @@ func (m *Mob) Update(dt float64) error {
 			m.vy = dy / dist * spd
 		}
 	}
+
+	// Update position
 	m.pos.X += m.vx * dt
 	m.pos.Y += m.vy * dt
+
+	// Handle animation
 	m.animTicker += dt
 	if int(m.animTicker/0.25)%2 == 0 {
 		m.frame = ImgMobA
