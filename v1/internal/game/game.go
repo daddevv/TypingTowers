@@ -66,6 +66,9 @@ type Game struct {
 	letterPool  []rune
 	unlockStage int
 
+	cursorX int
+	cursorY int
+
 	lastUpdate time.Time
 }
 
@@ -99,6 +102,8 @@ func NewGameWithConfig(cfg Config) *Game {
 		projectiles: make([]*Projectile, 0),
 		letterPool:  make([]rune, 0),
 		unlockStage: 0,
+		cursorX:     2,
+		cursorY:     16,
 	}
 
 	tx, ty := tilePosition(1, 16)
@@ -129,7 +134,36 @@ func (g *Game) Update() error {
 	}
 	g.lastUpdate = now
 	g.input.Update()
-	g.input.Update()
+
+	if !g.shopOpen {
+		if g.input.Left() {
+			g.cursorX--
+		}
+		if g.input.Right() {
+			g.cursorX++
+		}
+		if g.input.Up() {
+			g.cursorY--
+		}
+		if g.input.Down() {
+			g.cursorY++
+		}
+		if g.cursorX < 0 {
+			g.cursorX = 0
+		}
+		if g.cursorX > 59 {
+			g.cursorX = 59
+		}
+		if g.cursorY < 0 {
+			g.cursorY = 0
+		}
+		if g.cursorY > 33 {
+			g.cursorY = 33
+		}
+		if g.input.Build() {
+			g.buildTowerAtCursor()
+		}
+	}
 
 	if g.input.Reload() {
 		if err := g.reloadConfig(ConfigFile); err != nil {
@@ -343,6 +377,17 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		m.Draw(g.screen)
 	}
 
+	if !g.shopOpen {
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(float64(g.cursorX*TileSize), float64(TopMargin+g.cursorY*TileSize))
+		if g.validTowerPosition(g.cursorX, g.cursorY) {
+			g.screen.DrawImage(ImgHighlightTile, op)
+		} else {
+			// draw red rectangle for invalid position
+			vector.DrawFilledRect(g.screen, float32(g.cursorX*TileSize), float32(TopMargin+g.cursorY*TileSize), float32(TileSize), float32(TileSize), color.RGBA{255, 0, 0, 100}, false)
+		}
+	}
+
 	if g.paused {
 		opts := &text.DrawOptions{}
 		opts.GeoM.Translate(900, 520)
@@ -402,6 +447,46 @@ func (g *Game) spawnMob() {
 	}
 	m := NewMob(float64(x+16), float64(y+16), g.base, hp, speed)
 	g.mobs = append(g.mobs, m)
+}
+
+func (g *Game) validTowerPosition(tileX, tileY int) bool {
+	if tileX < 0 || tileX > 59 || tileY < 0 || tileY > 33 {
+		return false
+	}
+	tx, ty := tilePosition(tileX, tileY)
+	px := float64(tx + TileSize/2)
+	py := float64(ty + TileSize/2)
+	bx, by, bw, bh := g.base.Bounds()
+	if int(px) >= bx && int(px) <= bx+bw && int(py) >= by && int(py) <= by+bh {
+		return false
+	}
+	for _, t := range g.towers {
+		x, y, w, h := t.Bounds()
+		if int(px) >= x && int(px) <= x+w && int(py) >= y && int(py) <= y+h {
+			return false
+		}
+	}
+	return true
+}
+
+func (g *Game) buildTowerAtCursor() {
+	if g.cfg == nil {
+		return
+	}
+	cost := g.cfg.TowerConstructionCost
+	if cost == 0 {
+		cost = DefaultConfig.TowerConstructionCost
+	}
+	if g.gold < cost {
+		return
+	}
+	if !g.validTowerPosition(g.cursorX, g.cursorY) {
+		return
+	}
+	tx, ty := tilePosition(g.cursorX, g.cursorY)
+	t := NewTower(g, float64(tx+TileSize/2), float64(ty+TileSize/2))
+	g.towers = append(g.towers, t)
+	g.gold -= cost
 }
 
 // startWave initializes spawn counters for the next wave.
