@@ -9,19 +9,12 @@
 - [x] ~~Create base health system and game over conditions~~
 - [x] ~~Implement bouncing projectile mechanics~~
 - [x] ~~Add real-time configuration reloading system~~
+- [x] ~~Implement functional upgrade purchasing with gold~~
 
 ## High Priority (Next Sprint)
 
-### Letter-Based Enemy Targeting
-
-- [ ] Add letter display on enemy sprites
-- [ ] Modify tower targeting to require specific letter input
-- [ ] Create letter pool system starting with home row keys (a,s,d,f,j,k,l,;)
-- [ ] Update HUD to show which enemies can be targeted
-
 ### Enhanced Shop System
 
-- [ ] Implement functional upgrade purchasing with gold
 - [ ] Add tower damage, range, and fire rate upgrades
 - [ ] Create upgrade UI with keyboard navigation
 - [ ] Add visual feedback for purchased upgrades

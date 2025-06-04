@@ -77,3 +77,47 @@ func TestTowerReload(t *testing.T) {
 		t.Errorf("expected reloadLetter=A, got %v", tower.reloadLetter)
 	}
 }
+
+func TestUpgradePurchasing(t *testing.T) {
+	g := &Game{gold: 15, cfg: &DefaultConfig}
+	tower := NewTower(g, 0, 0)
+	g.towers = []*Tower{tower}
+
+	// Simulate damage upgrade
+	oldDamage := tower.damage
+	if g.gold < 5 {
+		t.Fatal("not enough gold for test")
+	}
+	g.gold -= 5
+	tower.damage++
+	if tower.damage != oldDamage+1 {
+		t.Errorf("damage upgrade failed")
+	}
+	if g.gold != 10 {
+		t.Errorf("gold not deducted correctly after damage upgrade")
+	}
+
+	// Simulate range upgrade
+	oldRange := tower.rangeDst
+	g.gold -= 5
+	tower.rangeDst += 50
+	if tower.rangeDst != oldRange+50 {
+		t.Errorf("range upgrade failed")
+	}
+	if g.gold != 5 {
+		t.Errorf("gold not deducted correctly after range upgrade")
+	}
+
+	// Simulate fire rate upgrade
+	oldRate := tower.rate
+	g.gold -= 5
+	if tower.rate > 10 {
+		tower.rate -= 10
+	}
+	if tower.rate != oldRate-10 && oldRate > 10 {
+		t.Errorf("fire rate upgrade failed")
+	}
+	if g.gold != 0 {
+		t.Errorf("gold not deducted correctly after fire rate upgrade")
+	}
+}

@@ -9,6 +9,7 @@ TypingTowers is a keyboard-controlled tower defense game built with [Ebiten](htt
 - **Manual Reloading**: When a tower's ammo runs low, players must type the prompted letters ('f' or 'j') to reload
 - **Jamming System**: Typing incorrect letters jams the tower, requiring backspace to clear
 - **Progressive Difficulty**: Each wave spawns more enemies with increased health
+- **Upgrade Purchasing**: Spend gold earned from defeating enemies to upgrade tower damage, range, and fire rate between waves
 
 ## Controls
 
@@ -61,6 +62,7 @@ Code should be formatted with `gofmt` and accompanied by unit tests when possibl
 - Real-time configuration reloading
 - Projectile intercept calculations for moving targets
 - Bouncing projectile mechanics
+- Upgrade purchasing system using gold between waves
 
 ## Automation
 

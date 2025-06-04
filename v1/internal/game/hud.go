@@ -19,6 +19,17 @@ func NewHUD(g *Game) *HUD {
 
 // Draw renders ammo count and reload prompts.
 func (h *HUD) Draw(screen *ebiten.Image) {
+	if h.game.shopOpen {
+		gold := h.game.gold
+		msg := "-- SHOP --\n"
+		msg += fmt.Sprintf("Gold: %d\n", gold)
+		msg += "[1] Upgrade Damage (+1): 5 gold\n"
+		msg += "[2] Upgrade Range (+50): 5 gold\n"
+		msg += "[3] Upgrade Fire Rate (faster): 5 gold\n"
+		msg += "Press Enter to start next wave"
+		ebitenutil.DebugPrintAt(screen, msg, 700, 300)
+		return
+	}
 	if len(h.game.towers) == 0 {
 		return
 	}

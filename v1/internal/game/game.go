@@ -50,7 +50,7 @@ func NewGameWithConfig(cfg Config) *Game {
 	ebiten.SetWindowTitle("TypingTowers")
 	ebiten.SetWindowSize(1920/8, 1080/8)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
-	// ebiten.SetFullscreen(true)
+	ebiten.SetFullscreen(true)
 
 	g := &Game{
 		screen:        ebiten.NewImage(1920, 1080),
@@ -113,6 +113,31 @@ func (g *Game) Update() error {
 	}
 
 	if g.shopOpen {
+		// Upgrade options and costs
+		const (
+			upgradeDamageCost = 5
+			upgradeRangeCost  = 5
+			upgradeFireRateCost = 5
+		)
+		if len(g.towers) > 0 {
+			tower := g.towers[0]
+			// Handle upgrade input
+			if ebiten.IsKeyPressed(ebiten.Key1) && g.gold >= upgradeDamageCost {
+				g.gold -= upgradeDamageCost
+				tower.damage++
+			}
+			if ebiten.IsKeyPressed(ebiten.Key2) && g.gold >= upgradeRangeCost {
+				g.gold -= upgradeRangeCost
+				tower.rangeDst += 50
+				tower.rangeImg = generateRangeImage(tower.rangeDst)
+			}
+			if ebiten.IsKeyPressed(ebiten.Key3) && g.gold >= upgradeFireRateCost {
+				g.gold -= upgradeFireRateCost
+				if tower.rate > 10 {
+					tower.rate -= 10 // Lower rate means faster fire
+				}
+			}
+		}
 		if g.input.Enter() {
 			g.shopOpen = false
 			g.currentWave++
