@@ -236,3 +236,18 @@ func TestSingleUpgradePurchase(t *testing.T) {
 		t.Errorf("gold should not change with insufficient funds, changed from %d to %d", oldGold, g.gold)
 	}
 }
+
+func TestNewTowerTypes(t *testing.T) {
+	g := &Game{cfg: &DefaultConfig}
+	sniper := NewTowerWithType(g, 0, 0, TowerSniper)
+	rapid := NewTowerWithType(g, 0, 0, TowerRapid)
+	if sniper.towerType != TowerSniper || rapid.towerType != TowerRapid {
+		t.Fatalf("tower types not set correctly")
+	}
+	if sniper.rangeDst <= rapid.rangeDst {
+		t.Errorf("sniper should have longer range")
+	}
+	if rapid.rate >= sniper.rate {
+		t.Errorf("rapid tower should fire faster")
+	}
+}
