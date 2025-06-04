@@ -27,12 +27,6 @@ A keyboard-focused tower defense game that combines strategic placement with typ
 
 ## Phase 1: Enhanced Typing Mechanics 🎯
 
-### Letter-Based Targeting
-
-- **Enemy Letters**: Each enemy displays a letter that must be typed to target it
-- **Selective Targeting**: Tower fires only when the correct enemy letter is typed
-- **Letter Pools**: Start with home row keys, expand as players progress
-
 ### Advanced Reload System
 
 - **Word-Based Reloading**: Replace single letters with short words (e.g., "reload", "fire")
@@ -89,6 +83,7 @@ A keyboard-focused tower defense game that combines strategic placement with typ
 - Add multiple tower placement system (keyboard-driven, Vim/Qutebrowser navigation)
 - Expand shop functionality with real upgrades (keyboard-driven)
 - Create comprehensive unit test coverage
+- **TODO:** Standardize all config/game parameters to use pixels (px) and milliseconds (ms) for measurements
 
 ### Medium Term (1-3 months)
 

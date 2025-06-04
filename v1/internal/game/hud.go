@@ -53,6 +53,30 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 			}
 			lines = append(lines, prefix+opt)
 		}
+	} else if h.game.buildMenuOpen {
+		cost := h.game.cfg.TowerConstructionCost
+		if cost == 0 {
+			cost = DefaultConfig.TowerConstructionCost
+		}
+		lines = append(lines, "-- BUILD --")
+		lines = append(lines, fmt.Sprintf("Gold: %d", h.game.gold))
+		options := []string{
+			"[1] Basic Tower",
+			"[2] Sniper Tower",
+			"[3] Rapid Tower",
+			"Cancel",
+		}
+		for i, opt := range options {
+			prefix := "  "
+			if i == h.game.buildCursor {
+				prefix = "> "
+			}
+			if i < 3 {
+				lines = append(lines, fmt.Sprintf("%s%s (%d gold)", prefix, opt, cost))
+			} else {
+				lines = append(lines, prefix+opt)
+			}
+		}
 	} else {
 		if len(h.game.towers) > 0 {
 			t := h.game.towers[h.game.selectedTower]

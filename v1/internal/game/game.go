@@ -81,6 +81,9 @@ type Game struct {
 	settingsOpen   bool
 	settingsCursor int
 
+	buildMenuOpen bool
+	buildCursor   int
+
 	sound    *SoundManager
 	settings Settings
 }
@@ -122,6 +125,8 @@ func NewGameWithConfig(cfg Config) *Game {
 		cursorY:       16,
 		sound:         NewSoundManager(),
 		settings:      DefaultSettings(),
+		buildMenuOpen: false,
+		buildCursor:   0,
 	}
 
 	tx, ty := tilePosition(1, 16)
@@ -154,6 +159,43 @@ func (g *Game) Update() error {
 	g.lastUpdate = now
 	g.input.Update()
 
+	if g.buildMenuOpen {
+		const optionsCount = 4
+		if g.input.Down() {
+			g.buildCursor = (g.buildCursor + 1) % optionsCount
+		}
+		if g.input.Up() {
+			g.buildCursor = (g.buildCursor - 1 + optionsCount) % optionsCount
+		}
+		if inpututil.IsKeyJustPressed(ebiten.Key1) {
+			g.buildTowerAtCursorType(TowerBasic)
+			g.buildMenuOpen = false
+		}
+		if inpututil.IsKeyJustPressed(ebiten.Key2) {
+			g.buildTowerAtCursorType(TowerSniper)
+			g.buildMenuOpen = false
+		}
+		if inpututil.IsKeyJustPressed(ebiten.Key3) {
+			g.buildTowerAtCursorType(TowerRapid)
+			g.buildMenuOpen = false
+		}
+		if g.input.Enter() {
+			switch g.buildCursor {
+			case 0:
+				g.buildTowerAtCursorType(TowerBasic)
+			case 1:
+				g.buildTowerAtCursorType(TowerSniper)
+			case 2:
+				g.buildTowerAtCursorType(TowerRapid)
+			}
+			g.buildMenuOpen = false
+		}
+		if g.input.Build() {
+			g.buildMenuOpen = false
+		}
+		return nil
+	}
+
 	if !g.shopOpen {
 		if g.input.Left() {
 			g.cursorX--
@@ -180,7 +222,8 @@ func (g *Game) Update() error {
 			g.cursorY = 33
 		}
 		if g.input.Build() {
-			g.buildTowerAtCursor()
+			g.buildMenuOpen = true
+			g.buildCursor = 0
 		}
 	}
 
@@ -581,6 +624,10 @@ func (g *Game) validTowerPosition(tileX, tileY int) bool {
 }
 
 func (g *Game) buildTowerAtCursor() {
+	g.buildTowerAtCursorType(TowerBasic)
+}
+
+func (g *Game) buildTowerAtCursorType(tt TowerType) {
 	if g.cfg == nil {
 		return
 	}
@@ -595,7 +642,7 @@ func (g *Game) buildTowerAtCursor() {
 		return
 	}
 	tx, ty := tilePosition(g.cursorX, g.cursorY)
-	t := NewTower(g, float64(tx+TileSize/2), float64(ty+TileSize/2))
+	t := NewTowerWithType(g, float64(tx+TileSize/2), float64(ty+TileSize/2), tt)
 	t.ApplyModifiers(g.towerMods)
 	g.towers = append(g.towers, t)
 	g.gold -= cost
