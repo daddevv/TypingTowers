@@ -58,8 +58,8 @@
 
 ### Letter Pool Progression
 
-- [ ] Design: System for unlocking/expanding available letters for reloading (e.g., start with f and j, proceed to other index fingers, then middle then ring then pinky, unlock more via shop or wave progression).
-- [ ] Implement: Mechanism to expand the letter pool.
+- [x] ~~Design: System for unlocking/expanding available letters for reloading (e.g., start with f and j, proceed to other index fingers, then middle then ring then pinky, unlock more via shop or wave progression).~~
+- [x] ~~Implement: Mechanism to expand the letter pool.~~
 
 ## Medium Priority (Next Month)
 

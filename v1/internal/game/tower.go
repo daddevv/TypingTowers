@@ -66,8 +66,11 @@ func NewTower(g *Game, x, y float64) *Tower {
 	return t
 }
 
-func randomReloadLetter() rune {
-	// randomly return either 'f' or 'j' for reload prompts
+func (t *Tower) randomReloadLetter() rune {
+	if t.game != nil {
+		return t.game.randomReloadLetter()
+	}
+	// fallback if game is nil
 	if rand.Intn(2) == 0 {
 		return 'f'
 	}
@@ -145,7 +148,7 @@ func (t *Tower) fillReloadQueue() {
 
 	// Add letters to reload queue to match empty slots
 	for len(t.reloadQueue) < emptySlots {
-		t.reloadQueue = append(t.reloadQueue, randomReloadLetter())
+		t.reloadQueue = append(t.reloadQueue, t.randomReloadLetter())
 	}
 }
 

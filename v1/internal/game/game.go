@@ -19,6 +19,24 @@ var (
 	houses       = make(map[string]struct{})
 )
 
+// letterUnlockSequence defines the order that new reload letters become
+// available as the player progresses through waves.
+var letterUnlockSequence = [][]rune{
+	{'f', 'j'}, // starting home row index fingers
+	{'d', 'k'}, // remaining index fingers
+	{'s', 'l'}, // middle fingers
+	{'a'},      // ring finger left (skip ';' for simplicity)
+	{'g', 'h'}, // inner index letters
+	{'q', 'p'}, // pinky top row
+	{'e', 'i'}, // middle top row
+	{'r', 'u'}, // index top row
+	{'t', 'y'}, // index top row outer
+	{'w', 'o'}, // ring/pinky top row
+	{'c', 'm'}, // bottom row center
+	{'v', 'n'}, // bottom row index
+	{'x', 'z'}, // bottom row outside
+}
+
 // Game represents the game state and implements ebiten.Game interface.
 type Game struct {
 	screen      *ebiten.Image
@@ -40,6 +58,9 @@ type Game struct {
 	spawnInterval float64
 	spawnTicker   float64
 	mobsToSpawn   int
+
+	letterPool  []rune
+	unlockStage int
 
 	lastUpdate time.Time
 }
@@ -70,6 +91,8 @@ func NewGameWithConfig(cfg Config) *Game {
 
 		mobs:        make([]*Mob, 0),
 		projectiles: make([]*Projectile, 0),
+		letterPool:  make([]rune, 0),
+		unlockStage: 0,
 	}
 
 	tx, ty := tilePosition(1, 16)
@@ -320,6 +343,38 @@ func (g *Game) startWave() {
 	inc := g.cfg.MobsPerWaveInc
 	g.mobsToSpawn = base + inc*(g.currentWave-1)
 	g.spawnInterval = g.cfg.SpawnInterval // already in seconds
+
+	// Unlock new reload letters as waves progress
+	g.unlockNextLetters()
+}
+
+// unlockNextLetters adds the next set of letters from the unlock sequence to
+// the game's letter pool. Once all letters are unlocked this method does
+// nothing.
+func (g *Game) unlockNextLetters() {
+	if g.unlockStage >= len(letterUnlockSequence) {
+		return
+	}
+	letters := letterUnlockSequence[g.unlockStage]
+	existing := make(map[rune]struct{})
+	for _, r := range g.letterPool {
+		existing[r] = struct{}{}
+	}
+	for _, r := range letters {
+		if _, ok := existing[r]; !ok {
+			g.letterPool = append(g.letterPool, r)
+		}
+	}
+	g.unlockStage++
+}
+
+// randomReloadLetter returns a random letter from the current letter pool.
+// If no letters have been unlocked, 'f' is returned as a safe default.
+func (g *Game) randomReloadLetter() rune {
+	if len(g.letterPool) == 0 {
+		return 'f'
+	}
+	return g.letterPool[rand.Intn(len(g.letterPool))]
 }
 
 // highlightHoverAndClickAndDrag highlights the tile under the mouse cursor.
