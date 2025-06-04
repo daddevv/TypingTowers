@@ -23,7 +23,7 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 		return
 	}
 	t := h.game.towers[0]
-	ammo := fmt.Sprintf("Ammo: %d/%d", t.ammo, t.ammoCapacity)
+	ammo := fmt.Sprintf("Ammo: %d/%d", len(t.ammo), t.ammoCapacity)
 	ebitenutil.DebugPrintAt(screen, ammo, 10, 40)
 	if t.reloading {
 		prompt := fmt.Sprintf("Reload in: %d", t.reloadTimer)

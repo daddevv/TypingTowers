@@ -17,7 +17,7 @@ type Tower struct {
 	rangeDst     float64
 	game         *Game
 	rangeImg     *ebiten.Image
-	ammo         int
+	ammo         []struct{}
 	ammoCapacity int
 	reloadTime   int
 	reloadTimer  int
@@ -43,7 +43,7 @@ func NewTower(g *Game, x, y float64) *Tower {
 		rangeDst:     500,
 		game:         g,
 		ammoCapacity: 5,
-		ammo:         5,
+		ammo:         make([]struct{}, 5),
 		reloadTime:   0,
 		jammed:       false,
 	}
@@ -77,42 +77,42 @@ func (t *Tower) Update() {
 		return
 	}
 
-	if !t.reloading && t.ammo < t.ammoCapacity {
+	if !t.reloading && len(t.ammo) < t.ammoCapacity {
 		t.startReload()
 	}
 
 	if t.reloading {
 		if t.reloadTimer > 0 {
 			t.reloadTimer--
-			return
-		}
-		for _, r := range typed {
-			if unicode.ToLower(r) == t.reloadLetter {
-				t.ammo++
-				if t.ammo >= t.ammoCapacity {
-					t.reloading = false
-					t.cooldown = t.rate
-				} else {
-					if rand.Intn(2) == 0 {
-						t.reloadLetter = 'f'
+		} else {
+			for _, r := range typed {
+				if unicode.ToLower(r) == t.reloadLetter {
+					t.ammo = append(t.ammo, struct{}{})
+					if len(t.ammo) >= t.ammoCapacity {
+						t.reloading = false
+						t.cooldown = t.rate
 					} else {
-						t.reloadLetter = 'j'
+						if rand.Intn(2) == 0 {
+							t.reloadLetter = 'f'
+						} else {
+							t.reloadLetter = 'j'
+						}
 					}
+					t.reloadTimer = t.reloadTime
+					break
+				} else {
+					t.jammed = true
+					t.reloading = false
+					break
 				}
-				return
-			} else {
-				t.jammed = true
-				t.reloading = false
-				return
 			}
 		}
-		return
 	}
 
 	if t.cooldown > 0 {
 		t.cooldown--
 	}
-	if t.cooldown > 0 {
+	if t.cooldown > 0 || t.reloadTimer > 0 {
 		return
 	}
 	var target *Mob
@@ -126,11 +126,11 @@ func (t *Tower) Update() {
 			target = m
 		}
 	}
-	if target != nil {
+	if target != nil && len(t.ammo) > 0 {
 		p := NewProjectile(t.pos.X, t.pos.Y, target)
 		t.game.projectiles = append(t.game.projectiles, p)
 		t.cooldown = t.rate
-		t.ammo--
+		t.ammo = t.ammo[1:]
 	}
 }
 
