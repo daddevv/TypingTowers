@@ -30,7 +30,7 @@ TypingTowers is a keyboard-controlled tower defense game built with [Ebiten](htt
 - `v1/cmd/game`: Main entrypoint for running the game
 - `v1/internal/game`: Core game logic, including entities, input handling, mobs, and towers
 - `assets`: Graphic and audio resources
-- `docs/`: Documentation including design notes and roadmap
+- `docs/`: Documentation including design notes, roadmap and balancing approach
 
 ## Running
 
