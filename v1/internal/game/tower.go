@@ -360,6 +360,9 @@ func (t *Tower) Update(dt float64) {
 		mult := 1.0
 		if t.game != nil {
 			mult = t.game.typing.RateMultiplier()
+			if t.game.sound != nil {
+				t.game.sound.PlayBeep()
+			}
 		}
 		t.cooldown = t.rate * mult
 	}

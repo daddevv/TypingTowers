@@ -147,3 +147,33 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 		currentY += lineHeight
 	}
 }
+
+// drawMenu renders a simple vertical list of lines with a background box.
+func drawMenu(screen *ebiten.Image, lines []string, textX, initialY int) {
+	if len(lines) == 0 {
+		return
+	}
+	lineHeight := 18
+	padding := 5.0
+
+	bgX := float64(textX) - padding
+	bgY := float64(initialY) - padding
+	bgWidth := 320.0
+	for _, line := range lines {
+		w := float64(len(line)) * 13.0
+		if w+padding*2 > bgWidth {
+			bgWidth = w + padding*2
+		}
+	}
+	bgHeight := float64(len(lines)*lineHeight) + (padding * 2.0) + 18.0
+	vector.DrawFilledRect(screen, float32(bgX), float32(bgY), float32(bgWidth), float32(bgHeight), color.RGBA{0, 0, 0, 180}, false)
+
+	currentY := initialY
+	for _, line := range lines {
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(float64(textX), float64(currentY))
+		opts.ColorScale.ScaleWithColor(color.White)
+		text.Draw(screen, line, NormalFont, opts)
+		currentY += lineHeight
+	}
+}
