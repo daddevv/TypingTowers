@@ -38,7 +38,8 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 	} else {
 		if len(h.game.towers) > 0 {
 			t := h.game.towers[0]
-			lines = append(lines, fmt.Sprintf("Ammo: %d/%d", len(t.ammo), t.ammoCapacity))
+			currentAmmo, maxAmmo := t.GetAmmoStatus()
+			lines = append(lines, fmt.Sprintf("Ammo: %d/%d", currentAmmo, maxAmmo))
 			lines = append(lines, fmt.Sprintf("Damage: %d", t.damage))
 			lines = append(lines, fmt.Sprintf("Range: %.0f", t.rangeDst))
 
@@ -49,14 +50,17 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 			}
 			lines = append(lines, fmt.Sprintf("Fire Speed: %.2f/s (Cooldown: %d)", sps, t.rate))
 
-			if t.reloading {
-				prompt := fmt.Sprintf("Reload in: %d", t.reloadTimer)
-				if t.reloadTimer <= 0 {
-					prompt = fmt.Sprintf("Type '%c'", t.reloadLetter)
-				}
-				lines = append(lines, prompt)
-			} else if t.jammed {
+			reloading, letter, nextLetter, timer, jammed := t.GetReloadStatus()
+			if jammed {
 				lines = append(lines, "Jammed! Press Backspace")
+				lines = append(lines, fmt.Sprintf("Stuck on: '%c'", letter))
+			} else if reloading {
+				if timer <= 0 {
+					lines = append(lines, fmt.Sprintf("Type '%c' (next: '%c')", letter, nextLetter))
+				} else {
+					lines = append(lines, fmt.Sprintf("Reload in: %d", timer))
+					lines = append(lines, fmt.Sprintf("Next: '%c' (then: '%c')", letter, nextLetter))
+				}
 			}
 		}
 

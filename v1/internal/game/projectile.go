@@ -87,33 +87,36 @@ func (p *Projectile) Update() {
 		dx := p.target.pos.X - p.pos.X
 		dy := p.target.pos.Y - p.pos.Y
 		if math.Hypot(dx, dy) < 16 {
-			p.target.health -= p.damage
-			if p.target.health <= 0 {
-				p.target.alive = false
-			}
-			if p.bounce > 0 && p.game != nil {
-				p.bounce--
-				// pick new target: closest alive mob
-				var next *Mob
-				dist := math.MaxFloat64
-				for _, m := range p.game.mobs {
-					if m.alive && m != p.target {
-						dx := m.pos.X - p.pos.X
-						dy := m.pos.Y - p.pos.Y
-						d := math.Hypot(dx, dy)
-						if d < dist {
-							dist = d
-							next = m
+			// Only process hit if target is still alive
+			if p.target.alive {
+				p.target.health -= p.damage
+				if p.target.health <= 0 {
+					p.target.alive = false
+				}
+				if p.bounce > 0 && p.game != nil {
+					p.bounce--
+					// pick new target: closest alive mob
+					var next *Mob
+					dist := math.MaxFloat64
+					for _, m := range p.game.mobs {
+						if m.alive && m != p.target {
+							dx := m.pos.X - p.pos.X
+							dy := m.pos.Y - p.pos.Y
+							d := math.Hypot(dx, dy)
+							if d < dist {
+								dist = d
+								next = m
+							}
 						}
 					}
+					if next != nil {
+						p.target = next
+						p.vx, p.vy = calcIntercept(p.pos.X, p.pos.Y, next, p.speed)
+						return
+					}
 				}
-				if next != nil {
-					p.target = next
-					p.vx, p.vy = calcIntercept(p.pos.X, p.pos.Y, next, p.speed)
-					return
-				}
+				p.alive = false
 			}
-			p.alive = false
 		}
 	}
 	if p.pos.X < -10 || p.pos.X > 1930 || p.pos.Y < -10 || p.pos.Y > 1090 {

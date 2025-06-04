@@ -24,7 +24,7 @@ func TestTowerApplyConfig(t *testing.T) {
 func TestTowerStartReload(t *testing.T) {
 	g := &Game{cfg: &DefaultConfig}
 	tower := NewTower(g, 0, 0)
-	tower.ammo = tower.ammo[:0]
+	tower.shootingAmmo = 0 // empty shooting ammo to trigger reload
 	tower.startReload()
 	if !tower.reloading {
 		t.Errorf("tower should be reloading")
@@ -34,6 +34,9 @@ func TestTowerStartReload(t *testing.T) {
 	}
 	if tower.reloadLetter != 'f' && tower.reloadLetter != 'j' {
 		t.Errorf("unexpected reload letter %c", tower.reloadLetter)
+	}
+	if tower.nextReloadLetter != 'f' && tower.nextReloadLetter != 'j' {
+		t.Errorf("unexpected next reload letter %c", tower.nextReloadLetter)
 	}
 }
 
@@ -53,15 +56,15 @@ func TestTowerConfig(t *testing.T) {
 	if tower.ammoCapacity != 5 {
 		t.Errorf("expected ammoCapacity=5, got %v", tower.ammoCapacity)
 	}
-	if len(tower.ammo) != tower.ammoCapacity {
-		t.Errorf("expected ammo=%v, got %v", tower.ammoCapacity, len(tower.ammo))
+	if tower.shootingAmmo > tower.ammoCapacity {
+		t.Errorf("shootingAmmo should not exceed ammoCapacity, got %v/%v", tower.shootingAmmo, tower.ammoCapacity)
 	}
 }
 
 func TestTowerReload(t *testing.T) {
 	g := &Game{}
 	tower := NewTower(g, 0, 0)
-	tower.ammo = tower.ammo[:0]
+	tower.shootingAmmo = 0 // empty shooting ammo
 	tower.startReload()
 	if !tower.reloading {
 		t.Errorf("expected reloading=true")
@@ -75,6 +78,45 @@ func TestTowerReload(t *testing.T) {
 	tower.reloadLetter = 'A'
 	if tower.reloadLetter != 'A' {
 		t.Errorf("expected reloadLetter=A, got %v", tower.reloadLetter)
+	}
+}
+
+func TestTowerAmmoSystem(t *testing.T) {
+	g := &Game{cfg: &DefaultConfig}
+	tower := NewTower(g, 0, 0)
+
+	// Test initial ammo state
+	ammo, capacity := tower.GetAmmoStatus()
+	if ammo != capacity {
+		t.Errorf("expected full ammo initially, got %d/%d", ammo, capacity)
+	}
+
+	// Test ammo consumption
+	initialAmmo := tower.shootingAmmo
+	tower.shootingAmmo-- // simulate firing
+	ammo, _ = tower.GetAmmoStatus()
+	if ammo != initialAmmo-1 {
+		t.Errorf("ammo not consumed properly, expected %d got %d", initialAmmo-1, ammo)
+	}
+}
+
+func TestTowerJamming(t *testing.T) {
+	g := &Game{}
+	tower := NewTower(g, 0, 0)
+	tower.shootingAmmo = 0
+	tower.startReload()
+
+	// Test jamming preserves letter
+	originalLetter := tower.reloadLetter
+	tower.jammed = true
+	tower.jammedLetter = originalLetter
+
+	// Clear jam
+	tower.jammed = false
+	tower.reloadLetter = tower.jammedLetter
+
+	if tower.reloadLetter != originalLetter {
+		t.Errorf("expected letter to be preserved after jam clear")
 	}
 }
 

@@ -38,6 +38,8 @@ type Game struct {
 	spawnInterval int
 	spawnTicker   int
 	mobsToSpawn   int
+
+	currentFrame int // add this field to track the current frame
 }
 
 // NewGame creates a new instance of the Game.
@@ -88,6 +90,7 @@ func NewGameWithConfig(cfg Config) *Game {
 
 // Update updates the game state. This method is called every frame.
 func (g *Game) Update() error {
+	g.currentFrame++ // increment frame counter
 	g.input.Update()
 
 	if g.input.Reload() {

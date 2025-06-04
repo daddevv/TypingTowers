@@ -17,8 +17,12 @@ type Tower struct {
 	rangeDst     float64
 	game         *Game
 	rangeImg     *ebiten.Image
-	ammo         []struct{}
+	
+	// Separate ammo for shooting vs reload bullets being added
+	shootingAmmo int // ammo available for firing projectiles
+	reloadBullets int // bullets being added through typing (separate from shooting ammo)
 	ammoCapacity int
+	
 	damage       int
 	projectiles  int
 	bounce       int
@@ -26,7 +30,11 @@ type Tower struct {
 	reloadTimer  int
 	reloading    bool
 	reloadLetter rune
+	nextReloadLetter rune // preview of next letter
 	jammed       bool
+	jammedLetter rune // preserve letter when jammed
+
+	lastFiredFrame int // track last frame when tower fired
 }
 
 // NewTower creates a new Tower at the given position.
@@ -46,7 +54,8 @@ func NewTower(g *Game, x, y float64) *Tower {
 		rangeDst:     DefaultConfig.TowerRange,
 		game:         g,
 		ammoCapacity: DefaultConfig.TowerAmmoCapacity,
-		ammo:         make([]struct{}, DefaultConfig.TowerAmmoCapacity),
+		shootingAmmo: DefaultConfig.TowerAmmoCapacity, // start with full ammo
+		reloadBullets: 0, // no bullets being reloaded initially
 		damage:       DefaultConfig.TowerDamage,
 		projectiles:  DefaultConfig.TowerProjectiles,
 		bounce:       DefaultConfig.TowerBounce,
@@ -85,11 +94,14 @@ func (t *Tower) ApplyConfig(cfg Config) {
 		t.rangeImg = generateRangeImage(t.rangeDst)
 	}
 	if cfg.TowerAmmoCapacity > 0 {
+		oldCapacity := t.ammoCapacity
 		t.ammoCapacity = cfg.TowerAmmoCapacity
-		if len(t.ammo) > t.ammoCapacity {
-			t.ammo = t.ammo[:t.ammoCapacity]
-		} else if len(t.ammo) < t.ammoCapacity {
-			t.ammo = append(t.ammo, make([]struct{}, t.ammoCapacity-len(t.ammo))...)
+		// Adjust shooting ammo proportionally
+		if oldCapacity > 0 {
+			ratio := float64(t.shootingAmmo) / float64(oldCapacity)
+			t.shootingAmmo = int(ratio * float64(t.ammoCapacity))
+		} else {
+			t.shootingAmmo = t.ammoCapacity
 		}
 	}
 	if cfg.TowerDamage > 0 {
@@ -107,81 +119,168 @@ func (t *Tower) ApplyConfig(cfg Config) {
 func (t *Tower) Update() {
 	typed := t.game.input.TypedChars()
 
+	// Handle jam clearing
 	if t.jammed {
 		if t.game.input.Backspace() {
 			t.jammed = false
+			// Restore the letter that was being typed when jammed
+			t.reloadLetter = t.jammedLetter
 		}
-		return
+		// Jammed towers can still fire, just can't reload
 	}
 
-	if !t.reloading && len(t.ammo) < t.ammoCapacity {
+	// Handle firing cooldown first - this must decrement before anything else
+	if t.cooldown > 0 {
+		t.cooldown--
+	}
+
+	// Start reloading if not at capacity and not already reloading
+	// Only start reload if we're not in firing cooldown
+	if !t.reloading && t.shootingAmmo < t.ammoCapacity && t.cooldown == 0 {
 		t.startReload()
 	}
 
-	if t.reloading {
+	// Handle reload typing (only if not jammed)
+	if t.reloading && !t.jammed {
 		if t.reloadTimer > 0 {
 			t.reloadTimer--
 		} else {
 			for _, r := range typed {
 				if unicode.ToLower(r) == t.reloadLetter {
-					t.ammo = append(t.ammo, struct{}{})
-					if len(t.ammo) >= t.ammoCapacity {
+					// Successfully typed reload letter
+					t.reloadBullets++
+					t.shootingAmmo++
+					
+					if t.shootingAmmo >= t.ammoCapacity {
+						// Fully reloaded - but don't override firing cooldown
 						t.reloading = false
-						t.cooldown = t.rate
+						// Only set cooldown if we're not already in firing cooldown
+						if t.cooldown == 0 {
+							t.cooldown = t.rate
+						}
 					} else {
-						t.reloadLetter = randomReloadLetter()
+						// Set up next reload letter
+						t.reloadLetter = t.nextReloadLetter
+						t.nextReloadLetter = randomReloadLetter()
 					}
 					t.reloadTimer = t.reloadTime
 					break
 				} else {
+					// Wrong letter - jam the tower
 					t.jammed = true
-					t.reloading = false
+					t.jammedLetter = t.reloadLetter // preserve current letter
 					break
 				}
 			}
 		}
 	}
 
-	if t.cooldown > 0 {
-		t.cooldown--
-	}
+	// Early return if cooldown or reload timer is active
 	if t.cooldown > 0 || t.reloadTimer > 0 {
 		return
 	}
-	var target *Mob
-	dist := math.MaxFloat64
+
+	// Prevent firing more than once per frame
+	currentFrame := t.game.currentFrame
+	if t.lastFiredFrame == currentFrame {
+		return
+	}
+
+	// Only fire if we have ammo
+	if t.shootingAmmo <= 0 {
+		return
+	}
+
+	// Find all targets in range, sorted by distance
+	type mobDist struct {
+		m *Mob
+		d float64
+	}
+	var targets []mobDist
 	for _, m := range t.game.mobs {
+		if !m.alive {
+			continue
+		}
 		dx := m.pos.X - t.pos.X
 		dy := m.pos.Y - t.pos.Y
 		d := math.Hypot(dx, dy)
-		if d < t.rangeDst && d < dist {
-			dist = d
-			target = m
+		if d < t.rangeDst {
+			targets = append(targets, mobDist{m, d})
 		}
 	}
-	if target != nil && len(t.ammo) > 0 {
-		shots := t.projectiles
-		if shots < 1 {
-			shots = 1
+	
+	// No targets, no firing
+	if len(targets) == 0 {
+		return
+	}
+	
+	// Sort by distance ascending
+	if len(targets) > 1 {
+		// Simple insertion sort (small N)
+		for i := 1; i < len(targets); i++ {
+			j := i
+			for j > 0 && targets[j].d < targets[j-1].d {
+				targets[j], targets[j-1] = targets[j-1], targets[j]
+				j--
+			}
 		}
-		speed := DefaultConfig.ProjectileSpeed
-		if t.game != nil && t.game.cfg != nil && t.game.cfg.ProjectileSpeed > 0 {
-			speed = t.game.cfg.ProjectileSpeed
+	}
+
+	// Determine how many shots to fire - limited by ammo, targets, and projectiles setting
+	shots := t.projectiles
+	if shots < 1 {
+		shots = 1
+	}
+	if shots > t.shootingAmmo {
+		shots = t.shootingAmmo
+	}
+	if shots > len(targets) {
+		shots = len(targets)
+	}
+
+	// Fire at the closest unique targets, one projectile per mob
+	speed := DefaultConfig.ProjectileSpeed
+	if t.game != nil && t.game.cfg != nil && t.game.cfg.ProjectileSpeed > 0 {
+		speed = t.game.cfg.ProjectileSpeed
+	}
+	
+	shotsFired := 0
+	for i := 0; i < shots && i < len(targets); i++ {
+		targetMob := targets[i].m
+		if targetMob == nil || !targetMob.alive {
+			continue
 		}
-		for i := 0; i < shots && len(t.ammo) > 0; i++ {
-			p := NewProjectile(t.game, t.pos.X, t.pos.Y, target, t.damage, speed, t.bounce)
-			t.game.projectiles = append(t.game.projectiles, p)
-			t.ammo = t.ammo[1:]
-		}
+		
+		p := NewProjectile(t.game, t.pos.X, t.pos.Y, targetMob, t.damage, speed, t.bounce)
+		t.game.projectiles = append(t.game.projectiles, p)
+		t.shootingAmmo--
+		shotsFired++
+	}
+	
+	// Set cooldown only if we actually fired
+	if shotsFired > 0 {
 		t.cooldown = t.rate
+		t.lastFiredFrame = currentFrame
 	}
 }
 
 func (t *Tower) startReload() {
 	t.reloading = true
 	t.reloadTimer = t.reloadTime
-	t.cooldown = 0
+	// Don't reset cooldown to 0 - preserve firing cooldown
 	t.reloadLetter = randomReloadLetter()
+	t.nextReloadLetter = randomReloadLetter()
+	t.reloadBullets = 0
+}
+
+// GetAmmoStatus returns current ammo and capacity for HUD display
+func (t *Tower) GetAmmoStatus() (int, int) {
+	return t.shootingAmmo, t.ammoCapacity
+}
+
+// GetReloadStatus returns reload state info for HUD
+func (t *Tower) GetReloadStatus() (bool, rune, rune, int, bool) {
+	return t.reloading, t.reloadLetter, t.nextReloadLetter, t.reloadTimer, t.jammed
 }
 
 // Draw renders the tower and its range indicator.
