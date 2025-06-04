@@ -87,6 +87,11 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 			lines = append(lines, fmt.Sprintf("Base HP: %d", h.game.base.Health()))
 		}
 		lines = append(lines, fmt.Sprintf("Wave %d | Gold %d | Mobs %d", h.game.currentWave, h.game.gold, len(h.game.mobs)))
+		cost := h.game.cfg.TowerConstructionCost
+		if cost == 0 {
+			cost = DefaultConfig.TowerConstructionCost
+		}
+		lines = append(lines, fmt.Sprintf("[h/j/k/l] move cursor | [b] build (%d gold)", cost))
 	}
 
 	if len(lines) == 0 {
