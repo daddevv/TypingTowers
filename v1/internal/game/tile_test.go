@@ -2,6 +2,11 @@ package game
 
 import "testing"
 
+
+func init() {
+	TESTING = true
+}
+
 func TestTileAtPosition(t *testing.T) {
     x, y := tileAtPosition(TileSize*5+1, TopMargin+TileSize*3+2)
     if x != 5 || y != 3 {

@@ -3,12 +3,18 @@ package game
 import (
 	"image/color"
 	"log"
+	"path/filepath"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 var (
+	// assetPrefix allows tests to override asset path prefix.
+	assetPrefix = ""
+	// Testing indicates if the package is running in test mode.
+	Testing = true
+
 	ImgBackgroundBasicTiles = generateBackground()
 	ImgBackgroundTile       = loadImage("assets/basic_tile_32.png")
 	ImgHighlightTile        = loadImage("assets/basic_tile_highlight_32.png")
@@ -22,6 +28,12 @@ var (
 
 // loadImage is the utility function to load an image from a file path.
 func loadImage(path string) *ebiten.Image {
+	if Testing {
+		log.Println("Loading image for testing:", path)
+		path = "../../" + path
+	}
+
+	path = filepath.FromSlash(path) // Ensure the path is in the correct format for the OS
 	img, _, err := ebitenutil.NewImageFromFile(path)
 	if err != nil {
 		panic(err)
@@ -34,16 +46,12 @@ func loadImage(path string) *ebiten.Image {
 // generateBackground creates a background image
 func generateBackground() *ebiten.Image {
 	bg := ebiten.NewImage(1920, 1080)
-	tile, _, err := ebitenutil.NewImageFromFile("assets/basic_tile_32.png")
-	if err != nil {
-		panic(err)
-	}
 	for x := range 60 {
 		for y := range 32 {
 			tileX, tileY := tilePosition(x, y)
 			op := &ebiten.DrawImageOptions{}
 			op.GeoM.Translate(float64(tileX), float64(tileY))
-			bg.DrawImage(tile, op)
+			bg.DrawImage(ImgBackgroundTile, op)
 		}
 	}
 	return bg
