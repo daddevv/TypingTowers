@@ -117,7 +117,7 @@
 - [ ] **IDLE-001** Auto-collection and offline progress
 - [ ] **IDLE-002** Upgradable idle generators
 - [ ] **IDLE-003** Prestige/reset system
-- [ ] **FUZZ-001** Engine fuzz tester and robustness checks
+- [x] **FUZZ-001** Engine fuzz tester and robustness checks
 - [ ] **FUZZ-002** Stress test for performance and stability
 - [ ] **FUZZ-003** Automated regression tests for core systems
 

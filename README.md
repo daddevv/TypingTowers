@@ -52,6 +52,15 @@ go test -tags test ./...
 The `resources_integration_test.go` integration test runs the game headlessly
 for three minutes and verifies that all resources accumulate from zero.
 
+Fuzz testing can be executed with Go 1.23+:
+
+```bash
+go test -run Fuzz -fuzz FuzzGameRandomInput ./...
+```
+
+The fuzz harness reports the game's internal state and a full stack trace on
+any panic so unexpected crashes are easy to diagnose.
+
 -## Current prototype
 
 - Shared FIFO queue manager implemented. Buildings enqueue words that are processed **letter by letter**. Completing a Barracks word spawns a Footman.
