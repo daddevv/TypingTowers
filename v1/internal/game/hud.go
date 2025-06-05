@@ -28,9 +28,10 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 	padding := 5.0
 
 	if h.game.shopOpen {
-		gold := h.game.gold
+		gold := h.game.Gold()
 		lines = append(lines, "-- SHOP --")
 		lines = append(lines, fmt.Sprintf("Gold: %d", gold))
+		lines = append(lines, fmt.Sprintf("Food: %d", h.game.resources.FoodAmount()))
 
 		var foresight int
 		if len(h.game.towers) > 0 {
@@ -59,7 +60,8 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 			cost = DefaultConfig.TowerConstructionCost
 		}
 		lines = append(lines, "-- BUILD --")
-		lines = append(lines, fmt.Sprintf("Gold: %d", h.game.gold))
+		lines = append(lines, fmt.Sprintf("Gold: %d", h.game.Gold()))
+		lines = append(lines, fmt.Sprintf("Food: %d", h.game.resources.FoodAmount()))
 		options := []string{
 			"[1] Basic Tower",
 			"[2] Sniper Tower",
@@ -127,7 +129,7 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 		if h.game.base != nil {
 			lines = append(lines, fmt.Sprintf("Base HP: %d", h.game.base.Health()))
 		}
-		lines = append(lines, fmt.Sprintf("Wave %d | Gold %d | Score %d | Mobs %d", h.game.currentWave, h.game.gold, h.game.score, len(h.game.mobs)))
+		lines = append(lines, fmt.Sprintf("Wave %d | Gold %d | Food %d | Score %d | Mobs %d", h.game.currentWave, h.game.Gold(), h.game.resources.FoodAmount(), h.game.score, len(h.game.mobs)))
 		acc := h.game.typing.Accuracy() * 100
 		wpm := h.game.typing.WPM()
 		lines = append(lines, fmt.Sprintf("Accuracy: %.0f%% | WPM: %.1f", acc, wpm))

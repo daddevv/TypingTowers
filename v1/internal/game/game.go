@@ -35,6 +35,7 @@ type savedTower struct {
 
 type savedGame struct {
 	Gold     int
+	Food     int
 	Wave     int
 	BaseHP   int
 	Towers   []savedTower
@@ -52,7 +53,7 @@ type Game struct {
 	hud         *HUD
 	gameOver    bool
 	paused      bool
-	gold        int
+	resources   ResourcePool
 
 	shopOpen bool
 
@@ -96,6 +97,15 @@ type Game struct {
 	flashTimer float64
 }
 
+// Gold returns the player's current gold amount.
+func (g *Game) Gold() int { return g.resources.GoldAmount() }
+
+// AddGold increases the player's gold.
+func (g *Game) AddGold(n int) { g.resources.AddGold(n) }
+
+// SpendGold attempts to deduct the given amount of gold and returns true on success.
+func (g *Game) SpendGold(n int) bool { return g.resources.Gold.Spend(n) }
+
 // NewGame creates a new instance of the Game.
 func NewGame() *Game {
 	return NewGameWithConfig(DefaultConfig)
@@ -120,7 +130,7 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		screen:          ebiten.NewImage(1920, 1080),
 		input:           NewInput(),
 		paused:          false,
-		gold:            0,
+		resources:       ResourcePool{},
 		shopOpen:        false,
 		selectedTower:   0,
 		shopCursor:      0,
@@ -358,35 +368,30 @@ func (g *Game) Update() error {
 			purchase := func(opt int) bool {
 				switch opt {
 				case 0:
-					if g.gold >= upgradeDamageCost {
-						g.gold -= upgradeDamageCost
+					if g.SpendGold(upgradeDamageCost) {
 						tower.damage++
 						return true
 					}
 				case 1:
-					if g.gold >= upgradeRangeCost {
-						g.gold -= upgradeRangeCost
+					if g.SpendGold(upgradeRangeCost) {
 						tower.rangeDst += 50
 						tower.rangeImg = generateRangeImage(tower.rangeDst)
 						return true
 					}
 				case 2:
-					if g.gold >= upgradeFireRateCost {
-						g.gold -= upgradeFireRateCost
+					if g.SpendGold(upgradeFireRateCost) {
 						if tower.rate > 10 {
 							tower.rate -= 10
 						}
 						return true
 					}
 				case 3:
-					if g.gold >= upgradeAmmoCost {
-						g.gold -= upgradeAmmoCost
+					if g.SpendGold(upgradeAmmoCost) {
 						tower.UpgradeAmmoCapacity(2)
 						return true
 					}
 				case 4:
-					if g.gold >= upgradeForesightCost {
-						g.gold -= upgradeForesightCost
+					if g.SpendGold(upgradeForesightCost) {
 						tower.UpgradeForesight(2)
 						return true
 					}
@@ -471,7 +476,7 @@ func (g *Game) Update() error {
 			if reward < 1 {
 				reward = 1
 			}
-			g.gold += reward
+			g.AddGold(reward)
 			g.score += reward
 			continue
 		}
@@ -691,7 +696,7 @@ func (g *Game) buildTowerAtCursorType(tt TowerType) {
 	if cost == 0 {
 		cost = DefaultConfig.TowerConstructionCost
 	}
-	if g.gold < cost {
+	if g.Gold() < cost {
 		return
 	}
 	if !g.validTowerPosition(g.cursorX, g.cursorY) {
@@ -701,7 +706,7 @@ func (g *Game) buildTowerAtCursorType(tt TowerType) {
 	t := NewTowerWithType(g, float64(tx+TileSize/2), float64(ty+TileSize/2), tt)
 	t.ApplyModifiers(g.towerMods)
 	g.towers = append(g.towers, t)
-	g.gold -= cost
+	g.SpendGold(cost)
 }
 
 // startWave initializes spawn counters for the next wave.
@@ -933,7 +938,8 @@ func (g *Game) reloadConfig(path string) error {
 
 func (g *Game) saveGame(path string) {
 	sg := savedGame{
-		Gold:     g.gold,
+		Gold:     g.resources.GoldAmount(),
+		Food:     g.resources.FoodAmount(),
 		Wave:     g.currentWave,
 		BaseHP:   g.base.Health(),
 		Settings: g.settings,
@@ -964,7 +970,8 @@ func (g *Game) loadGame(path string) error {
 		return err
 	}
 	*g = *NewGameWithConfig(*g.cfg)
-	g.gold = sg.Gold
+	g.resources.Gold.Set(sg.Gold)
+	g.resources.Food.Set(sg.Food)
 	g.currentWave = sg.Wave
 	g.base.health = sg.BaseHP
 	g.settings = sg.Settings
@@ -1009,14 +1016,14 @@ func (g *Game) evaluatePerformanceAchievements() {
 
 	if wpm >= 60 {
 		add("Speed Demon")
-		g.gold += 5
+		g.AddGold(5)
 	}
 	if acc >= 0.95 {
 		add("Sharpshooter")
-		g.gold += 5
+		g.AddGold(5)
 	}
 	if g.typing.MaxCombo() >= 10 {
 		add("Combo Master")
-		g.gold += 5
+		g.AddGold(5)
 	}
 }

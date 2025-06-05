@@ -87,6 +87,11 @@ All new features are optional enhancements, preserving the educational and acces
 
 *Planned: Idle resource generators and auto-collection upgrades available via skill tree. Offline progress and prestige/reset mechanics as optional late-game systems.*
 
+### Economy Implementation Notes
+
+- **ECO-1** The game maintains a `ResourcePool` struct aggregating Gold, Food, Wood, Stone and Iron.
+- **ECO-2** Buildings like the Farmer deposit resources into this pool when their words are completed.
+
 ---
 
 ## 5 Tech Trees

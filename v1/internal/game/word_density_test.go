@@ -20,7 +20,7 @@ func TestWordDensitySimulation(t *testing.T) {
 		if w := f.Update(dt); w != "" {
 			words++
 			q.TryDequeue(w)
-			f.OnWordCompleted(w)
+			f.OnWordCompleted(w, nil)
 		}
 		if w := b.Update(dt); w != "" {
 			words++

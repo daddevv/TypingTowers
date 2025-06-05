@@ -23,7 +23,7 @@ func TestFarmerCooldownAndWordGeneration(t *testing.T) {
 		}
 		words[word] = struct{}{}
 		// simulate typing completion to reset cooldown
-		f.OnWordCompleted(word)
+		f.OnWordCompleted(word, nil)
 	}
 	if len(words) < 2 {
 		t.Errorf("Expected at least 2 unique words, got %d", len(words))
@@ -41,7 +41,7 @@ func TestFarmerWaitsForCompletion(t *testing.T) {
 	if next := f.Update(0.11); next != "" {
 		t.Fatalf("expected no new word until completion")
 	}
-	f.OnWordCompleted(first)
+	f.OnWordCompleted(first, nil)
 	if w := f.Update(0.11); w == "" {
 		t.Fatalf("expected new word after completion")
 	}
@@ -51,12 +51,29 @@ func TestFarmerResourceOutput(t *testing.T) {
 	f := NewFarmer()
 	word := f.generateWord()
 	f.pendingWord = word
-	food := f.OnWordCompleted(word)
+	pool := &ResourcePool{}
+	food := f.OnWordCompleted(word, pool)
 	if food != f.resourceOut {
 		t.Errorf("Expected %d food, got %d", f.resourceOut, food)
 	}
-	food = f.OnWordCompleted("wrong")
+	if pool.FoodAmount() != f.resourceOut || pool.GoldAmount() != f.resourceOut {
+		t.Errorf("resources not added to pool")
+	}
+	food = f.OnWordCompleted("wrong", pool)
 	if food != 0 {
 		t.Errorf("Expected 0 food for wrong word, got %d", food)
+	}
+}
+
+func TestFarmerAddsResourcesToPool(t *testing.T) {
+	f := NewFarmer()
+	pool := &ResourcePool{}
+	word := f.Update(2.0)
+	if word == "" {
+		t.Fatalf("expected word generated")
+	}
+	f.OnWordCompleted(word, pool)
+	if pool.GoldAmount() != f.resourceOut || pool.FoodAmount() != f.resourceOut {
+		t.Fatalf("expected pool to have %d resources", f.resourceOut)
 	}
 }
