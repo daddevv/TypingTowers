@@ -113,6 +113,7 @@ All new features are optional enhancements, preserving the educational and acces
 - **SKILL-3** `SampleSkillTree` provides a validated in-memory tree with example nodes for each category.
 - **SKILL-4** Skills can be unlocked by spending King's Points once prerequisites are met.
 - **SKILL-5** `Tab` opens the skill tree menu. Arrow keys switch categories and navigate nodes, highlighting the current selection and showing locked/unlocked status.
+- **SKILL-6** Unlocking a skill applies its effects to the game (tower stats, base HP, etc.).
 
 ---
 
@@ -154,7 +155,8 @@ All new features are optional enhancements, preserving the educational and acces
 ## 8 Persistence
 
 - **SAVE-1** Auto-save every wave: letter unlock state, tech trees, resources.  
-- **SAVE-2** Three local save-slots; JSON format, versioned.  
+- **SAVE-2** Three local save-slots; JSON format, versioned.
+- **SAVE-3** Skill tree unlocks persist in save files and are restored on load.
 
 *Planned: Save skill tree, minion unlocks, idle progress, and minigame achievements.*
 

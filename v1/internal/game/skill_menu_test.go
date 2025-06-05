@@ -76,3 +76,27 @@ func TestSkillMenuNavigation(t *testing.T) {
 		t.Fatalf("expected category to advance")
 	}
 }
+
+func TestSkillUnlockAppliesEffect(t *testing.T) {
+	g := NewGame()
+	g.resources.AddKingsPoints(50)
+	inp := &skillInput{toggle: true}
+	g.input = inp
+	g.lastUpdate = time.Now()
+	g.Update()      // open menu
+	inp.down = true // select sharp_arrows
+	g.Update()
+	inp.enter = true
+	if err := g.Update(); err != nil {
+		t.Fatal(err)
+	}
+	if !g.unlockedSkills["sharp_arrows"] {
+		t.Fatalf("skill not unlocked")
+	}
+	if g.resources.KingsAmount() != 40 {
+		t.Fatalf("Kings Points not deducted")
+	}
+	if g.towerMods.DamageMult <= 1.0 {
+		t.Fatalf("damage multiplier not applied")
+	}
+}
