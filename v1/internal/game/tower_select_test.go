@@ -75,6 +75,7 @@ func (s *stubInputSelect) SelectTower() bool  { v := s.selectTower; s.selectTowe
 func (s *stubInputSelect) Command() bool      { return false }
 func (s *stubInputSelect) TechMenu() bool     { return false }
 func (s *stubInputSelect) SkillMenu() bool    { return false }
+func (s *stubInputSelect) StatsPanel() bool   { return false }
 
 func TestSlashOpensTowerSelect(t *testing.T) {
 	g := NewGame()

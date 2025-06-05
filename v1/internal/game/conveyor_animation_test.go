@@ -24,6 +24,7 @@ func (s *stubInputConveyor) SelectTower() bool  { return false }
 func (s *stubInputConveyor) Command() bool      { return false }
 func (s *stubInputConveyor) TechMenu() bool     { return false }
 func (s *stubInputConveyor) SkillMenu() bool    { return false }
+func (s *stubInputConveyor) StatsPanel() bool   { return false }
 
 func TestConveyorOffsetMoves(t *testing.T) {
 	g := NewGame()

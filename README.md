@@ -95,6 +95,7 @@ See the [ROADMAP.md](./ROADMAP.md) for the up-to-date backlog and [TODO_ARCHIVE.
 - HUD displays queue, cooldowns, resources, and tower selection overlays.
 - The HUD also shows the last word's accuracy and completion time.
 - Rolling WPM for the last 30 seconds is displayed beneath word stats.
+- Pressing `Tab` opens a detailed stats panel with recent word history, rolling WPM and accuracy.
 - Title screen, pre-game setup, and save/load systems are in place.
 - Tech trees and skill trees are loaded from YAML and can be navigated and unlocked via keyboard.
 - See `docs/REQUIREMENTS.md` for the full feature scaffold.

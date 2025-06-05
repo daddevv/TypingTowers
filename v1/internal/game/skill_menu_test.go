@@ -34,6 +34,7 @@ func (s *skillInput) SelectTower() bool { return false }
 func (s *skillInput) TechMenu() bool    { return false }
 func (s *skillInput) SkillMenu() bool   { v := s.toggle; s.toggle = false; return v }
 func (s *skillInput) Command() bool     { return false }
+func (s *skillInput) StatsPanel() bool  { return false }
 
 func TestSkillMenuToggle(t *testing.T) {
 	g := NewGame()

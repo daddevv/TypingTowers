@@ -29,6 +29,7 @@ func (s *stubInputOverlay) SelectTower() bool  { return false }
 func (s *stubInputOverlay) Command() bool      { return false }
 func (s *stubInputOverlay) TechMenu() bool     { return false }
 func (s *stubInputOverlay) SkillMenu() bool    { return false }
+func (s *stubInputOverlay) StatsPanel() bool   { return false }
 
 // TestDrawTowerSelectionOverlay verifies the HUD draws overlay highlights without panic.
 func TestDrawTowerSelectionOverlay(t *testing.T) {

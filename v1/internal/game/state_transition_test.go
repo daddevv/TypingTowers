@@ -29,6 +29,7 @@ func (p *pauseInput) SelectTower() bool  { return false }
 func (p *pauseInput) Command() bool      { return false }
 func (p *pauseInput) TechMenu() bool     { return false }
 func (p *pauseInput) SkillMenu() bool    { return false }
+func (p *pauseInput) StatsPanel() bool   { return false }
 
 func TestPauseResumeTransition(t *testing.T) {
 	g := NewGame()

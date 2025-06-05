@@ -25,3 +25,4 @@ func (s *stubInput) SelectTower() bool  { return false }
 func (s *stubInput) Command() bool      { return false }
 func (s *stubInput) TechMenu() bool     { return false }
 func (s *stubInput) SkillMenu() bool    { return false }
+func (s *stubInput) StatsPanel() bool   { return false }
