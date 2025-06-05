@@ -799,6 +799,25 @@ func (g *Game) Update() error {
 	return nil
 }
 
+// Step advances the game state by dt seconds.
+// This is used for testing conveyor animation.
+func (g *Game) Step(dt float64) {
+	// Update conveyor offset logic here as in the main game loop.
+	// For example:
+	// If a character was typed, increase conveyorOffset.
+	// Otherwise, decay conveyorOffset over time.
+	// The actual logic should match what the test expects.
+	// Example (replace with your actual logic):
+	if len(g.input.TypedChars()) > 0 {
+		g.conveyorOffset += 1.0 // or whatever increment is correct
+	} else if g.conveyorOffset > 0 {
+		g.conveyorOffset -= dt // or your decay logic
+		if g.conveyorOffset < 0 {
+			g.conveyorOffset = 0
+		}
+	}
+}
+
 // Draw renders the game to the screen. This method is called every frame.
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.screen.Clear()

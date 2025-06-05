@@ -21,6 +21,7 @@ type InputHandler interface {
 	Build() bool
 	Save() bool
 	Load() bool
+	SelectTower() bool // Add this method to the interface
 	Command() bool // Command reports if ':' was pressed to enter command mode
 }
 

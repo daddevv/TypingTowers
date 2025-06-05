@@ -28,6 +28,7 @@ func (w *waveInput) Down() bool         { return false }
 func (w *waveInput) Build() bool        { return false }
 func (w *waveInput) Save() bool         { return false }
 func (w *waveInput) Load() bool         { return false }
+func (w *waveInput) SelectTower() bool  { return false }
 func (w *waveInput) Command() bool      { c := w.command; w.command = false; return c }
 
 // TestSurviveFiveWaves simulates five waves with perfect typing input.

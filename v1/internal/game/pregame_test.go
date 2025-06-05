@@ -28,6 +28,7 @@ func (p *pgInput) Down() bool         { return p.down }
 func (p *pgInput) Build() bool        { return false }
 func (p *pgInput) Save() bool         { return false }
 func (p *pgInput) Load() bool         { return false }
+func (p *pgInput) SelectTower() bool  { return false }
 func (p *pgInput) Command() bool      { return false }
 
 // TestPreGameFlow ensures the setup screens progress to playing state.

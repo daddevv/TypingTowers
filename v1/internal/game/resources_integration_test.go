@@ -41,3 +41,12 @@ func TestResourcesAccumulation(t *testing.T) {
 		t.Fatalf("expected food to accumulate")
 	}
 }
+
+type stubInput struct {
+	typed []rune
+}
+
+func (s *stubInput) Save() bool         { return false }
+func (s *stubInput) Load() bool         { return false }
+func (s *stubInput) SelectTower() bool  { return false }
+func (s *stubInput) Command() bool      { return false }

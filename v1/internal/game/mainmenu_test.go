@@ -27,6 +27,7 @@ func (m *menuInput) Down() bool         { return m.down }
 func (m *menuInput) Build() bool        { return false }
 func (m *menuInput) Save() bool         { return false }
 func (m *menuInput) Load() bool         { return false }
+func (m *menuInput) SelectTower() bool  { return false }
 func (m *menuInput) Command() bool      { return false }
 
 func TestMainMenuStartGame(t *testing.T) {

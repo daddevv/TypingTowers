@@ -54,7 +54,7 @@ func (h *HUD) drawConveyorBelt(screen *ebiten.Image, totalWidth float64) {
 	stripeSpacing := 12.0
 	offset := math.Mod(h.game.conveyorOffset, stripeSpacing)
 	for x := -offset; x < beltW; x += stripeSpacing {
-		vector.DrawLine(screen,
+		vector.StrokeLine(screen,
 			float32(beltX+x), float32(beltY),
 			float32(beltX+x+beltHeight/2), float32(beltY+beltHeight),
 			1, color.RGBA{80, 80, 80, 200}, false)
