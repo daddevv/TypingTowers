@@ -42,8 +42,8 @@ All new features are optional enhancements, preserving the educational and acces
 
 | Family | Buildings | Primary Resource / Effect | Base CD |
 |--------|-----------|---------------------------|---------|
-| **Gathering** | Farmer (Food), Lumberjack (Wood), Miner (Stone+Iron) | +Resources | 3 s |
-| **Military** | Barracks (melee), Archery Range (ranged), Stable (cavalry), Siege Workshop (siege) | Spawns units | 4–6 s |
+| **Gathering** | Farmer (Food), Lumberjack (Wood), Miner (Stone+Iron) | +Resources | 1.5 s |
+| **Military** | Barracks (melee), Archery Range (ranged), Stable (cavalry), Siege Workshop (siege) | Spawns units | 2 s |
 | **Craft & Defense** | Blacksmith, Armorer, Library | Upgrades towers & soldiers | 5 s |
 | **Economy** | Market | Multiplies Gold drop + passive trade | 4 s |
 | **Spiritual** | Sanctum of Light | Generates Mana & spell words | 6 s |
@@ -56,6 +56,7 @@ All new features are optional enhancements, preserving the educational and acces
   - Shorter CD, longer word (more output), additional effect (crit, AoE, heal).
 - **B-GEN-3** Buildings can be paused (`p` key) – stops pushing words.
 - **B-GEN-4** Cooldown only resets after the building's pending word is completed.
+- **B-GEN-5** Default Farmer and Barracks generate roughly 1–1.5 words per second combined.
 - **B-MIL-1** Barracks generates a word every cooldown and spawns a Footman unit when that word is completed.
 
 ---

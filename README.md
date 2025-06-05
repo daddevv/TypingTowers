@@ -64,17 +64,17 @@ See the [ROADMAP.md](./ROADMAP.md) for detailed tasks.
 
 ---
 
-## Farmer (Gathering Building)
+-## Farmer (Gathering Building)
 
-- The Farmer building is now implemented as a Gathering structure that generates a word from its letter pool every cooldown cycle (default 3s).
+- The Farmer building is now implemented as a Gathering structure that generates a word from its letter pool every cooldown cycle (default 1.5s).
 - Typing the generated word completes the cycle and produces Food resources.
 - Each building's cooldown timer pauses once a word is queued and only resets after that word is typed.
 - The Farmer's cooldown, letter pool, and word length can be configured and extended for progression.
 - See `v1/internal/game/farmer.go` for implementation and `farmer_test.go` for tests.
 
-## Barracks (Military Building)
+-## Barracks (Military Building)
 
-- The Barracks building generates a word from its letter pool every 5 seconds.
+- The Barracks building generates a word from its letter pool every 2 seconds.
 - Typing the generated word spawns a Footman unit.
 - Word generation logic and cooldown behavior are tested in `barracks_test.go`.
 
