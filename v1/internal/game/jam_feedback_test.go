@@ -9,11 +9,12 @@ import (
 type stubInput struct {
 	typed     []rune
 	backspace bool
+	command   bool
 }
 
 func (s *stubInput) TypedChars() []rune { return s.typed }
 func (s *stubInput) Update()            {}
-func (s *stubInput) Reset()             { s.typed = nil; s.backspace = false }
+func (s *stubInput) Reset()             { s.typed = nil; s.backspace = false; s.command = false }
 func (s *stubInput) Backspace() bool    { return s.backspace }
 func (s *stubInput) Space() bool        { return false }
 func (s *stubInput) Quit() bool         { return false }
@@ -26,6 +27,7 @@ func (s *stubInput) Down() bool         { return false }
 func (s *stubInput) Build() bool        { return false }
 func (s *stubInput) Save() bool         { return false }
 func (s *stubInput) Load() bool         { return false }
+func (s *stubInput) Command() bool      { c := s.command; s.command = false; return c }
 
 func TestQueueJamMistypeFeedback(t *testing.T) {
 	g := NewGame()

@@ -21,6 +21,7 @@ type InputHandler interface {
 	Build() bool
 	Save() bool
 	Load() bool
+	Command() bool // Command reports if ':' was pressed to enter command mode
 }
 
 type Input struct {
@@ -38,6 +39,7 @@ type Input struct {
 	save        bool
 	load        bool
 	selectTower bool
+	command     bool // whether ':' was pressed this frame
 }
 
 // NewInput creates a new Input instance with default values.
@@ -57,6 +59,7 @@ func NewInput() *Input {
 		save:        false,
 		load:        false,
 		selectTower: false,
+		command:     false,
 	}
 }
 
@@ -65,7 +68,16 @@ func (i *Input) Update() {
 	if ebiten.IsKeyPressed(ebiten.KeyEscape) {
 		i.quit = true
 	}
-	i.typed = ebiten.AppendInputChars(i.typed[:0])
+	raw := ebiten.AppendInputChars(i.typed[:0])
+	i.typed = i.typed[:0]
+	i.command = false
+	for _, r := range raw {
+		if r == ':' {
+			i.command = true
+		} else {
+			i.typed = append(i.typed, r)
+		}
+	}
 	i.backspace = inpututil.IsKeyJustPressed(ebiten.KeyBackspace)
 	i.space = inpututil.IsKeyJustPressed(ebiten.KeySpace)
 	i.reload = inpututil.IsKeyJustPressed(ebiten.KeyF5)
@@ -97,6 +109,7 @@ func (i *Input) Reset() {
 	i.save = false
 	i.load = false
 	i.selectTower = false
+	i.command = false
 }
 
 // Quit returns whether the game should quit.
@@ -137,3 +150,4 @@ func (i *Input) Build() bool       { return i.build }
 func (i *Input) Save() bool        { return i.save }
 func (i *Input) Load() bool        { return i.load }
 func (i *Input) SelectTower() bool { return i.selectTower }
+func (i *Input) Command() bool     { return i.command }

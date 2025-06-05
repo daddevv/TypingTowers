@@ -122,6 +122,7 @@ All new features are optional enhancements, preserving the educational and acces
 | **UI-TITLE-2** | Title screen has a simple animated background and is keyboard navigable. |
 | **UI-PREGAME-1** | Pre-game setup screen handles character and difficulty selection, tutorial, typing test and mode selection. |
 | **UI-TOWER-1** | `/` enters tower selection mode, labels towers with letters and opens an upgrade menu for the chosen tower. |
+| **UI-CMD-1** | `:` enters command mode allowing text commands like `pause` or `quit`. |
 
 *Planned: Typed commands for minion management, skill tree navigation, and minigames. All new features remain keyboard-only.*
 
