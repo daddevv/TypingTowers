@@ -20,6 +20,17 @@ All new features are optional enhancements, preserving the educational and acces
 
 ---
 
+## Architecture
+
+- **ARCH-1** The engine is split into handlers (`entity`, `ui`, `tech`, `tower`,
+  `phase`, `content`, `sprite`). Each handler exposes `Update(dt)`.
+- **ARCH-2** Handlers communicate via a channel-based event bus located in
+  `internal/event`.
+- **ARCH-3** `game.Game` acts as the main renderer and aggregates state from all
+  handlers.
+
+---
+
 ## 1 Core Gameplay Systems
 
 | ID | Requirement |

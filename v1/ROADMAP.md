@@ -24,11 +24,11 @@
     - [x] **T-006** Define event types for each module (e.g., `EntityEvent`, `UIEvent`, etc.)
     - [x] **T-007** Each handler exposes channels for publishing/subscribing to events
     - [x] **T-008** Implement event communication between handlers (e.g., UI notification on tech unlock)
-  - [ ] **T-009** Migrate all existing logic/files into new module structure
-  - [ ] **T-010** Update all imports and references to match new structure
-  - [ ] **T-011** Write/adjust tests for new handler/event system
-  - [ ] **T-012** Document the new architecture and handler/event pattern for contributors
-  - [ ] **T-013** Ensure `game.Game` acts as main renderer, coordinating rendering using handler state
+  - [x] **T-009** Migrate all existing logic/files into new module structure
+  - [x] **T-010** Update all imports and references to match new structure
+  - [x] **T-011** Write/adjust tests for new handler/event system
+  - [x] **T-012** Document the new architecture and handler/event pattern for contributors
+  - [x] **T-013** Ensure `game.Game` acts as main renderer, coordinating rendering using handler state
   - [ ] **T-014** (Optional) Add migration/compatibility notes for contributors
   - [ ] **Design Note:** The `game.Game` will act as the main renderer. Each handler's state (e.g., entities, UI, tech, towers) composes the overall game state. There is no separate/dedicated renderer; rendering is coordinated by the engine using handler state.
 

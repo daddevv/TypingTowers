@@ -1,4 +1,4 @@
-package game
+package event
 
 // Event is a generic interface for all events.
 type Event interface{}

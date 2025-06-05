@@ -17,6 +17,7 @@ import (
 
 	"github.com/daddevv/type-defense/internal/content"
 	"github.com/daddevv/type-defense/internal/entity"
+	"github.com/daddevv/type-defense/internal/event"
 	"github.com/daddevv/type-defense/internal/phase"
 	"github.com/daddevv/type-defense/internal/sprite"
 	"github.com/daddevv/type-defense/internal/tech"
@@ -189,16 +190,16 @@ type Game struct {
 	SpriteHandler  sprite.SpriteHandler
 
 	// Event system
-	EventBus *EventBus
+	EventBus *event.EventBus
 
 	// Event channels for handler pub/sub (T-007, T-008 implemented)
-	EntityEvents  chan Event
-	UIEvents      chan Event
-	TechEvents    chan Event
-	TowerEvents   chan Event
-	PhaseEvents   chan Event
-	ContentEvents chan Event
-	SpriteEvents  chan Event
+	EntityEvents  chan event.Event
+	UIEvents      chan event.Event
+	TechEvents    chan event.Event
+	TowerEvents   chan event.Event
+	PhaseEvents   chan event.Event
+	ContentEvents chan event.Event
+	SpriteEvents  chan event.Event
 }
 
 // Gold returns the player's current gold amount.
@@ -362,23 +363,23 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 	g.PhaseHandler = phase.NewHandler()
 	g.ContentHandler = content.NewHandler()
 	g.SpriteHandler = sprite.NewHandler()
-	g.EventBus = NewEventBus()
+	g.EventBus = event.NewEventBus()
 
 	// Initialize event channels for each handler (T-007)
-	g.EntityEvents = make(chan Event, 8)
-	g.UIEvents = make(chan Event, 8)
-	g.TechEvents = make(chan Event, 8)
-	g.TowerEvents = make(chan Event, 8)
-	g.PhaseEvents = make(chan Event, 8)
-	g.ContentEvents = make(chan Event, 8)
-	g.SpriteEvents = make(chan Event, 8)
+	g.EntityEvents = make(chan event.Event, 8)
+	g.UIEvents = make(chan event.Event, 8)
+	g.TechEvents = make(chan event.Event, 8)
+	g.TowerEvents = make(chan event.Event, 8)
+	g.PhaseEvents = make(chan event.Event, 8)
+	g.ContentEvents = make(chan event.Event, 8)
+	g.SpriteEvents = make(chan event.Event, 8)
 
 	// Example: subscribe UI handler to UIEvents channel
 	go func() {
 		for evt := range g.UIEvents {
 			// In a real implementation, UIHandler would process UIEvents here.
 			// For demo, just print UI notifications.
-			if uevt, ok := evt.(UIEvent); ok && uevt.Type == "notification" {
+			if uevt, ok := evt.(event.UIEvent); ok && uevt.Type == "notification" {
 				// This could be replaced with a call to UIHandler.Notify(uevt.Payload)
 				fmt.Println("[UI Notification]", uevt.Payload)
 			}
@@ -1272,7 +1273,7 @@ func (g *Game) applyNextTech() {
 
 	// T-008: Publish UI notification event when tech is unlocked
 	select {
-	case g.UIEvents <- UIEvent{Type: "notification", Payload: "Tech unlocked!"}:
+	case g.UIEvents <- event.UIEvent{Type: "notification", Payload: "Tech unlocked!"}:
 	default:
 		// Drop if channel full
 	}
