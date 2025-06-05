@@ -107,12 +107,12 @@ See the [ROADMAP.md](./ROADMAP.md) for detailed tasks.
 
 -## Barracks (Military Building)
 
-- The Barracks building generates a word from its letter pool every 2 seconds.
-- Typing the generated word spawns a Footman unit.
-- Spawned units are tracked by the new `Military` system.
-- Word generation logic and cooldown behavior are tested in `barracks_test.go`.
-- HUD now shows cooldown progress bars for the Farmer and Barracks.
-- HUD also displays resource icons for Gold, Wood, Stone, Iron and Mana.
+- The Barracks generates a word from its letter pool every few seconds.
+- Each letter must be typed in order. When the final letter is entered a Footman unit spawns.
+- Spawned units are tracked by the `Military` system.
+- Word generation logic, cooldown behaviour, and letter-by-letter queue processing are tested in `barracks_test.go`.
+- The HUD highlights progress on the first queued word so you can see partially typed letters.
+- Cooldown progress bars for the Farmer and Barracks are shown along with resource icons.
 
 - Press `/` to enter tower selection mode. The screen dims and towers are labeled with letters; press a letter to open that tower's upgrade menu.
 - Press `/` again to open the tech menu. Type to search unlocked technologies and press `Enter` to purchase the highlighted upgrade.

@@ -63,7 +63,8 @@ func TestSurviveFiveWaves(t *testing.T) {
 		}
 
 		if w, ok := g.Queue().Peek(); ok && !g.queueJam {
-			inp.typed = []rune{rune(w.Text[g.queueIndex])}
+			idx := g.Queue().Index()
+			inp.typed = []rune{rune(w.Text[idx])}
 		}
 
 		if err := g.Update(); err != nil {

@@ -34,7 +34,7 @@ func TestConveyorOffsetMoves(t *testing.T) {
 
 	// Ensure queue is not jammed and index is at 0
 	g.queueJam = false
-	g.queueIndex = 0
+	g.Queue().ResetProgress()
 
 	inp.typed = []rune{'a'}
 	g.Step(0.1)
