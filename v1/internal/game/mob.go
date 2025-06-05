@@ -12,12 +12,12 @@ type Mob struct {
 	target     *Base
 	health     int
 
-	armor    int
-	shield   int
-	burst    float64
-	burstCD  float64
-	burstDur float64
-	mobType  MobType
+	armor       int
+	shield      int
+	burst       float64
+	burstTimer  CooldownTimer // Use proper timer for burst cooldown
+	burstActive CooldownTimer // Use proper timer for burst duration
+	mobType     MobType
 }
 
 // NewMob returns a new mob at the given position.
@@ -50,10 +50,11 @@ func NewArmoredMob(x, y float64, target *Base, hp, armor int, speed float64) *Mo
 
 // NewFastMob creates a mob with periodic speed bursts.
 func NewFastMob(x, y float64, target *Base, hp int, speed, burst float64) *Mob {
-	m := NewMob(x, y, target, hp, speed)
+	m := NewMob(x, y, target, hp, speed*0.3) // Much slower base movement
 	m.burst = burst
-	m.burstCD = 2.0  // Start with cooldown
-	m.burstDur = 0   // Not in burst phase initially
+	m.burstTimer = NewCooldownTimer(4.0)    // Longer cooldown between bursts
+	m.burstActive = NewCooldownTimer(1.0)   // Burst lasts 1 second
+	m.burstActive.remaining = 0             // Start not in burst
 	m.mobType = MobFast
 	return m
 }
@@ -67,27 +68,17 @@ func NewBossMob(x, y float64, target *Base, hp int, speed float64) *Mob {
 
 // Update moves the mob and handles animation.
 func (m *Mob) Update(dt float64) error {
-	spd := m.speed
+	spd := m.speed * 0.5 // Slow down all mobs significantly
 
 	// Handle burst mechanics for fast mobs
 	if m.burst > 0 {
-		if m.burstCD > 0 {
-			// Cooldown phase - decrement timer
-			m.burstCD -= dt
-			if m.burstCD <= 0 {
-				// Cooldown finished, start burst phase
-				m.burstCD = 0
-				m.burstDur = 0.5  // Set burst duration
-			}
-		} else if m.burstDur > 0 {
-			// Burst phase - apply speed multiplier
-			spd = m.speed * m.burst
-			m.burstDur -= dt
-			if m.burstDur <= 0 {
-				// Burst finished, reset to cooldown
-				m.burstDur = 0
-				m.burstCD = 2.0  // Reset cooldown
-			}
+		if !m.burstActive.Ready() {
+			// Currently in burst phase
+			spd = m.speed * m.burst * 0.5 // Apply burst but still slower
+			m.burstActive.Tick(dt)
+		} else if m.burstTimer.Tick(dt) {
+			// Cooldown finished, start new burst
+			m.burstActive.Reset()
 		}
 	}
 
@@ -106,9 +97,9 @@ func (m *Mob) Update(dt float64) error {
 	m.pos.X += m.vx * dt
 	m.pos.Y += m.vy * dt
 
-	// Handle animation
+	// Handle animation (slower)
 	m.animTicker += dt
-	if int(m.animTicker/0.25)%2 == 0 {
+	if int(m.animTicker/0.5)%2 == 0 { // Slower animation
 		m.frame = ImgMobA
 	} else {
 		m.frame = ImgMobB

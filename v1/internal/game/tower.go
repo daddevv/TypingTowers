@@ -21,7 +21,7 @@ const (
 // Tower represents a stationary auto-firing tower.
 type Tower struct {
 	BaseEntity
-	cooldown float64 // seconds
+	cooldownTimer CooldownTimer // Use proper timer instead of float64
 	rate     float64 // seconds between shots
 	rangeDst float64
 	game     *Game
@@ -48,7 +48,7 @@ type Tower struct {
 	challengeWord   []rune // special challenge sequence
 	challengeIdx    int
 	challengeActive bool
-	bonusTimer      float64
+	bonusTimer      CooldownTimer // Use timer for bonus duration
 	damageBonus     int
 }
 
@@ -93,18 +93,19 @@ func NewTowerWithTypeAndLevel(g *Game, x, y float64, tt TowerType, level int) *T
 			frameAnchorY: float64(h) / 2,
 			static:       true,
 		},
-		rate:         cfg.TowerFireRate, // seconds
-		rangeDst:     cfg.TowerRange,
-		game:         g,
-		ammoCapacity: cfg.TowerAmmoCapacity,
-		damage:       cfg.TowerDamage,
-		projectiles:  cfg.TowerProjectiles,
-		bounce:       cfg.TowerBounce,
-		level:        level,
-		jammed:       false,
-		foresight:    5,
-		damageBonus:  0,
-		towerType:    tt,
+		cooldownTimer: NewCooldownTimer(cfg.TowerFireRate * 3.0), // Much slower firing
+		rangeDst:      cfg.TowerRange,
+		game:          g,
+		ammoCapacity:  cfg.TowerAmmoCapacity,
+		damage:        cfg.TowerDamage,
+		projectiles:   cfg.TowerProjectiles,
+		bounce:        cfg.TowerBounce,
+		level:         level,
+		jammed:        false,
+		foresight:     5,
+		damageBonus:   0,
+		towerType:     tt,
+		bonusTimer:    NewCooldownTimer(5.0),
 	}
 
 	// Initialize ammo queue with full capacity
@@ -128,14 +129,14 @@ func NewTowerWithTypeAndLevel(g *Game, x, y float64, tt TowerType, level int) *T
 	case TowerSniper:
 		t.damage *= 3
 		t.rangeDst *= 2.0 // Ensure sniper has significantly longer range
-		t.rate *= 2.5     // slower fire rate (higher value = slower)
+		t.cooldownTimer.SetInterval(t.cooldownTimer.interval * 2.5) // slower fire rate
 		t.ammoCapacity = 3
 	case TowerRapid:
 		if t.damage > 1 {
 			t.damage /= 2
 		}
 		t.rangeDst *= 0.7
-		t.rate *= 0.4 // faster fire rate (lower value = faster)
+		t.cooldownTimer.SetInterval(t.cooldownTimer.interval * 0.4) // faster fire rate
 		t.ammoCapacity = 6
 	}
 
@@ -333,11 +334,8 @@ func (t *Tower) fillReloadQueue() {
 func (t *Tower) Update(dt float64) {
 	typed := t.game.input.TypedChars()
 
-	if t.bonusTimer > 0 {
-		t.bonusTimer -= dt
-		if t.bonusTimer < 0 {
-			t.bonusTimer = 0
-		}
+	if !t.bonusTimer.Ready() {
+		t.bonusTimer.Tick(dt)
 	}
 
 	// Handle jam clearing
@@ -356,7 +354,7 @@ func (t *Tower) Update(dt float64) {
 				if t.challengeIdx >= len(t.challengeWord) {
 					t.challengeActive = false
 					t.challengeIdx = 0
-					t.bonusTimer = 5
+					t.bonusTimer.Reset()
 					if t.game != nil {
 						t.game.typing.Record(true)
 					}
@@ -372,13 +370,8 @@ func (t *Tower) Update(dt float64) {
 		return
 	}
 
-	// Handle firing cooldown first - this must decrement before anything else
-	if t.cooldown > 0 {
-		t.cooldown -= dt
-		if t.cooldown < 0 {
-			t.cooldown = 0
-		}
-	}
+	// Handle firing cooldown first
+	t.cooldownTimer.Tick(dt)
 
 	// Always ensure reload queue is populated for empty ammo slots
 	t.fillReloadQueue()
@@ -414,8 +407,8 @@ func (t *Tower) Update(dt float64) {
 		}
 	}
 
-	// Early return if cooldown or reload timer is active
-	if t.cooldown > 0 {
+	// Early return if cooldown is not ready
+	if !t.cooldownTimer.Ready() {
 		return
 	}
 
@@ -488,7 +481,7 @@ func (t *Tower) Update(dt float64) {
 
 		if t.consumeAmmo() {
 			dmg := t.damage
-			if t.bonusTimer > 0 {
+			if t.bonusTimer.Ready() {
 				dmg += t.damageBonus
 			}
 			p := NewProjectile(t.game, t.pos.X, t.pos.Y, targetMob, dmg, speed, t.bounce)
@@ -506,7 +499,8 @@ func (t *Tower) Update(dt float64) {
 				t.game.sound.PlayBeep()
 			}
 		}
-		t.cooldown = t.rate * mult
+		t.cooldownTimer.SetInterval(t.cooldownTimer.interval * mult)
+		t.cooldownTimer.Reset()
 	}
 }
 

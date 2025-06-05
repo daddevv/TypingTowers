@@ -5,6 +5,39 @@
 
 ---
 
+## Immediate Critical Fixes (Current Sprint)
+
+- [ ] **CORE-001** Fix game loop timing and slow down all gameplay significantly
+  - [x] Replace manual float64 cooldowns with CooldownTimer throughout
+  - [x] Increase all intervals by 3-5x for manageable gameplay
+  - [x] Slow down mob movement and spawning dramatically
+- [ ] **QUEUE-001** Implement letter-by-letter queue processing
+  - [x] Process individual letters instead of whole words
+  - [ ] Adjust backlog pressure to accommodate larger letter queues
+  - [ ] Static word processing location at (400, 900) with conveyor effect
+- [ ] **UI-001** Tower selection and upgrade system
+  - [x] Press `/` to enter tower selection mode
+  - [x] Generate letter labels for each tower
+  - [x] Press corresponding letter to select tower and open upgrade menu
+- [ ] **CMD-001** Command mode for power users
+  - [x] Press `:` to enter command mode
+  - [x] Basic commands: pause, unpause, god, slow, fast
+  - [ ] Advanced building/unit commands
+- [ ] **TITLE-001** Add proper title screen and main menu
+  - [ ] Create MainMenuState with options: New Game, Load Game, Settings, Quit
+  - [ ] Title screen with game logo and background music
+  - [ ] Animated background with floating letters/particles
+  - [ ] Settings menu for audio, difficulty, key bindings
+  - [ ] Save/load game selection screen with preview thumbnails
+- [ ] **PREGAME-001** Pre-game setup and tutorial
+  - [ ] Character/difficulty selection screen
+  - [ ] Interactive tutorial covering basic mechanics
+  - [ ] Typing test to calibrate difficulty settings
+  - [ ] Campaign vs sandbox mode selection
+  - [ ] Custom game settings (wave count, resources, etc.)
+
+---
+
 ## Expanded Vision & New Systems
 
 - Deep progression via a 100+ node skill tree (offense, defense, typing, automation, utility)
@@ -15,47 +48,14 @@
 
 ---
 
-### Completed – Core Gameplay Loop Integration
-
-- [x] **INT-001** Integrate Gathering (Farmer) building with resource system (R-001, R-002)
-  - [x] Farmer produces Gold and other relevant resources.
-  - [x] Resource output correctly updates global resource pools.
-- [x] **INT-002** Integrate Military (Barracks) building with unit spawning (M-001, M-002)
-  - [x] Barracks spawns Footman entities upon word completion.
-  - [x] Spawned units are tracked by the military system.
-- [x] **INT-003** Integrate Shared Queue Manager with HUD and building inputs
-  - [x] Display color-coded words (per building `family`) in the typing queue.
-  - [x] Ensure words from Farmer and Barracks correctly populate the global queue.
-  - [x] Typing validation and word dequeue logic functions as expected.
-- [x] **INT-004** Integrate Per-Building Cooldown Timers with UI
-  - [x] Display visual cooldown progress for Farmer and Barracks.
-  - [x] Cooldowns reset correctly after word completion.
-- [x] **INT-005** Integrate Back-Pressure Damage mechanic
-  - [x] Player/base health decreases when active word queue exceeds threshold (e.g., ≥ 5 words).
-  - [x] Link to player health system.
-- [x] **INT-006** Integrate Jam State Visuals and Audio
-  - [x] Implement red flash on mistype.
-  - [x] Implement "clank" SFX placeholder on mistype.
-- [x] **INT-007** Implement Letter Unlock System
-  - [x] Create UI for viewing and purchasing letter unlocks as per `docs/LETTER_UNLOCKS.md`.
-  - [x] Connect letter unlocks to word generation logic for buildings.
-  - [x] Ensure resource costs for unlocks are deducted correctly.
-- [x] **TEST-CORELOOP** End-to-end playtest of the core loop
-  - [x] Verify resource gathering from Farmer.
-  - [x] Verify letter unlocking and its effect on word generation.
-  - [x] Verify unit spawning from Barracks.
-  - [x] Verify queue mechanics: color-coding, back-pressure damage.
-  - [x] Verify jam state feedback (visual and audio).
-  - [x] Check overall game balance and flow for a 5-10 min session.
-
----
-
-### Current Sprint – Resource Loop & HUD
+### Next Sprint – Resource Loop & HUD
 
 - [ ] **R-001** Implement Gold/Wood/Stone/Iron structs
 - [ ] **R-002** Farmer, Lumberjack, Miner cooldowns produce resources
   - [ ] Balance numbers in `config.json`
 - [ ] **HUD-001** Top bar resource icons (`G`, `W`, `S`, `I`, `M`)
+- [ ] **HUD-002** Show word processing queue with conveyor belt animation
+- [ ] **HUD-003** Tower selection overlay with letter labels
 - [ ] **TEST-RES** Integration test 3 min sim, resources > 0
 
 ### Backlog #1 – Tech Tree Loader
@@ -67,24 +67,37 @@
 
 ### Backlog #2 – Military Prototype
 
-- [ ] **M-001** Barracks building pushes unit words
+- [ ] **M-001** Barracks building pushes unit words (letter-by-letter)
 - [ ] **M-002** Footman entity (HP, dmg, speed)
 - [ ] **M-003** Combat resolution attacker vs orc grunt
 - [ ] **TEST-COMBAT** Unit kills grunt in <8 s with perfect typing
 
-### Backlog #3 – Art & Audio Pass 1
+### Backlog #3 – Game States & Flow
+
+- [ ] **STATE-001** Implement proper game state management
+  - [ ] States: MainMenu, PreGame, Playing, Paused, GameOver, Settings
+  - [ ] Clean transitions between states
+  - [ ] State-specific input handling and rendering
+- [ ] **SAVE-001** Comprehensive save/load system
+  - [ ] Save game state, tower configurations, progress
+  - [ ] Multiple save slots with metadata
+  - [ ] Auto-save functionality
+
+### Backlog #4 – Art & Audio Pass 1
 
 - [ ] **ART-001** 16×16 farmer, lumberjack, miner idle sprites
 - [ ] **ART-002** Orc grunt walk + hit animation
+- [ ] **ART-003** Tower upgrade visual indicators
 - [ ] **SFX-001** Key-hit, crit, jam placeholders (chiptune)
+- [ ] **SFX-002** Background music for different game states
 
-### Backlog #4 – Continuous Typing Metrics
+### Backlog #5 – Continuous Typing Metrics
 
 - [ ] **MET-001** Capture per-word accuracy & time
 - [ ] **MET-002** Rolling WPM (last 30 s)
 - [ ] **UI-MET** Toggle stats panel (`Tab`)
 
-### Backlog #5 – Skill Tree & Progression
+### Backlog #6 – Skill Tree & Progression
 
 - [ ] **SKILL-001** Design and implement global skill tree UI
   - [ ] Node categories: offense, defense, typing, automation, utility
@@ -92,30 +105,30 @@
 - [ ] **SKILL-002** Integrate skill tree with building/tech systems
 - [ ] **SKILL-003** Save/load skill tree state
 
-### Backlog #6 – Minions & Heroes
+### Backlog #7 – Minions & Heroes
 
 - [ ] **MINION-001** Implement minion summoning via typed commands
 - [ ] **MINION-002** Minion AI and unique roles
 - [ ] **MINION-003** Minion upgrades and management UI
 
-### Backlog #7 – Idle & Incremental Mechanics
+### Backlog #8 – Idle & Incremental Mechanics
 
 - [ ] **IDLE-001** Auto-collection and offline progress
 - [ ] **IDLE-002** Upgradable idle generators
 - [ ] **IDLE-003** Prestige/reset system
 
-### Backlog #8 – Typing Minigames
+### Backlog #9 – Typing Minigames
 
 - [ ] **MINIGAME-001** Speed trial mode
 - [ ] **MINIGAME-002** Accuracy challenge mode
 - [ ] **MINIGAME-003** Word puzzle/anagram mode
 - [ ] **MINIGAME-004** Boss practice mode
 
-### Backlog #9 – Fuzz Testing & Robustness
+### Backlog #10 – Fuzz Testing & Robustness
 
 - [ ] **FUZZ-001** Implement engine fuzz tester
   - [ ] Generate randomized sequences of inputs/events (typing, build/deploy, mob movement, resource updates)
-  - [ ] Integrate with Go’s fuzzing support or go-fuzz to automate stress runs  
+  - [ ] Integrate with Go's fuzzing support or go-fuzz to automate stress runs  
   - [ ] Detect and log boundary conditions, panics, invariant breaches, and unexpected states  
   - [ ] Verify that all bad states are handled gracefully without crashing  
   - [ ] Produce detailed trace output and reproducible minimised cases for debugging

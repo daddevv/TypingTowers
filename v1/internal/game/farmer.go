@@ -21,20 +21,19 @@ type Farmer struct {
 // NewFarmer creates a new Farmer with default settings.
 func NewFarmer() *Farmer {
 	return &Farmer{
-		// Shorter cooldown to hit ~1 word/sec with Barracks combined
-		timer:       NewCooldownTimer(1.5), // 1.5 seconds base cooldown
+		// Much slower cooldown for more manageable gameplay
+		timer:       NewCooldownTimer(5.0), // 5 seconds between words
 		letterPool:  []rune{'f', 'j'},
 		unlockStage: 0,
-		wordLenMin:  2,
-		// Slightly longer words to balance the faster rate
-		wordLenMax:  4,
+		wordLenMin:  3, // Slightly longer words
+		wordLenMax:  5, // More predictable length range
 		resourceOut: 1,
 		active:      true,
 		queue:       nil,
 	}
 }
 
-// Update ticks the Farmer's cooldown and pushes a word if ready.
+// Update ticks the Farmer's cooldown and pushes individual letters to queue.
 // Returns the generated word if one is ready, else "".
 func (f *Farmer) Update(dt float64) string {
 	if !f.active || f.pendingWord != "" {
@@ -44,9 +43,11 @@ func (f *Farmer) Update(dt float64) string {
 		word := f.generateWord()
 		f.pendingWord = word
 		if f.queue != nil {
-			f.queue.Enqueue(Word{Text: word, Source: "Farmer", Family: "Gathering"})
+			// Queue individual letters instead of whole words
+			for _, letter := range word {
+				f.queue.Enqueue(Word{Text: string(letter), Source: "Farmer", Family: "Gathering"})
+			}
 		}
-		// cooldown resets only after word completion
 		return word
 	}
 	return ""

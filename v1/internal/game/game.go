@@ -106,9 +106,21 @@ type Game struct {
 	barracks   *Barracks
 	military   *Military
 
-	// Typing state for the queue
+	// Typing state for the queue - process individual letters
 	queueIndex int
 	queueJam   bool
+	
+	// Command mode for power users
+	commandMode   bool
+	commandBuffer string
+	
+	// Tower selection system
+	towerSelectMode bool
+	towerLabels     map[string]int // label -> tower index
+	
+	// Static word processing location
+	wordProcessX float64
+	wordProcessY float64
 }
 
 // Gold returns the player's current gold amount.
@@ -152,7 +164,7 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		selectedTower:   0,
 		shopCursor:      0,
 		currentWave:     1,
-		spawnInterval:   cfg.SpawnInterval, // already in seconds
+		spawnInterval:   cfg.SpawnInterval * 4.0, // Much slower spawning
 		spawnTicker:     0,
 		mobsToSpawn:     cfg.MobsPerWave,
 		cfg:             &cfg,
@@ -177,6 +189,12 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		miner:           NewMiner(),
 		barracks:        NewBarracks(),
 		military:        NewMilitary(),
+		wordProcessX:    400,
+		wordProcessY:    900,
+		commandMode:     false,
+		commandBuffer:   "",
+		towerSelectMode: false,
+		towerLabels:     make(map[string]int),
 	}
 
 	tx, ty := tilePosition(1, 16)
@@ -372,33 +390,30 @@ func (g *Game) Update() error {
 		return nil
 	}
 
-	// ---- Global typing queue processing ----
+	// ---- Global typing queue processing (letter by letter) ----
 	if g.queue != nil {
 		g.queue.Update(dt)
 		if w, ok := g.queue.Peek(); ok {
 			if g.queueJam {
 				if g.input.Backspace() {
 					g.queueJam = false
-					g.queueIndex = 0
 				}
 			} else {
 				for _, r := range g.input.TypedChars() {
-					expected := rune(w.Text[g.queueIndex])
+					expected := rune(w.Text[0]) // Process single letters
 					if unicode.ToLower(r) == unicode.ToLower(expected) {
-						g.queueIndex++
-						g.typing.Record(true)
-						if g.queueIndex >= len(w.Text) {
-							g.queueIndex = 0
-							dq, _ := g.queue.TryDequeue(w.Text)
-							switch dq.Source {
-							case "Farmer":
-								g.farmer.OnWordCompleted(dq.Text, &g.resources)
-							case "Barracks":
-								if unit := g.barracks.OnWordCompleted(dq.Text); unit != nil {
-									g.military.AddUnit(unit)
-								}
+						// Successfully typed the letter
+						dq, _ := g.queue.TryDequeue(w.Text)
+						switch dq.Source {
+						case "Farmer":
+							g.farmer.OnWordCompleted(dq.Text, &g.resources)
+						case "Barracks":
+							if unit := g.barracks.OnWordCompleted(dq.Text); unit != nil {
+								g.military.AddUnit(unit)
 							}
 						}
+						g.typing.Record(true)
+						break
 					} else {
 						g.typing.Record(false)
 						g.MistypeFeedback()
@@ -519,6 +534,7 @@ func (g *Game) Update() error {
 		return nil
 	}
 
+	// Slow down mob spawning significantly
 	if g.mobsToSpawn > 0 {
 		g.spawnTicker += dt
 		if g.spawnTicker >= g.spawnInterval {
@@ -767,9 +783,9 @@ func (g *Game) spawnMob() {
 			hp = 1
 		}
 	}
-	speed := g.cfg.MobSpeed
+	speed := g.cfg.MobSpeed * 0.3 // Much slower mobs
 	if speed == 0 {
-		speed = DefaultConfig.MobSpeed
+		speed = DefaultConfig.MobSpeed * 0.3
 	}
 	var m Enemy
 	if g.currentWave%5 == 0 && g.mobsToSpawn == 1 {
@@ -837,7 +853,7 @@ func (g *Game) startWave() {
 	}
 	inc := g.cfg.MobsPerWaveInc
 	g.mobsToSpawn = base + inc*(g.currentWave-1)
-	g.spawnInterval = g.cfg.SpawnInterval // already in seconds
+	g.spawnInterval = g.cfg.SpawnInterval * 6.0 // Much slower spawning
 
 	// Unlock new tech node for additional letters and tower bonuses
 	if g.techTree != nil {

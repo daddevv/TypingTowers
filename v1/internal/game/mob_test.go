@@ -32,16 +32,16 @@ func TestArmoredMobDamage(t *testing.T) {
 func TestFastMobBurst(t *testing.T) {
 	b := NewBase(100, 0, 1)  // Place base away from the mob's position
 	m := NewFastMob(0, 0, b, 10, 1, 3)
-	// Initial burstCD should be 2, so no burst at first
+	// Initial burstTimer should be ready (cooldown = 4.0), but burstActive should not be ready
 	m.Update(0.016)
-	if m.burstCD <= 0 {
-		t.Errorf("expected burstCD > 0 at start")
+	if m.burstTimer.Ready() {
+		t.Errorf("expected burstTimer not ready at start, remaining: %f", m.burstTimer.Remaining())
 	}
 	
 	oldVX, oldVY := m.Velocity()
-	m.Update(2.0) // Wait for burst cooldown to expire
-	if m.burstCD > 0 {
-		t.Errorf("expected burstCD to be 0 or less after enough time, got %f", m.burstCD)
+	m.Update(4.0) // Wait for burst cooldown to expire
+	if !m.burstTimer.Ready() {
+		t.Errorf("expected burstTimer to be ready after enough time, remaining: %f", m.burstTimer.Remaining())
 	}
 	// Now burst should happen
 	m.Update(0.016) // Trigger burst
