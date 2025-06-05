@@ -58,6 +58,7 @@ for three minutes and verifies that all resources accumulate from zero.
 - Global queue is displayed on the HUD at `(400,900)` with a conveyor belt animation. Mistypes jam the queue until Backspace is pressed.
 - Mistypes now trigger a brief red flash and a "clank" sound effect.
 - Basic orc grunt waves scale every 45 s.
+- Footmen automatically attack nearby orc grunts each tick.
 - Back-pressure damage: if the queue grows past 20 letters, the base loses 1 HP each second.
 - Typing speed/accuracy multiplier working.
 - Vim navigation for pause/menu/shop implemented.
