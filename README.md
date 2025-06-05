@@ -63,6 +63,7 @@ for three minutes and verifies that all resources accumulate from zero.
 - Typing speed/accuracy multiplier working.
 - Vim navigation for pause/menu/shop implemented.
 - Title screen with animated background and keyboard-only menu.
+- Game states now managed via a `GamePhase` enum (MainMenu, PreGame, Playing, Paused, Settings, GameOver).
 - Pre-game setup lets you choose a character and difficulty, shows a quick
   tutorial and typing test, then prompts for mode selection.
 - Letter unlock order and costs documented (see `docs/LETTER_UNLOCKS.md`).
