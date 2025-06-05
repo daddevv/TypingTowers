@@ -43,11 +43,15 @@ func (ts *TypingStats) recordEvent(t time.Time) {
 func (ts *TypingStats) trimOld(now time.Time) {
 	cutoff := now.Add(-30 * time.Second)
 	idx := 0
-	for _, e := range ts.events {
-		if e.After(cutoff) {
+	for i, e := range ts.events {
+		if !e.Before(cutoff) {
+			idx = i
 			break
 		}
-		idx++
+		// If all events are old, idx should be set to len(ts.events)
+		if i == len(ts.events)-1 {
+			idx = len(ts.events)
+		}
 	}
 	if idx > 0 {
 		ts.events = ts.events[idx:]
