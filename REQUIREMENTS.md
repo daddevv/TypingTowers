@@ -119,6 +119,7 @@ All new features are optional enhancements, preserving the educational and acces
 | **UI-NAV-5** | Key-rebinder supports QWERTY, Colemak, Dvorak. |
 | **UI-BUILD-1** | HUD displays cooldown progress for Farmer and Barracks. |
 | **UI-RES-1** | HUD shows resource icons for Gold, Wood, Stone, Iron and Mana. |
+| **UI-QUEUE-1** | HUD displays the word queue with a conveyor belt animation. |
 | **UI-TITLE-1** | Game starts at a title screen with Start, Settings and Quit options. |
 | **UI-TITLE-2** | Title screen has a simple animated background and is keyboard navigable. |
 | **UI-PREGAME-1** | Pre-game setup screen handles character and difficulty selection, tutorial, typing test and mode selection. |
