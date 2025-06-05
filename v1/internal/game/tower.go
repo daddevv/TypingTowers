@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"unicode"
 
+	"github.com/daddevv/type-defense/internal/tower"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -50,6 +51,10 @@ type Tower struct {
 	challengeActive bool
 	bonusTimer      CooldownTimer // Use timer for bonus duration
 	damageBonus     int
+}
+
+func (t *Tower) NewHandler() tower.TowerHandler {
+	panic("unimplemented")
 }
 
 // NewTower creates a basic tower at the given position.

@@ -15,6 +15,11 @@ type techInput struct {
 	down   bool
 }
 
+// StatsPanel implements InputHandler.
+func (t *techInput) StatsPanel() bool {
+	panic("unimplemented")
+}
+
 func (t *techInput) TypedChars() []rune { ch := t.typed; t.typed = nil; return ch }
 func (t *techInput) Update()            {}
 func (t *techInput) Reset() {

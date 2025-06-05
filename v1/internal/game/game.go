@@ -15,6 +15,13 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/daddevv/type-defense/internal/content"
+	"github.com/daddevv/type-defense/internal/entity"
+	"github.com/daddevv/type-defense/internal/phase"
+	"github.com/daddevv/type-defense/internal/sprite"
+	"github.com/daddevv/type-defense/internal/tech"
+	"github.com/daddevv/type-defense/internal/tower"
+	"github.com/daddevv/type-defense/internal/ui"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
@@ -171,6 +178,27 @@ type Game struct {
 	mainMenu  *MainMenu
 	preGame   *PreGame
 	quit      bool
+
+	// Modular handler pointers (for handler/event system)
+	EntityHandler  entity.EntityHandler
+	UIHandler      ui.UiHandler
+	TechHandler    tech.TechHandler
+	TowerHandler   tower.TowerHandler
+	PhaseHandler   phase.PhaseHandler
+	ContentHandler content.ContentHandler
+	SpriteHandler  sprite.SpriteHandler
+
+	// Event system
+	EventBus *EventBus
+
+	// Event channels for handler pub/sub (T-007)
+	EntityEvents  chan Event
+	UIEvents      chan Event
+	TechEvents    chan Event
+	TowerEvents   chan Event
+	PhaseEvents   chan Event
+	ContentEvents chan Event
+	SpriteEvents  chan Event
 }
 
 // Gold returns the player's current gold amount.
@@ -325,6 +353,38 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 	}
 	g.lastUpdate = time.Now()
 	g.hud = NewHUD(g)
+
+	// Initialize modular handlers
+	g.EntityHandler = entity.NewHandler()
+	g.UIHandler = ui.NewHandler()
+	g.TechHandler = tech.NewHandler()
+	g.TowerHandler = tower.NewHandler()
+	g.PhaseHandler = phase.NewHandler()
+	g.ContentHandler = content.NewHandler()
+	g.SpriteHandler = sprite.NewHandler()
+	g.EventBus = NewEventBus()
+
+	// Initialize event channels for each handler (T-007)
+	g.EntityEvents = make(chan Event, 8)
+	g.UIEvents = make(chan Event, 8)
+	g.TechEvents = make(chan Event, 8)
+	g.TowerEvents = make(chan Event, 8)
+	g.PhaseEvents = make(chan Event, 8)
+	g.ContentEvents = make(chan Event, 8)
+	g.SpriteEvents = make(chan Event, 8)
+
+	// Example: subscribe UI handler to UIEvents channel
+	go func() {
+		for evt := range g.UIEvents {
+			// In a real implementation, UIHandler would process UIEvents here.
+			// For demo, just print UI notifications.
+			if uevt, ok := evt.(UIEvent); ok && uevt.Type == "notification" {
+				// This could be replaced with a call to UIHandler.Notify(uevt.Payload)
+				fmt.Println("[UI Notification]", uevt.Payload)
+			}
+		}
+	}()
+
 	return g
 }
 
@@ -336,6 +396,31 @@ func (g *Game) Update() error {
 		dt = now.Sub(g.lastUpdate).Seconds()
 	}
 	g.lastUpdate = now
+
+	// --- Call all handler Update(dt) methods ---
+	if g.EntityHandler != nil {
+		g.EntityHandler.Update(dt)
+	}
+	if g.UIHandler != nil {
+		g.UIHandler.Update(dt)
+	}
+	if g.TechHandler != nil {
+		g.TechHandler.Update(dt)
+	}
+	if g.TowerHandler != nil {
+		g.TowerHandler.Update(dt)
+	}
+	if g.PhaseHandler != nil {
+		g.PhaseHandler.Update(dt)
+	}
+	if g.ContentHandler != nil {
+		g.ContentHandler.Update(dt)
+	}
+	if g.SpriteHandler != nil {
+		g.SpriteHandler.Update(dt)
+	}
+	// --- End handler updates ---
+
 	g.input.Update()
 	g.handleStatsPanelInput()
 	g.handleSkillMenuInput()
@@ -1183,6 +1268,13 @@ func (g *Game) applyNextTech() {
 	}
 	if ach != "" {
 		g.achievements = append(g.achievements, ach)
+	}
+
+	// T-008: Publish UI notification event when tech is unlocked
+	select {
+	case g.UIEvents <- UIEvent{Type: "notification", Payload: "Tech unlocked!"}:
+	default:
+		// Drop if channel full
 	}
 }
 

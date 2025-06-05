@@ -17,12 +17,12 @@
     - `content`: Asset/content loaders and resource management
     - `sprite`: Sprite/image providers and ebiten.Image helpers
     - `game`: Core engine, main loop, and glue code
-  - [ ] **T-002** For each module, define a `Handler` struct (e.g., `EntityHandler`, `UIHandler`, etc.) with basic state and interface
-  - [ ] **T-003** Refactor `game.Engine` to hold pointers to all handlers as fields
-  - [ ] **T-004** Implement `Update(dt)` method for each handler; call all handlers from `Engine.Update(dt)`
-  - [ ] **T-005** Design Go channel-based pub/sub event system:
-    - [ ] **T-006** Define event types for each module (e.g., `EntityEvent`, `UIEvent`, etc.)
-    - [ ] **T-007** Each handler exposes channels for publishing/subscribing to events
+  - [x] **T-002** For each module, define a `Handler` struct (e.g., `EntityHandler`, `UIHandler`, etc.) with basic state and interface
+  - [x] **T-003** Refactor `game.Engine` to hold pointers to all handlers as fields
+  - [x] **T-004** Implement `Update(dt)` method for each handler; call all handlers from `Engine.Update(dt)`
+  - [x] **T-005** Design Go channel-based pub/sub event system:
+    - [x] **T-006** Define event types for each module (e.g., `EntityEvent`, `UIEvent`, etc.)
+    - [x] **T-007** Each handler exposes channels for publishing/subscribing to events
     - [ ] **T-008** Implement event communication between handlers (e.g., UI notification on tech unlock)
   - [ ] **T-009** Migrate all existing logic/files into new module structure
   - [ ] **T-010** Update all imports and references to match new structure
