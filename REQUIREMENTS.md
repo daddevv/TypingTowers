@@ -122,8 +122,9 @@ All new features are optional enhancements, preserving the educational and acces
 
 ## 7 Sound / FX
 
-- **SND-1** 8-bit SFX for key hits, crits, jams.  
-- **SND-2** Optional voice-over reads next word for early readers (accessibility toggle).  
+- **SND-1** 8-bit SFX for key hits, crits, jams.
+- **FX-1** Mistyped letters briefly flash the screen red and play a "clank" sound.
+- **SND-2** Optional voice-over reads next word for early readers (accessibility toggle).
 
 ---
 
