@@ -40,6 +40,7 @@ func TestLetterUnlocking(t *testing.T) {
 
 func TestGameBackPressureDamage(t *testing.T) {
 	g := NewGame()
+	g.phase = PhasePlaying // Ensure main update logic runs
 	// Fill the queue to the threshold for backpressure
 	for i := 0; i < 6; i++ {
 		g.Queue().Enqueue(Word{Text: "w"})

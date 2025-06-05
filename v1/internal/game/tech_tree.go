@@ -105,9 +105,5 @@ func (t *YAMLTechTree) validate() error {
 			return err
 		}
 	}
-	// reverse order so prerequisites appear first
-	for i, j := 0, len(t.order)-1; i < j; i, j = i+1, j-1 {
-		t.order[i], t.order[j] = t.order[j], t.order[i]
-	}
 	return nil
 }

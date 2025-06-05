@@ -32,6 +32,7 @@ func (s *stubInput) TechMenu() bool     { return false }
 
 func TestQueueJamMistypeFeedback(t *testing.T) {
 	g := NewGame()
+	g.phase = PhasePlaying // Ensure main update logic runs
 	inp := &stubInput{}
 	g.input = inp
 	g.Queue().Enqueue(Word{Text: "f"})
