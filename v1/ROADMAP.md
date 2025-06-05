@@ -7,15 +7,30 @@
 
 ## Core Gameplay Loop Demo (Highest Priority)
 
-- [x] **SKILL-001** Global skill tree UI (offense, defense, typing, automation, utility)
-  - [x] Define Go structs for skill tree nodes and categories
-  - [x] Implement in-memory skill tree structure and sample data
-  - [x] Add keyboard UI: open skill tree menu, navigate categories/nodes, show node details
-  - [x] Render skill tree overlay: display branches, highlight selected node, show unlock status
-  - [x] Implement skill unlock logic: check prerequisites/resources, update state on unlock
-  - [x] Integrate skill effects with game systems (e.g., global stat boosts, automation unlocks)
-  - [x] Write unit tests for skill tree navigation, unlocks, and effect application
-  - [x] Persist skill tree state in save/load system
+- [ ] **ARCH-001** Modularize internal codebase with handler/event system
+  - [x] **T-001** Define new module structure and create directories:
+    - `entity`: All ally/enemy minions, workers, and base logic
+    - `ui`: HUD, overlays, menus, and all rendering/UI logic
+    - `tech`: Tech tree, skill tree, upgrades, and related systems
+    - `tower`: Tower logic, projectiles, and related mechanics
+    - `phase`: Game phase/state enums and transitions
+    - `content`: Asset/content loaders and resource management
+    - `sprite`: Sprite/image providers and ebiten.Image helpers
+    - `game`: Core engine, main loop, and glue code
+  - [ ] **T-002** For each module, define a `Handler` struct (e.g., `EntityHandler`, `UIHandler`, etc.) with basic state and interface
+  - [ ] **T-003** Refactor `game.Engine` to hold pointers to all handlers as fields
+  - [ ] **T-004** Implement `Update(dt)` method for each handler; call all handlers from `Engine.Update(dt)`
+  - [ ] **T-005** Design Go channel-based pub/sub event system:
+    - [ ] **T-006** Define event types for each module (e.g., `EntityEvent`, `UIEvent`, etc.)
+    - [ ] **T-007** Each handler exposes channels for publishing/subscribing to events
+    - [ ] **T-008** Implement event communication between handlers (e.g., UI notification on tech unlock)
+  - [ ] **T-009** Migrate all existing logic/files into new module structure
+  - [ ] **T-010** Update all imports and references to match new structure
+  - [ ] **T-011** Write/adjust tests for new handler/event system
+  - [ ] **T-012** Document the new architecture and handler/event pattern for contributors
+  - [ ] **T-013** Ensure `game.Engine` acts as main renderer, coordinating rendering using handler state
+  - [ ] **T-014** (Optional) Add migration/compatibility notes for contributors
+  - [ ] **Design Note:** The `game.Engine` will act as the main renderer. Each handler's state (e.g., entities, UI, tech, towers) composes the overall game state. There is no separate/dedicated renderer; rendering is coordinated by the engine using handler state.
 
 ---
 
