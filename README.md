@@ -48,9 +48,9 @@ go run ./cmd/game          # Ebiten entry
 go test ./...
 ```
 
-## Current prototype
+-## Current prototype
 
-- Global FIFO queue, single Farmer + Barracks building (f j words).
+- Global FIFO queue, single Farmer + Barracks building (f j words). Barracks words spawn Footman units.
 - Basic orc grunt waves scale every 45 s.
 - Typing speed/accuracy multiplier working.
 - Vim navigation for pause/menu/shop implemented.
@@ -70,6 +70,12 @@ See the [ROADMAP.md](./ROADMAP.md) for detailed tasks.
 - Typing the generated word completes the cycle and produces Food resources.
 - The Farmer's cooldown, letter pool, and word length can be configured and extended for progression.
 - See `v1/internal/game/farmer.go` for implementation and `farmer_test.go` for tests.
+
+## Barracks (Military Building)
+
+- The Barracks building generates a word from its letter pool every 5 seconds.
+- Typing the generated word spawns a Footman unit.
+- Word generation logic and cooldown behavior are tested in `barracks_test.go`.
 
 See docs/REQUIREMENTS.md for the full feature scaffold, ROADMAP.md for planned phases, and TODO.md for sprint tasks.
 

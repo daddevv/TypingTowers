@@ -12,7 +12,7 @@ import (
 var (
 	// assetPrefix allows tests to override asset path prefix.
 	assetPrefix = ""
-	
+
 	ImgBackgroundBasicTiles *ebiten.Image
 	ImgBackgroundTile       *ebiten.Image
 	ImgHighlightTile        *ebiten.Image
@@ -21,6 +21,7 @@ var (
 	ImgTower                *ebiten.Image
 	ImgMobA                 *ebiten.Image
 	ImgMobB                 *ebiten.Image
+	ImgFootman              *ebiten.Image
 	ImgProjectile           *ebiten.Image
 )
 
@@ -33,6 +34,7 @@ func InitImages() {
 	ImgTower = generateTowerImage()
 	ImgMobA = generateMobImage(color.RGBA{255, 0, 0, 255})
 	ImgMobB = generateMobImage(color.RGBA{255, 128, 0, 255})
+	ImgFootman = generateMobImage(color.RGBA{0, 0, 255, 255})
 	ImgProjectile = generateProjectileImage()
 	ImgBackgroundBasicTiles = generateBackground()
 }
