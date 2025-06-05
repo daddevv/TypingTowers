@@ -20,9 +20,9 @@
 - [x] **INT-001** Integrate Gathering (Farmer) building with resource system (R-001, R-002)
   - [x] Farmer produces Gold and other relevant resources.
   - [x] Resource output correctly updates global resource pools.
-- [ ] **INT-002** Integrate Military (Barracks) building with unit spawning (M-001, M-002)
-  - [ ] Barracks spawns Footman entities upon word completion.
-  - [ ] Spawned units are tracked by the military system.
+- [x] **INT-002** Integrate Military (Barracks) building with unit spawning (M-001, M-002)
+  - [x] Barracks spawns Footman entities upon word completion.
+  - [x] Spawned units are tracked by the military system.
 - [ ] **INT-003** Integrate Shared Queue Manager with HUD and building inputs
   - [ ] Display color-coded words (per building `family`) in the typing queue.
   - [ ] Ensure words from Farmer and Barracks correctly populate the global queue.

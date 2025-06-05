@@ -77,6 +77,7 @@ See the [ROADMAP.md](./ROADMAP.md) for detailed tasks.
 
 - The Barracks building generates a word from its letter pool every 2 seconds.
 - Typing the generated word spawns a Footman unit.
+- Spawned units are tracked by the new `Military` system.
 - Word generation logic and cooldown behavior are tested in `barracks_test.go`.
 
 See docs/REQUIREMENTS.md for the full feature scaffold, ROADMAP.md for planned phases, and TODO.md for sprint tasks.

@@ -66,7 +66,8 @@ All new features are optional enhancements, preserving the educational and acces
 
 - **MOB-1** Wave spawner increments `wave_id`, HP ×1.25, DPS ×1.15 each wave.  
 - **MOB-2** Families: Grunt, Armored, Fast, Shaman, Boss (10th wave).  
-- **UNIT-1** Each trained unit consumes `Food` and spawns at left, moves right.  
+- **UNIT-1** Each trained unit consumes `Food` and spawns at left, moves right.
+- **UNIT-2** The Military system tracks spawned units and updates them each frame.
 - **DAMAGE** `Effective = base × accuracy × (1+speed_bonus)` (speed bonus tiers 0 / +25 / +50 %).  
 - **CRIT** 100 % accuracy **and** top speed bonus → +50 % power.  
 - **TOWER RELOADS** Work exactly like buildings: arrow tower pushes its own queue words.
