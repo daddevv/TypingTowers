@@ -4,7 +4,28 @@ package game
 type GamePhase int
 
 const (
-	PhaseMenu GamePhase = iota
+	PhaseMainMenu GamePhase = iota
 	PhasePreGame
 	PhasePlaying
+	PhasePaused
+	PhaseGameOver
+	PhaseSettings
 )
+
+func (p GamePhase) String() string {
+	switch p {
+	case PhaseMainMenu:
+		return "MainMenu"
+	case PhasePreGame:
+		return "PreGame"
+	case PhasePlaying:
+		return "Playing"
+	case PhasePaused:
+		return "Paused"
+	case PhaseGameOver:
+		return "GameOver"
+	case PhaseSettings:
+		return "Settings"
+	}
+	return "Unknown"
+}

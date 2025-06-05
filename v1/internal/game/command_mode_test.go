@@ -49,7 +49,7 @@ func TestEnterCommandMode(t *testing.T) {
 	if err := g.Update(); err != nil {
 		t.Fatal(err)
 	}
-	if !g.paused {
+	if g.phase != PhasePaused {
 		t.Fatalf("expected command executed")
 	}
 	if g.commandMode {

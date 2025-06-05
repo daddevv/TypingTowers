@@ -34,7 +34,7 @@ func (m *menuInput) SkillMenu() bool    { return false }
 
 func TestMainMenuStartGame(t *testing.T) {
 	g := NewGame()
-	g.phase = PhaseMenu
+	g.phase = PhaseMainMenu
 	g.mainMenu = NewMainMenu()
 	inp := &menuInput{enter: true}
 	g.input = inp
@@ -49,7 +49,7 @@ func TestMainMenuStartGame(t *testing.T) {
 
 func TestMainMenuCursorWrap(t *testing.T) {
 	g := NewGame()
-	g.phase = PhaseMenu
+	g.phase = PhaseMainMenu
 	g.mainMenu = NewMainMenu()
 	inp := &menuInput{up: true}
 	g.input = inp
@@ -64,7 +64,7 @@ func TestMainMenuCursorWrap(t *testing.T) {
 
 func TestMainMenuSettingsToggle(t *testing.T) {
 	g := NewGame()
-	g.phase = PhaseMenu
+	g.phase = PhaseMainMenu
 	g.mainMenu = NewMainMenu()
 	g.mainMenu.cursor = 1
 	inp := &menuInput{enter: true}

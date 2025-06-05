@@ -145,10 +145,11 @@ type Game struct {
 	conveyorOffset float64
 
 	// High level state
-	phase    GamePhase
-	mainMenu *MainMenu
-	preGame  *PreGame
-	quit     bool
+	phase     GamePhase
+	prevPhase GamePhase
+	mainMenu  *MainMenu
+	preGame   *PreGame
+	quit      bool
 }
 
 // Gold returns the player's current gold amount.
@@ -237,7 +238,7 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		commandBuffer:   "",
 		towerSelectMode: false,
 		towerLabels:     make(map[string]int),
-		phase:           PhaseMenu,
+		phase:           PhaseMainMenu,
 		mainMenu:        NewMainMenu(),
 		preGame:         NewPreGame(),
 	}
@@ -318,11 +319,17 @@ func (g *Game) Update() error {
 		return ebiten.Termination
 	}
 
-	if g.phase == PhaseMenu {
+	if g.phase == PhaseMainMenu {
 		return g.mainMenu.Update(g, dt)
 	}
 	if g.phase == PhasePreGame {
 		return g.preGame.Update(g, dt)
+	}
+	if g.phase == PhasePaused {
+		return g.updatePaused(dt)
+	}
+	if g.phase == PhaseSettings {
+		return g.updateSettings(dt)
 	}
 
 	// Animate conveyor belt offset
@@ -528,62 +535,17 @@ func (g *Game) Update() error {
 		}
 	}
 
-	if g.input.Space() && !g.settingsOpen {
-		g.paused = !g.paused
-		if g.paused {
-			g.pauseCursor = 0
-		}
+	if g.input.Space() && g.phase == PhasePlaying {
+		g.phase = PhasePaused
+		g.paused = true
+		g.pauseCursor = 0
 	}
 
 	if g.input.Quit() {
 		return ebiten.Termination
 	}
 
-	if g.paused {
-		if g.settingsOpen {
-			if g.input.Down() {
-				g.settingsCursor = (g.settingsCursor + 1) % 2
-			}
-			if g.input.Up() {
-				g.settingsCursor = (g.settingsCursor - 1 + 2) % 2
-			}
-			if g.input.Enter() {
-				switch g.settingsCursor {
-				case 0:
-					g.settings.Mute = !g.settings.Mute
-					if g.sound != nil {
-						g.sound.ToggleMute()
-					}
-				case 1:
-					g.settingsOpen = false
-				}
-			}
-		} else {
-			const optionsCount = 4
-			if g.input.Down() {
-				g.pauseCursor = (g.pauseCursor + 1) % optionsCount
-			}
-			if g.input.Up() {
-				g.pauseCursor = (g.pauseCursor - 1 + optionsCount) % optionsCount
-			}
-			if g.input.Enter() {
-				switch g.pauseCursor {
-				case 0:
-					g.paused = false
-				case 1:
-					g.Restart()
-				case 2:
-					return ebiten.Termination
-				case 3:
-					g.settingsOpen = true
-					g.settingsCursor = 0
-				}
-			}
-		}
-		return nil
-	}
-
-	if g.gameOver {
+	if g.phase == PhaseGameOver {
 		return nil
 	}
 
@@ -815,6 +777,7 @@ func (g *Game) Update() error {
 
 	if !g.base.Alive() {
 		g.gameOver = true
+		g.phase = PhaseGameOver
 	}
 
 	if g.gameOver && !g.gameOverHandled {
@@ -836,10 +799,60 @@ func (g *Game) Step(dt float64) error {
 	return g.Update()
 }
 
+func (g *Game) updatePaused(dt float64) error {
+	const optionsCount = 4
+	if g.input.Down() {
+		g.pauseCursor = (g.pauseCursor + 1) % optionsCount
+	}
+	if g.input.Up() {
+		g.pauseCursor = (g.pauseCursor - 1 + optionsCount) % optionsCount
+	}
+	if g.input.Enter() {
+		switch g.pauseCursor {
+		case 0:
+			g.phase = PhasePlaying
+			g.paused = false
+		case 1:
+			g.Restart()
+		case 2:
+			return ebiten.Termination
+		case 3:
+			g.phase = PhaseSettings
+			g.prevPhase = PhasePaused
+			g.settingsCursor = 0
+		}
+	}
+	return nil
+}
+
+func (g *Game) updateSettings(dt float64) error {
+	if g.input.Down() {
+		g.settingsCursor = (g.settingsCursor + 1) % 2
+	}
+	if g.input.Up() {
+		g.settingsCursor = (g.settingsCursor - 1 + 2) % 2
+	}
+	if g.input.Enter() {
+		switch g.settingsCursor {
+		case 0:
+			g.settings.Mute = !g.settings.Mute
+			if g.sound != nil {
+				g.sound.ToggleMute()
+			}
+		case 1:
+			g.phase = g.prevPhase
+			if g.prevPhase == PhasePaused {
+				g.paused = true
+			}
+		}
+	}
+	return nil
+}
+
 // Draw renders the game to the screen. This method is called every frame.
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.screen.Clear()
-	if g.phase == PhaseMenu {
+	if g.phase == PhaseMainMenu {
 		g.mainMenu.Draw(g, g.screen)
 		g.renderFrame(screen)
 		return
@@ -851,7 +864,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 	drawBackgroundTilemap(g.screen)
 
-	if g.gameOver {
+	if g.phase == PhaseGameOver {
 		opts := &text.DrawOptions{}
 		opts.GeoM.Translate(900, 540)
 		opts.ColorScale.ScaleWithColor(color.White)
@@ -938,35 +951,33 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 	}
 
-	if g.paused {
-		var lines []string
-		if g.settingsOpen {
-			lines = append(lines, "-- SETTINGS --")
-			mute := "Off"
-			if g.settings.Mute {
-				mute = "On"
+	if g.phase == PhasePaused {
+		lines := []string{"-- PAUSED --"}
+		opts := []string{"Resume", "Restart", "Quit", "Settings"}
+		for i, opt := range opts {
+			prefix := "  "
+			if i == g.pauseCursor {
+				prefix = "> "
 			}
-			options := []string{
-				"Toggle Mute: " + mute,
-				"Back",
+			lines = append(lines, prefix+opt)
+		}
+		drawMenu(g.screen, lines, 860, 480)
+		g.renderFrame(screen)
+		return
+	}
+	if g.phase == PhaseSettings {
+		lines := []string{"-- SETTINGS --"}
+		mute := "Off"
+		if g.settings.Mute {
+			mute = "On"
+		}
+		opts := []string{"Toggle Mute: " + mute, "Back"}
+		for i, opt := range opts {
+			prefix := "  "
+			if i == g.settingsCursor {
+				prefix = "> "
 			}
-			for i, opt := range options {
-				prefix := "  "
-				if i == g.settingsCursor {
-					prefix = "> "
-				}
-				lines = append(lines, prefix+opt)
-			}
-		} else {
-			lines = append(lines, "-- PAUSED --")
-			opts := []string{"Resume", "Restart", "Quit", "Settings"}
-			for i, opt := range opts {
-				prefix := "  "
-				if i == g.pauseCursor {
-					prefix = "> "
-				}
-				lines = append(lines, prefix+opt)
-			}
+			lines = append(lines, prefix+opt)
 		}
 		drawMenu(g.screen, lines, 860, 480)
 		g.renderFrame(screen)
@@ -1556,8 +1567,10 @@ func (g *Game) executeCommand(cmd string) {
 		g.quit = true
 	case "pause":
 		g.paused = true
+		g.phase = PhasePaused
 	case "resume":
 		g.paused = false
+		g.phase = PhasePlaying
 	}
 }
 

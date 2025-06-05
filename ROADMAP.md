@@ -112,13 +112,13 @@
 
 ## Game States & Persistence
 
-- [ ] **STATE-001** Proper game state management (MainMenu, PreGame, Playing, Paused, GameOver, Settings)
-  - [ ] **T-001** Define a `GamePhase` enum/type covering all major states (MainMenu, PreGame, Playing, Paused, GameOver, Settings)
-  - [ ] **T-002** Refactor main game loop to use `GamePhase` for state transitions
-  - [ ] **T-003** Implement state transition logic (e.g., menu → pregame → playing → paused/gameover/settings)
-  - [ ] **T-004** Ensure each state has a dedicated update and draw handler
-  - [ ] **T-005** Add keyboard navigation and transitions between states (e.g., Esc to pause, Enter to continue)
-  - [ ] **T-006** Write unit tests for state transitions and edge cases
+- [x] **STATE-001** Proper game state management (MainMenu, PreGame, Playing, Paused, GameOver, Settings)
+  - [x] **T-001** Define a `GamePhase` enum/type covering all major states (MainMenu, PreGame, Playing, Paused, GameOver, Settings)
+  - [x] **T-002** Refactor main game loop to use `GamePhase` for state transitions
+  - [x] **T-003** Implement state transition logic (e.g., menu → pregame → playing → paused/gameover/settings)
+  - [x] **T-004** Ensure each state has a dedicated update and draw handler
+  - [x] **T-005** Add keyboard navigation and transitions between states (e.g., Esc to pause, Enter to continue)
+  - [x] **T-006** Write unit tests for state transitions and edge cases
 
 - [ ] **SAVE-001** Comprehensive save/load system (multiple slots, auto-save)
   - [ ] **T-001** Design a save file structure supporting multiple slots and versioning
