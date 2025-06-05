@@ -18,8 +18,8 @@
 ## Current Sprint – Queue MVP Hardening
 
 - [ ] **Q-001** Refactor global queue to support color-coding per building
-  - [ ] Add `family` field to `Word` struct
-  - [ ] Palette map + ANSI tests
+  - [x] Add `family` field to `Word` struct
+  - [x] Palette map + ANSI tests
 - [ ] **Q-002** Back-pressure damage when backlog ≥ 5
   - [ ] Unit test: enqueue 6 words, expect base HP −1
 - [ ] **Q-003** Jam state visual

@@ -4,21 +4,21 @@ import "testing"
 
 func TestQueueFIFO(t *testing.T) {
 	q := NewQueueManager()
-	q.Enqueue(Word{Text: "one", Source: "farmer"})
-	q.Enqueue(Word{Text: "two", Source: "barracks"})
+	q.Enqueue(Word{Text: "one", Source: "farmer", Family: "Gathering"})
+	q.Enqueue(Word{Text: "two", Source: "barracks", Family: "Military"})
 
 	if q.Len() != 2 {
 		t.Fatalf("expected queue length 2 got %d", q.Len())
 	}
 	w, ok := q.Peek()
-	if !ok || w.Text != "one" || w.Source != "farmer" {
+	if !ok || w.Text != "one" || w.Source != "farmer" || w.Family != "Gathering" {
 		t.Fatalf("unexpected first word: %+v ok=%v", w, ok)
 	}
 }
 
 func TestQueueDequeueValidation(t *testing.T) {
 	q := NewQueueManager()
-	q.Enqueue(Word{Text: "alpha", Source: "farmer"})
+	q.Enqueue(Word{Text: "alpha", Source: "farmer", Family: "Gathering"})
 
 	if _, ok := q.TryDequeue("beta"); ok {
 		t.Fatalf("dequeue should fail for wrong input")
@@ -27,7 +27,7 @@ func TestQueueDequeueValidation(t *testing.T) {
 		t.Fatalf("queue length changed on failed dequeue")
 	}
 	w, ok := q.TryDequeue("alpha")
-	if !ok || w.Text != "alpha" {
+	if !ok || w.Text != "alpha" || w.Family != "Gathering" {
 		t.Fatalf("dequeue failed for correct input")
 	}
 	if q.Len() != 0 {

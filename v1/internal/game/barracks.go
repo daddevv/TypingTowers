@@ -37,7 +37,7 @@ func (b *Barracks) Update(dt float64) string {
 		word := b.generateWord()
 		b.pendingWord = word
 		if b.queue != nil {
-			b.queue.Enqueue(Word{Text: word, Source: "Barracks"})
+			b.queue.Enqueue(Word{Text: word, Source: "Barracks", Family: "Military"})
 		}
 		return word
 	}

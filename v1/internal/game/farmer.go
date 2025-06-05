@@ -42,7 +42,7 @@ func (f *Farmer) Update(dt float64) string {
 		word := f.generateWord()
 		f.pendingWord = word
 		if f.queue != nil {
-			f.queue.Enqueue(Word{Text: word, Source: "Farmer"})
+			f.queue.Enqueue(Word{Text: word, Source: "Farmer", Family: "Gathering"})
 		}
 		// cooldown resets only after word completion
 		return word

@@ -4,6 +4,7 @@ package game
 type Word struct {
 	Text   string // text the player must type
 	Source string // name of the building that generated the word
+	Family string // building family for colour coding
 }
 
 // QueueManager maintains a global FIFO queue of words.
