@@ -178,12 +178,42 @@ func (h *HUD) drawTechMenu(screen *ebiten.Image) {
 	drawMenu(screen, lines, 760, 300)
 }
 
+// drawSkillMenu renders the global skill tree overlay when active.
+func (h *HUD) drawSkillMenu(screen *ebiten.Image) {
+	if !h.game.skillMenuOpen {
+		return
+	}
+	categories := []string{"Offense", "Defense", "Typing", "Automation", "Utility"}
+	cat := categories[h.game.skillCategory]
+	nodes := h.game.skillNodesByCategory(SkillCategory(h.game.skillCategory))
+	lines := []string{"-- SKILLS --", "Category: " + cat}
+	for i, n := range nodes {
+		line := fmt.Sprintf("%s (Cost %d)", n.Name, n.Cost)
+		prefix := "  "
+		if i == h.game.skillCursor {
+			prefix = "> "
+		}
+		lines = append(lines, prefix+line)
+	}
+	if len(nodes) > 0 {
+		sel := nodes[h.game.skillCursor]
+		effs := []string{}
+		for k, v := range sel.Effects {
+			effs = append(effs, fmt.Sprintf("%s=%.1f", k, v))
+		}
+		lines = append(lines, "")
+		lines = append(lines, strings.Join(effs, ", "))
+	}
+	drawMenu(screen, lines, 720, 260)
+}
+
 // Draw renders ammo count, tower stats, reload prompts, and shop interface.
 func (h *HUD) Draw(screen *ebiten.Image) {
 	h.drawResourceIcons(screen)
 	h.drawQueue(screen)
 	h.drawTowerSelectionOverlay(screen)
 	h.drawTechMenu(screen)
+	h.drawSkillMenu(screen)
 	if h.game.commandMode {
 		drawMenu(screen, []string{":" + h.game.commandBuffer}, 860, 1020)
 		return

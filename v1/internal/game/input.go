@@ -23,6 +23,7 @@ type InputHandler interface {
 	Load() bool
 	SelectTower() bool // Add this method to the interface
 	TechMenu() bool    // Toggle tech menu mode
+	SkillMenu() bool   // Toggle skill tree menu
 	Command() bool     // Command reports if ':' was pressed to enter command mode
 }
 
@@ -42,6 +43,7 @@ type Input struct {
 	load        bool
 	selectTower bool
 	techMenu    bool
+	skillMenu   bool
 	command     bool // whether ':' was pressed this frame
 }
 
@@ -63,6 +65,7 @@ func NewInput() *Input {
 		load:        false,
 		selectTower: false,
 		techMenu:    false,
+		skillMenu:   false,
 		command:     false,
 	}
 }
@@ -97,6 +100,7 @@ func (i *Input) Update() {
 	pressedSlash := inpututil.IsKeyJustPressed(ebiten.KeySlash)
 	i.selectTower = pressedSlash
 	i.techMenu = pressedSlash
+	i.skillMenu = inpututil.IsKeyJustPressed(ebiten.KeyF4)
 }
 
 // Reset resets the Input state to its default values.
@@ -116,6 +120,7 @@ func (i *Input) Reset() {
 	i.load = false
 	i.selectTower = false
 	i.techMenu = false
+	i.skillMenu = false
 	i.command = false
 }
 
@@ -158,4 +163,5 @@ func (i *Input) Save() bool        { return i.save }
 func (i *Input) Load() bool        { return i.load }
 func (i *Input) SelectTower() bool { return i.selectTower }
 func (i *Input) TechMenu() bool    { return i.techMenu }
+func (i *Input) SkillMenu() bool   { return i.skillMenu }
 func (i *Input) Command() bool     { return i.command }

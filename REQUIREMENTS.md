@@ -133,6 +133,7 @@ All new features are optional enhancements, preserving the educational and acces
 | **UI-TOWER-2** | While selecting, the HUD overlays each tower with a yellow box and its letter label. |
 | **UI-TOWER-2** | Tower selection mode dims the background and displays letter labels above towers. |
 | **UI-TECH-1** | `/` toggles the tech menu. Typing filters nodes and `Enter` purchases the highlighted technology. |
+| **UI-SKILL-1** | `F4` opens the global skill tree menu and arrow keys navigate categories and nodes. |
 | **UI-CMD-1** | `:` enters command mode allowing text commands like `pause` or `quit`. |
 
 *Planned: Typed commands for minion management, skill tree navigation, and minigames. All new features remain keyboard-only.*
