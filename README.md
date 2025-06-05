@@ -106,6 +106,7 @@ See the [ROADMAP.md](./ROADMAP.md) for detailed tasks.
 - Spawned units are tracked by the new `Military` system.
 - Word generation logic and cooldown behavior are tested in `barracks_test.go`.
 - HUD now shows cooldown progress bars for the Farmer and Barracks.
+- Press `/` to label towers with letters and open an upgrade menu for the chosen tower.
 
 See docs/REQUIREMENTS.md for the full feature scaffold, ROADMAP.md for planned phases, and TODO.md for sprint tasks.
 

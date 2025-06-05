@@ -23,8 +23,8 @@
 - [x] **QUEUE-001** Letter-by-letter queue processing
   - [x] Adjust backlog pressure for letter queues
   - [x] Static word processing location at (400, 900) with conveyor effect
-- [ ] **UI-001** Tower selection and upgrade system
-  - [ ] `/` to enter tower selection mode, letter labels, upgrade menu
+- [x] **UI-001** Tower selection and upgrade system
+  - [x] `/` to enter tower selection mode, letter labels, upgrade menu
 - [ ] **CMD-001** Command mode for power users
   - [ ] `:` to enter command mode, basic and advanced commands
 - [x] **TITLE-001** Title screen and main menu
