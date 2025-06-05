@@ -72,6 +72,7 @@ All new features are optional enhancements, preserving the educational and acces
 - **UNIT-3** Footmen have 10 HP, deal 1 damage, and move at speed 50 px/s.
 - **UNIT-4** Orc Grunts have 5 HP, deal 1 damage, and march toward the base.
 - **COMBAT-1** When a Footman and Orc Grunt overlap, each deals damage equal to its stat once per tick.
+- **COMBAT-2** With perfect typing, a Footman must defeat an Orc Grunt in under eight seconds.
 - **DAMAGE** `Effective = base × accuracy × (1+speed_bonus)` (speed bonus tiers 0 / +25 / +50 %).  
 - **CRIT** 100 % accuracy **and** top speed bonus → +50 % power.  
 - **TOWER RELOADS** Work exactly like buildings: arrow tower pushes its own queue words.
