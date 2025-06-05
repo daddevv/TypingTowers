@@ -60,8 +60,8 @@
 
 ### Backlog #1 – Tech Tree Loader
 
-- [ ] **T-001** YAML schema for node graph
-  - [ ] `type`, `cost`, `effects`, `prereqs`
+ - [x] **T-001** YAML schema for node graph
+   - [x] `type`, `cost`, `effects`, `prereqs`
 - [ ] **T-002** Parser + in-memory graph
 - [ ] **T-003** Keyboard UI for tech purchase (`/` search, `Enter` buy)
 

@@ -59,6 +59,13 @@ go test -tags test ./...
 - Vim navigation for pause/menu/shop implemented.
 - Letter unlock order and costs documented (see `docs/LETTER_UNLOCKS.md`).
 - Letters can now be unlocked in-game using King's Points, expanding each building's word pool.
+- Tech trees are defined in YAML under `data/trees/` (see `letters_basic.yaml`).
+
+## Tech Tree YAML
+
+Tech tree files live in `data/trees/` and describe upgrade nodes. The example
+`letters_basic.yaml` shows the schema with fields for `type`, `cost`, `effects`
+and `prereqs`.
 
 ---
 

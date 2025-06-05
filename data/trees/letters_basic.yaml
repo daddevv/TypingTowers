@@ -1,0 +1,35 @@
+nodes:
+  - id: home_row
+    name: "Home Row"
+    type: UnlockLetter
+    cost: 0
+    effects:
+      letters: ["f", "j"]
+    prereqs: []
+  - id: index_ext
+    name: "Index Extensions"
+    type: UnlockLetter
+    cost: 20
+    effects:
+      letters: ["d", "k"]
+      range_mult: 1.05
+    prereqs:
+      - home_row
+  - id: middle_fingers
+    name: "Middle Fingers"
+    type: UnlockLetter
+    cost: 40
+    effects:
+      letters: ["s", "l"]
+      damage_mult: 1.1
+    prereqs:
+      - index_ext
+  - id: ring_finger
+    name: "Ring Finger"
+    type: UnlockLetter
+    cost: 60
+    effects:
+      letters: ["a"]
+      ammo_add: 1
+    prereqs:
+      - middle_fingers

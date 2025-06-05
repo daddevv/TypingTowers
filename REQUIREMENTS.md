@@ -100,7 +100,8 @@ All new features are optional enhancements, preserving the educational and acces
 
 - **TREE-1** Each building holds a **directed-graph tech tree** of nodes (YAML in `data/trees/`).  
 - **TREE-2** Node types: `UnlockLetter`, `StatBoost`, `NewUnit`, `CDReduction`, `GlobalPassive`.  
-- **TREE-3** Infinite spiral: on outer-ring completion, costs×2, effects×1.1.  
+- **TREE-3** Infinite spiral: on outer-ring completion, costs×2, effects×1.1.
+- **TREE-4** Each YAML node defines `type`, `cost`, `effects`, and `prereqs` fields.
 
 *Planned: Skill tree expands to 100+ nodes, with branches for offense, defense, typing proficiency, automation, and utility. Certain nodes require WPM/accuracy milestones.*
 
