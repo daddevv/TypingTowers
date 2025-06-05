@@ -42,7 +42,15 @@ func (m *Military) Update(dt float64, orcs []*OrcGrunt) {
 			if rectOverlap(fx, fy, fw, fh, ox, oy, ow, oh) {
 				o.Damage(u.damage)
 				u.Damage(o.AttackDamage())
+				// Immediately check if Footman died and remove from units
+				if !u.Alive() {
+					break // stop further combat for this unit
+				}
 			}
+		}
+		if !u.Alive() {
+			m.units = append(m.units[:i], m.units[i+1:]...)
+			continue
 		}
 		i++
 	}
