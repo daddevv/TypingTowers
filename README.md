@@ -60,6 +60,7 @@ for three minutes and verifies that all resources accumulate from zero.
 - Basic orc grunt waves scale every 45 s.
 - Footmen automatically attack nearby orc grunts each tick.
 - Integration test ensures a Footman defeats an Orc Grunt in under eight seconds with perfect typing.
+- Extensive unit tests cover combat edge cases such as multiple units, simultaneous deaths, and non-overlapping encounters.
 - Back-pressure damage: if the queue grows past 20 letters, the base loses 1 HP each second.
 - Typing speed/accuracy multiplier working.
 - Vim navigation for pause/menu/shop implemented.
