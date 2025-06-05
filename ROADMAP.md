@@ -96,11 +96,11 @@
   - [x] **M-002.3** Add Footman spawn logic to Barracks on word completion
   - [x] **M-002.4** Write unit tests for Footman creation and state updates
 
-- [ ] **M-003** Combat resolution attacker vs orc grunt
-  - [ ] **M-003.1** Define OrcGrunt struct with HP and damage
-  - [ ] **M-003.2** Implement combat logic between Footman and OrcGrunt
-  - [ ] **M-003.3** Update military system to resolve combat each tick
-  - [ ] **M-003.4** Add tests for combat outcomes and edge cases
+- [x] **M-003** Combat resolution attacker vs orc grunt
+  - [x] **M-003.1** Define OrcGrunt struct with HP and damage
+  - [x] **M-003.2** Implement combat logic between Footman and OrcGrunt
+  - [x] **M-003.3** Update military system to resolve combat each tick
+  - [x] **M-003.4** Add tests for combat outcomes and edge cases
 
 - [ ] **TEST-COMBAT** Unit kills grunt in <8 s with perfect typing
   - [ ] **T-001** Create integration test simulating perfect typing input

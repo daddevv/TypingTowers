@@ -746,7 +746,9 @@ func (g *Game) Update() error {
 
 	// Update buildings and units
 	if g.military != nil {
-		g.military.Update(dt)
+		// Combat resolution currently only handles OrcGrunts; none are
+		// spawned yet so pass nil.
+		g.military.Update(dt, nil)
 	}
 	if g.farmer != nil {
 		if w := g.farmer.Update(dt); w != "" {
