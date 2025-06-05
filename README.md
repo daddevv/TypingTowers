@@ -57,7 +57,7 @@ for three minutes and verifies that all resources accumulate from zero.
 - Global queue is displayed on the HUD at `(400,900)` with a conveyor belt animation. Mistypes jam the queue until Backspace is pressed.
 - Mistypes now trigger a brief red flash and a "clank" sound effect.
 - Basic orc grunt waves scale every 45 s.
- - Back-pressure damage: if the queue grows past 20 letters, the base loses 1 HP each second.
+- Back-pressure damage: if the queue grows past 20 letters, the base loses 1 HP each second.
 - Typing speed/accuracy multiplier working.
 - Vim navigation for pause/menu/shop implemented.
 - Title screen with animated background and keyboard-only menu.
@@ -108,8 +108,8 @@ See the [ROADMAP.md](./ROADMAP.md) for detailed tasks.
 - Typing the generated word spawns a Footman unit.
 - Spawned units are tracked by the new `Military` system.
 - Word generation logic and cooldown behavior are tested in `barracks_test.go`.
- - HUD now shows cooldown progress bars for the Farmer and Barracks.
- - HUD also displays resource icons for Gold, Wood, Stone, Iron and Mana.
+- HUD now shows cooldown progress bars for the Farmer and Barracks.
+- HUD also displays resource icons for Gold, Wood, Stone, Iron and Mana.
 
 - Press `/` to enter tower selection mode. The screen dims and towers are labeled with letters; press a letter to open that tower's upgrade menu.
 - Press `:` to enter command mode for quick text commands like `pause` or `quit`.

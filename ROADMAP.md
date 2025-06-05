@@ -70,17 +70,43 @@
   - [ ] **T-003.7** Handle `Enter` key to purchase selected tech: check prerequisites/resources, call `UnlockNext`
   - [ ] **T-003.8** Write unit tests for tech menu: toggling, filtering, navigation, and purchase flow
 - [ ] **SKILL-001** Global skill tree UI (offense, defense, typing, automation, utility)
-- [ ] **SKILL-002** Integrate skill tree with building/tech systems
-- [ ] **SKILL-003** Save/load skill tree state
+  - [ ] **SKILL-001.1** Define Go structs for skill tree nodes and categories (offense, defense, typing, automation, utility)
+  - [ ] **SKILL-001.2** Implement in-memory skill tree structure and sample data
+  - [ ] **SKILL-001.3** Add keyboard UI: open skill tree menu, navigate categories/nodes, show node details
+  - [ ] **SKILL-001.4** Render skill tree overlay: display branches, highlight selected node, show unlock status
+  - [ ] **SKILL-001.5** Implement skill unlock logic: check prerequisites/resources, update state on unlock
+  - [ ] **SKILL-001.6** Integrate skill effects with game systems (e.g., global stat boosts, automation unlocks)
+  - [ ] **SKILL-001.7** Write unit tests for skill tree navigation, unlocks, and effect application
+  - [ ] **SKILL-001.8** Persist skill tree state in save/load system
 
 ---
 
 ## Military Prototype
 
 - [ ] **M-001** Barracks building pushes unit words (letter-by-letter)
+  - [ ] **T-001** Refactor Barracks to enqueue words to the global queue letter-by-letter
+  - [ ] **T-002** Update queue manager to support partial word progress and per-letter validation
+  - [ ] **T-003** Ensure Barracks cooldown only resets after full word is typed
+  - [ ] **T-004** Add unit tests for Barracks letter-by-letter queue logic
+  - [ ] **T-005** Integrate Barracks with HUD to show letter-by-letter progress
+
 - [ ] **M-002** Footman entity (HP, dmg, speed)
+  - [ ] **T-001** Define Footman struct with HP, damage, and speed fields
+  - [ ] **T-002** Implement Footman movement and update logic
+  - [ ] **T-003** Add Footman spawn logic to Barracks on word completion
+  - [ ] **T-004** Write unit tests for Footman creation and state updates
+
 - [ ] **M-003** Combat resolution attacker vs orc grunt
+  - [ ] **T-001** Define OrcGrunt struct with HP and damage
+  - [ ] **T-002** Implement combat logic between Footman and OrcGrunt
+  - [ ] **T-003** Update military system to resolve combat each tick
+  - [ ] **T-004** Add tests for combat outcomes and edge cases
+
 - [ ] **TEST-COMBAT** Unit kills grunt in <8 s with perfect typing
+  - [ ] **T-001** Create integration test simulating perfect typing input
+  - [ ] **T-002** Spawn Footman and OrcGrunt, simulate combat loop
+  - [ ] **T-003** Assert OrcGrunt is defeated in under 8 seconds
+  - [ ] **T-004** Add test to CI pipeline
 
 ---
 
