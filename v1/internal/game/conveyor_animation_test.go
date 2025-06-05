@@ -27,9 +27,14 @@ func (s *stubInputConveyor) SkillMenu() bool    { return false }
 
 func TestConveyorOffsetMoves(t *testing.T) {
 	g := NewGame()
+	g.phase = PhasePlaying // Ensure main update logic runs
 	inp := &stubInputConveyor{}
 	g.input = inp
 	g.Queue().Enqueue(Word{Text: "ab"})
+
+	// Ensure queue is not jammed and index is at 0
+	g.queueJam = false
+	g.queueIndex = 0
 
 	inp.typed = []rune{'a'}
 	g.Step(0.1)

@@ -3,7 +3,6 @@ set -e
 
 # Ensure Go tooling uses the vendor directory
 export CGO_ENABLED=0
-export GOFLAGS=-mod=vendor
 export EBITEN_HEADLESS=1 # Enable headless mode for Ebiten
 
 # Format check
