@@ -66,10 +66,14 @@ func (f *Farmer) generateWord() string {
 
 // OnWordCompleted should be called when the player completes the Farmer's word.
 // Returns the amount of Food produced.
-func (f *Farmer) OnWordCompleted(word string) int {
+func (f *Farmer) OnWordCompleted(word string, pool *ResourcePool) int {
 	if word == f.pendingWord {
 		f.pendingWord = ""
 		f.timer.Reset()
+		if pool != nil {
+			pool.AddGold(f.resourceOut)
+			pool.AddFood(f.resourceOut)
+		}
 		return f.resourceOut
 	}
 	return 0

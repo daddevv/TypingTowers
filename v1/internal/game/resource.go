@@ -91,3 +91,47 @@ func (i *Iron) Amount() int { return i.amount }
 
 // Set sets the iron amount directly.
 func (i *Iron) Set(n int) { i.amount = n }
+
+// Food tracks the player's food resources.
+type Food struct {
+	amount int
+}
+
+// Add increases the food amount.
+func (f *Food) Add(n int) { f.amount += n }
+
+// Spend subtracts the given amount if available and returns true.
+func (f *Food) Spend(n int) bool {
+	if f.amount < n {
+		return false
+	}
+	f.amount -= n
+	return true
+}
+
+// Amount returns the current food total.
+func (f *Food) Amount() int { return f.amount }
+
+// Set sets the food amount directly.
+func (f *Food) Set(n int) { f.amount = n }
+
+// ResourcePool aggregates all resource types for the player.
+type ResourcePool struct {
+	Gold  Gold
+	Food  Food
+	Wood  Wood
+	Stone Stone
+	Iron  Iron
+}
+
+// AddGold adds the specified amount of gold.
+func (r *ResourcePool) AddGold(n int) { r.Gold.Add(n) }
+
+// AddFood adds the specified amount of food.
+func (r *ResourcePool) AddFood(n int) { r.Food.Add(n) }
+
+// GoldAmount returns the current gold total.
+func (r *ResourcePool) GoldAmount() int { return r.Gold.Amount() }
+
+// FoodAmount returns the current food total.
+func (r *ResourcePool) FoodAmount() int { return r.Food.Amount() }

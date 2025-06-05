@@ -135,52 +135,53 @@ func TestTowerJamming(t *testing.T) {
 }
 
 func TestUpgradePurchasing(t *testing.T) {
-	g := &Game{gold: 25, cfg: &DefaultConfig, input: NewInput(), typing: NewTypingStats()}
+	g := &Game{cfg: &DefaultConfig, input: NewInput(), typing: NewTypingStats()}
+	g.AddGold(25)
 	tower := NewTower(g, 0, 0)
 	g.towers = []*Tower{tower}
 
 	// Test damage upgrade
 	oldDamage := tower.damage
-	if g.gold < 5 {
+	if g.Gold() < 5 {
 		t.Fatal("not enough gold for test")
 	}
-	g.gold -= 5
+	g.SpendGold(5)
 	tower.damage++
 	if tower.damage != oldDamage+1 {
 		t.Errorf("damage upgrade failed, expected %d got %d", oldDamage+1, tower.damage)
 	}
-	if g.gold != 20 {
-		t.Errorf("gold not deducted correctly after damage upgrade, expected 20 got %d", g.gold)
+	if g.Gold() != 20 {
+		t.Errorf("gold not deducted correctly after damage upgrade, expected 20 got %d", g.Gold())
 	}
 
 	// Test range upgrade
 	oldRange := tower.rangeDst
-	g.gold -= 5
+	g.SpendGold(5)
 	tower.rangeDst += 50
 	if tower.rangeDst != oldRange+50 {
 		t.Errorf("range upgrade failed, expected %f got %f", oldRange+50, tower.rangeDst)
 	}
-	if g.gold != 15 {
-		t.Errorf("gold not deducted correctly after range upgrade, expected 15 got %d", g.gold)
+	if g.Gold() != 15 {
+		t.Errorf("gold not deducted correctly after range upgrade, expected 15 got %d", g.Gold())
 	}
 
 	// Test fire rate upgrade
 	oldRate := tower.rate
-	g.gold -= 5
+	g.SpendGold(5)
 	if tower.rate > 10 {
 		tower.rate -= 10
 	}
 	if tower.rate != oldRate-10 && oldRate > 10 {
 		t.Errorf("fire rate upgrade failed, expected %f got %f", oldRate-10, tower.rate)
 	}
-	if g.gold != 10 {
-		t.Errorf("gold not deducted correctly after fire rate upgrade, expected 10 got %d", g.gold)
+	if g.Gold() != 10 {
+		t.Errorf("gold not deducted correctly after fire rate upgrade, expected 10 got %d", g.Gold())
 	}
 
 	// Test ammo capacity upgrade
 	oldCapacity := tower.ammoCapacity
 	oldAmmo, _ := tower.GetAmmoStatus()
-	g.gold -= 10
+	g.SpendGold(10)
 	tower.UpgradeAmmoCapacity(2)
 	newAmmo, newCapacity := tower.GetAmmoStatus()
 	if newCapacity != oldCapacity+2 {
@@ -189,23 +190,23 @@ func TestUpgradePurchasing(t *testing.T) {
 	if newAmmo != oldAmmo+2 {
 		t.Errorf("ammo should increase with capacity upgrade, expected %d got %d", oldAmmo+2, newAmmo)
 	}
-	if g.gold != 0 {
-		t.Errorf("gold not deducted correctly after ammo capacity upgrade, expected 0 got %d", g.gold)
+	if g.Gold() != 0 {
+		t.Errorf("gold not deducted correctly after ammo capacity upgrade, expected 0 got %d", g.Gold())
 	}
 }
 
 func TestSingleUpgradePurchase(t *testing.T) {
-	g := &Game{gold: 100, cfg: &DefaultConfig, input: NewInput(), typing: NewTypingStats()}
+	g := &Game{cfg: &DefaultConfig, input: NewInput(), typing: NewTypingStats()}
+	g.AddGold(100)
 	tower := NewTower(g, 0, 0)
 	g.towers = []*Tower{tower}
 
 	// Test that upgrade only happens once per purchase action
 	oldDamage := tower.damage
-	oldGold := g.gold
+	oldGold := g.Gold()
 
 	// Simulate single upgrade purchase
-	if g.gold >= 5 {
-		g.gold -= 5
+	if g.SpendGold(5) {
 		tower.damage++
 	}
 
@@ -213,18 +214,17 @@ func TestSingleUpgradePurchase(t *testing.T) {
 	if tower.damage != oldDamage+1 {
 		t.Errorf("expected single damage upgrade, got %d -> %d", oldDamage, tower.damage)
 	}
-	if g.gold != oldGold-5 {
-		t.Errorf("expected gold to decrease by 5, got %d -> %d", oldGold, g.gold)
+	if g.Gold() != oldGold-5 {
+		t.Errorf("expected gold to decrease by 5, got %d -> %d", oldGold, g.Gold())
 	}
 
 	// Test insufficient funds prevention
-	g.gold = 3 // Not enough for 5 gold upgrade
+	g.resources.Gold.Set(3) // Not enough for 5 gold upgrade
 	oldDamage = tower.damage
-	oldGold = g.gold
+	oldGold = g.Gold()
 
 	// Should not upgrade when insufficient funds
-	if g.gold >= 5 { // This condition should fail
-		g.gold -= 5
+	if g.SpendGold(5) { // This condition should fail
 		tower.damage++
 	}
 
@@ -232,8 +232,8 @@ func TestSingleUpgradePurchase(t *testing.T) {
 	if tower.damage != oldDamage {
 		t.Errorf("upgrade should not occur with insufficient gold, damage changed from %d to %d", oldDamage, tower.damage)
 	}
-	if g.gold != oldGold {
-		t.Errorf("gold should not change with insufficient funds, changed from %d to %d", oldGold, g.gold)
+	if g.Gold() != oldGold {
+		t.Errorf("gold should not change with insufficient funds, changed from %d to %d", oldGold, g.Gold())
 	}
 }
 

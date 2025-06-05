@@ -6,7 +6,7 @@ func TestBuildTowerCostsGold(t *testing.T) {
 	cfg := DefaultConfig
 	cfg.TowerConstructionCost = 5
 	g := NewGameWithConfig(cfg)
-	g.gold = 10
+	g.AddGold(10)
 	g.cursorX = 4
 	g.cursorY = 4
 	initial := len(g.towers)
@@ -14,8 +14,8 @@ func TestBuildTowerCostsGold(t *testing.T) {
 	if len(g.towers) != initial+1 {
 		t.Fatalf("expected tower count %d got %d", initial+1, len(g.towers))
 	}
-	if g.gold != 5 {
-		t.Fatalf("expected gold 5 got %d", g.gold)
+	if g.Gold() != 5 {
+		t.Fatalf("expected gold 5 got %d", g.Gold())
 	}
 	if g.towers[len(g.towers)-1].towerType != TowerSniper {
 		t.Fatalf("expected sniper tower type")
