@@ -80,7 +80,6 @@ type Game struct {
 	achievements []string
 	towerMods    TowerModifiers
 
-	skillTree      *SkillTree
 	unlockedSkills map[string]bool
 	skillMenuOpen  bool
 	skillCursor    int
@@ -216,7 +215,6 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		skillMenuOpen:   false,
 		searchBuffer:    "",
 		techCursor:      0,
-		skillMenuOpen:   false,
 		skillCursor:     0,
 		skillCategory:   SkillOffense,
 		flashTimer:      0,
@@ -829,21 +827,10 @@ func (g *Game) Update() error {
 
 // Step advances the game state by dt seconds.
 // This is used for testing conveyor animation.
-func (g *Game) Step(dt float64) {
-	// Update conveyor offset logic here as in the main game loop.
-	// For example:
-	// If a character was typed, increase conveyorOffset.
-	// Otherwise, decay conveyorOffset over time.
-	// The actual logic should match what the test expects.
-	// Example (replace with your actual logic):
-	if len(g.input.TypedChars()) > 0 {
-		g.conveyorOffset += 1.0 // or whatever increment is correct
-	} else if g.conveyorOffset > 0 {
-		g.conveyorOffset -= dt // or your decay logic
-		if g.conveyorOffset < 0 {
-			g.conveyorOffset = 0
-		}
-	}
+func (g *Game) Step(dt float64) error {
+	// For test: just call Update() after setting lastUpdate to simulate dt.
+	g.lastUpdate = g.lastUpdate.Add(-time.Duration(dt * float64(time.Second)))
+	return g.Update()
 }
 
 // Draw renders the game to the screen. This method is called every frame.
@@ -1230,12 +1217,12 @@ func (g *Game) handleSkillMenuInput() {
 	}
 	categories := []SkillCategory{SkillOffense, SkillDefense, SkillTyping, SkillAutomation, SkillUtility}
 	if g.input.Right() {
-		g.skillCategory = (g.skillCategory + 1) % len(categories)
+		g.skillCategory = (g.skillCategory + 1) % SkillCategory(len(categories))
 		g.skillCursor = 0
 		return
 	}
 	if g.input.Left() {
-		g.skillCategory = (g.skillCategory - 1 + len(categories)) % len(categories)
+		g.skillCategory = (g.skillCategory - 1 + SkillCategory(len(categories))) % SkillCategory(len(categories))
 		g.skillCursor = 0
 		return
 	}
@@ -1249,7 +1236,6 @@ func (g *Game) handleSkillMenuInput() {
 	if g.input.Up() {
 		g.skillCursor = (g.skillCursor - 1 + len(nodes)) % len(nodes)
 	}
-	return nodes
 }
 
 // enterTowerSelectMode assigns letter labels to towers and activates selection mode.

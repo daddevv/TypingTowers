@@ -5,6 +5,7 @@ package game
 import (
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestEnterTowerSelectMode(t *testing.T) {
@@ -73,6 +74,7 @@ func (s *stubInputSelect) Load() bool         { return false }
 func (s *stubInputSelect) SelectTower() bool  { v := s.selectTower; s.selectTower = false; return v }
 func (s *stubInputSelect) Command() bool      { return false }
 func (s *stubInputSelect) TechMenu() bool     { return false }
+func (s *stubInputSelect) SkillMenu() bool    { return false }
 
 func TestSlashOpensTowerSelect(t *testing.T) {
 	g := NewGame()

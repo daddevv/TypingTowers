@@ -65,9 +65,9 @@ for three minutes and verifies that all resources accumulate from zero.
 - Pre-game setup lets you choose a character and difficulty, shows a quick
   tutorial and typing test, then prompts for mode selection.
 - Letter unlock order and costs documented (see `docs/LETTER_UNLOCKS.md`).
- - Letters can now be unlocked in-game using King's Points, expanding each building's word pool.
- - Tech trees are defined in YAML under `data/trees/` (see `letters_basic.yaml`). They are loaded at runtime via a Go parser that builds an in-memory graph and verifies all prerequisites.
- - Skill tree nodes can be purchased with King's Points once prerequisites are met.
+- Letters can now be unlocked in-game using King's Points, expanding each building's word pool.
+- Tech trees are defined in YAML under `data/trees/` (see `letters_basic.yaml`). They are loaded at runtime via a Go parser that builds an in-memory graph and verifies all prerequisites.
+- Skill tree nodes can be purchased with King's Points once prerequisites are met.
 
 ## Tech Tree YAML
 

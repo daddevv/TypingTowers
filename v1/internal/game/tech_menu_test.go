@@ -36,6 +36,7 @@ func (t *techInput) Load() bool        { return false }
 func (t *techInput) SelectTower() bool { return false }
 func (t *techInput) Command() bool     { return false }
 func (t *techInput) TechMenu() bool    { v := t.toggle; t.toggle = false; return v }
+func (t *techInput) SkillMenu() bool   { return false }
 
 func TestTechMenuToggle(t *testing.T) {
 	g := NewGame()

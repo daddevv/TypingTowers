@@ -23,4 +23,3 @@ func TestBuildTowerCostsGold(t *testing.T) {
 }
 
 // If stubInput is used in this file, add:
-func (s *stubInput) SelectTower() bool { return false }

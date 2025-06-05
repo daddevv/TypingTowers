@@ -188,12 +188,15 @@ func (h *HUD) drawSkillMenu(screen *ebiten.Image) {
 	nodes := h.game.skillNodesByCategory(SkillCategory(h.game.skillCategory))
 	lines := []string{"-- SKILLS --", "Category: " + cat}
 	for i, n := range nodes {
-		line := fmt.Sprintf("%s (Cost %d)", n.Name, n.Cost)
+		nodeStatus := "Locked"
+		if h.game.unlockedSkills[n.ID] {
+			nodeStatus = "Unlocked"
+		}
 		prefix := "  "
 		if i == h.game.skillCursor {
 			prefix = "> "
 		}
-		lines = append(lines, fmt.Sprintf("%s%s - %s", prefix, n.Name, status))
+		lines = append(lines, fmt.Sprintf("%s%s - %s", prefix, n.Name, nodeStatus))
 	}
 	drawMenu(screen, lines, 760, 300)
 }
@@ -203,17 +206,17 @@ func (h *HUD) drawSkillTreeOverlay(screen *ebiten.Image) {
 	if !h.game.skillMenuOpen {
 		return
 	}
-	nodes := h.game.skillMenuNodes()
+	nodes := h.game.skillNodesByCategory(SkillCategory(h.game.skillCategory))
 	if nodes == nil {
-		nodes = h.game.skillTree.NodesByCategory(h.game.skillCategory)
+		return
 	}
-	lines := []string{fmt.Sprintf("-- SKILLS: %s --", h.game.skillCategory.String())}
-	for i, n := range nodes {
+	lines := []string{fmt.Sprintf("-- SKILLS: %s --", SkillCategory(h.game.skillCategory).String())}
+	for _, n := range nodes {
 		status := "Locked"
 		if h.game.unlockedSkills[n.ID] {
 			status = "Unlocked"
 		}
-    		lines = append(lines, prefix+line)
+		lines = append(lines, fmt.Sprintf("  %s - %s", n.Name, status))
 	}
 	if len(nodes) > 0 {
 		sel := nodes[h.game.skillCursor]
@@ -225,227 +228,29 @@ func (h *HUD) drawSkillTreeOverlay(screen *ebiten.Image) {
 		lines = append(lines, strings.Join(effs, ", "))
 	}
 	drawMenu(screen, lines, 720, 260)
+}
 
-// Draw renders ammo count, tower stats, reload prompts, and shop interface.
+// drawMenu renders a vertical list of strings at (x, y) with spacing and shadow.
+func drawMenu(screen *ebiten.Image, lines []string, x, y int) {
+	const lineSpacing = 32
+	for i, line := range lines {
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(float64(x), float64(y+i*lineSpacing))
+		opts.ColorScale.ScaleWithColor(color.Black)
+		opts.GeoM.Translate(2, 2)
+		text.Draw(screen, line, BoldFont, opts)
+		opts = &text.DrawOptions{}
+		opts.GeoM.Translate(float64(x), float64(y+i*lineSpacing))
+		opts.ColorScale.ScaleWithColor(color.White)
+		text.Draw(screen, line, BoldFont, opts)
+	}
+}
+
+// Draw renders the HUD elements on screen
 func (h *HUD) Draw(screen *ebiten.Image) {
 	h.drawResourceIcons(screen)
 	h.drawQueue(screen)
 	h.drawTowerSelectionOverlay(screen)
 	h.drawTechMenu(screen)
 	h.drawSkillMenu(screen)
-	h.drawSkillTreeOverlay(screen)
-	if h.game.commandMode {
-		drawMenu(screen, []string{":" + h.game.commandBuffer}, 860, 1020)
-		return
-	}
-	var lines []string
-	textX := 10
-	initialY := 30 // Start HUD lower to avoid overlap with mouse/tile debug info
-	lineHeight := 18
-	padding := 5.0
-
-	if h.game.shopOpen {
-		gold := h.game.Gold()
-		lines = append(lines, "-- SHOP --")
-		lines = append(lines, fmt.Sprintf("Gold: %d", gold))
-		lines = append(lines, fmt.Sprintf("Food: %d", h.game.resources.FoodAmount()))
-		lines = append(lines, fmt.Sprintf("KP: %d", h.game.resources.KingsAmount()))
-
-		var foresight int
-		if len(h.game.towers) > 0 {
-			foresight = h.game.towers[h.game.selectedTower].foresight
-		}
-
-		options := []string{
-			"[1] Upgrade Damage (+1): 5 gold",
-			"[2] Upgrade Range (+50): 5 gold",
-			"[3] Upgrade Fire Rate (faster): 5 gold",
-			"[4] Upgrade Ammo Capacity (+2): 10 gold",
-			fmt.Sprintf("[5] Foresight (+2 letters) [%d]", foresight),
-			fmt.Sprintf("[6] Unlock Farmer Letters (%d KP)", h.game.farmer.NextUnlockCost()),
-			fmt.Sprintf("[7] Unlock Barracks Letters (%d KP)", h.game.barracks.NextUnlockCost()),
-			"Start Next Wave",
-		}
-
-		for i, opt := range options {
-			prefix := "  "
-			if i == h.game.shopCursor {
-				prefix = "> "
-			}
-			lines = append(lines, prefix+opt)
-		}
-	} else if h.game.upgradeMenuOpen {
-		lines = append(lines, "-- UPGRADE TOWER --")
-		lines = append(lines, fmt.Sprintf("Gold: %d", h.game.Gold()))
-		options := []string{
-			"[1] Upgrade Damage (+1): 5 gold",
-			"[2] Upgrade Range (+50): 5 gold",
-			"[3] Upgrade Fire Rate (faster): 5 gold",
-			"[4] Upgrade Ammo Capacity (+2): 10 gold",
-			"[5] Foresight (+2 letters)",
-			"Cancel",
-		}
-		for i, opt := range options {
-			prefix := "  "
-			if i == h.game.upgradeCursor {
-				prefix = "> "
-			}
-			lines = append(lines, prefix+opt)
-		}
-	} else if h.game.buildMenuOpen {
-		cost := h.game.cfg.TowerConstructionCost
-		if cost == 0 {
-			cost = DefaultConfig.TowerConstructionCost
-		}
-		lines = append(lines, "-- BUILD --")
-		lines = append(lines, fmt.Sprintf("Gold: %d", h.game.Gold()))
-		lines = append(lines, fmt.Sprintf("Food: %d", h.game.resources.FoodAmount()))
-		options := []string{
-			"[1] Basic Tower",
-			"[2] Sniper Tower",
-			"[3] Rapid Tower",
-			"Cancel",
-		}
-		for i, opt := range options {
-			prefix := "  "
-			if i == h.game.buildCursor {
-				prefix = "> "
-			}
-			if i < 3 {
-				lines = append(lines, fmt.Sprintf("%s%s (%d gold)", prefix, opt, cost))
-			} else {
-				lines = append(lines, prefix+opt)
-			}
-		}
-	} else {
-		if len(h.game.towers) > 0 {
-			t := h.game.towers[h.game.selectedTower]
-			lines = append(lines, fmt.Sprintf("Selected Tower: %d", h.game.selectedTower+1))
-			currentAmmo, maxAmmo := t.GetAmmoStatus()
-			lines = append(lines, fmt.Sprintf("Ammo: %d/%d", currentAmmo, maxAmmo))
-			lines = append(lines, fmt.Sprintf("Damage: %d", t.damage))
-			lines = append(lines, fmt.Sprintf("Range: %.0f", t.rangeDst))
-
-			sps := 0.0
-			if t.rate > 0 {
-				sps = 1.0 / t.rate
-			}
-			lines = append(lines, fmt.Sprintf("Fire Speed: %.2f/s (Cooldown: %.2fs)", sps, t.rate))
-
-			reloading, currentLetter, previewQueue, timer, jammed := t.GetReloadStatus()
-			if jammed {
-				lines = append(lines, "Jammed! Press Backspace")
-				lines = append(lines, fmt.Sprintf("Stuck on: '%c'", currentLetter))
-			} else if reloading {
-				if timer <= 0 {
-					queueStr := ""
-					for i, letter := range previewQueue {
-						if i == 0 {
-							queueStr += fmt.Sprintf("[%c]", letter)
-						} else {
-							queueStr += fmt.Sprintf(" %c", letter)
-						}
-					}
-					lines = append(lines, fmt.Sprintf("Type: %s", queueStr))
-				} else {
-					lines = append(lines, fmt.Sprintf("Reload in: %.2fs", timer))
-					if len(previewQueue) > 0 {
-						queueStr := ""
-						for i, letter := range previewQueue {
-							if i == 0 {
-								queueStr += fmt.Sprintf("[%c]", letter)
-							} else {
-								queueStr += fmt.Sprintf(" %c", letter)
-							}
-						}
-						lines = append(lines, fmt.Sprintf("Next: %s", queueStr))
-					}
-				}
-			}
-		}
-
-		if h.game.base != nil {
-			lines = append(lines, fmt.Sprintf("Base HP: %d", h.game.base.Health()))
-		}
-		lines = append(lines, fmt.Sprintf("Wave %d | Gold %d | Food %d | KP %d | Score %d | Mobs %d", h.game.currentWave, h.game.Gold(), h.game.resources.FoodAmount(), h.game.resources.KingsAmount(), h.game.score, len(h.game.mobs)))
-		acc := h.game.typing.Accuracy() * 100
-		wpm := h.game.typing.WPM()
-		lines = append(lines, fmt.Sprintf("Accuracy: %.0f%% | WPM: %.1f", acc, wpm))
-		if h.game.farmer != nil {
-			prog := h.game.farmer.CooldownProgress()
-			lines = append(lines, "Farmer "+progressBar(prog, 10))
-		}
-		if h.game.barracks != nil {
-			prog := h.game.barracks.CooldownProgress()
-			lines = append(lines, "Barracks "+progressBar(prog, 10))
-		}
-		cost := h.game.cfg.TowerConstructionCost
-		if cost == 0 {
-			cost = DefaultConfig.TowerConstructionCost
-		}
-		lines = append(lines, fmt.Sprintf("[h/j/k/l] move cursor | [b] build (%d gold)", cost))
-	}
-
-	if len(lines) == 0 {
-		return
-	}
-
-	// Define background properties
-	bgX := float64(textX) - padding
-	bgY := float64(initialY) - padding
-	// Dynamically calculate width based on longest line, fallback to min width
-	minWidth := 520.0 // Increased from 420.0 for more space
-	bgWidth := minWidth
-	for _, line := range lines {
-		w := float64(len(line)) * 13.0 // crude estimate: 13px per char, was 10.0
-		if w+padding*2 > bgWidth {
-			bgWidth = w + padding*2
-		}
-	}
-	// Calculate height based on number of lines and line height, plus padding
-	bgHeight := float64(len(lines)*lineHeight) + (padding * 2.0) + 18.0 // add extra height for clarity
-
-	// Draw background rectangle
-	bgColor := color.RGBA{0, 0, 0, 180} // Semi-transparent black
-	vector.DrawFilledRect(screen, float32(bgX), float32(bgY), float32(bgWidth), float32(bgHeight), bgColor, false)
-
-	// Draw text lines using the game's font
-	currentY := initialY
-	for _, line := range lines {
-		opts := &text.DrawOptions{}
-		opts.GeoM.Translate(float64(textX), float64(currentY))
-		opts.ColorScale.ScaleWithColor(color.White)
-		text.Draw(screen, line, NormalFont, opts)
-		currentY += lineHeight
-	}
-}
-
-// drawMenu renders a simple vertical list of lines with a background box.
-func drawMenu(screen *ebiten.Image, lines []string, textX, initialY int) {
-	if len(lines) == 0 {
-		return
-	}
-	lineHeight := 18
-	padding := 5.0
-
-	bgX := float64(textX) - padding
-	bgY := float64(initialY) - padding
-	bgWidth := 320.0
-	for _, line := range lines {
-		w := float64(len(line)) * 13.0
-		if w+padding*2 > bgWidth {
-			bgWidth = w + padding*2
-		}
-	}
-	bgHeight := float64(len(lines)*lineHeight) + (padding * 2.0) + 18.0
-	vector.DrawFilledRect(screen, float32(bgX), float32(bgY), float32(bgWidth), float32(bgHeight), color.RGBA{0, 0, 0, 180}, false)
-
-	currentY := initialY
-	for _, line := range lines {
-		opts := &text.DrawOptions{}
-		opts.GeoM.Translate(float64(textX), float64(currentY))
-		opts.ColorScale.ScaleWithColor(color.White)
-		text.Draw(screen, line, NormalFont, opts)
-		currentY += lineHeight
-	}
 }
