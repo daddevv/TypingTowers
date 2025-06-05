@@ -21,10 +21,10 @@
   - [x] Farmer cooldown logic
   - [x] Farmer word generation from letter pool
   - [x] Resource output on word completion
-- [ ] **P-002** Implement Military (Barracks) building
-  - [ ] Barracks cooldown logic
-  - [ ] Barracks word generation from letter pool
-  - [ ] Unit spawn on word completion
+- [x] **P-002** Implement Military (Barracks) building
+  - [x] Barracks cooldown logic
+  - [x] Barracks word generation from letter pool
+  - [x] Unit spawn on word completion
 - [ ] **P-003** Shared queue manager
   - [ ] Global FIFO queue structure
   - [ ] Enqueue from multiple buildings
