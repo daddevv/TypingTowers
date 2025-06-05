@@ -33,8 +33,9 @@ func NewFarmer() *Farmer {
 	}
 }
 
-// Update ticks the Farmer's cooldown and pushes individual letters to queue.
-// Returns the generated word if one is ready, else "".
+// Update ticks the Farmer's cooldown and pushes a word to the global queue.
+// The queue processes the word letter by letter. Returns the generated word if
+// one is ready, else "".
 func (f *Farmer) Update(dt float64) string {
 	if !f.active || f.pendingWord != "" {
 		return ""
@@ -43,10 +44,8 @@ func (f *Farmer) Update(dt float64) string {
 		word := f.generateWord()
 		f.pendingWord = word
 		if f.queue != nil {
-			// Queue individual letters instead of whole words
-			for _, letter := range word {
-				f.queue.Enqueue(Word{Text: string(letter), Source: "Farmer", Family: "Gathering"})
-			}
+			// Enqueue the full word; Game processes it letter by letter
+			f.queue.Enqueue(Word{Text: word, Source: "Farmer", Family: "Gathering"})
 		}
 		return word
 	}

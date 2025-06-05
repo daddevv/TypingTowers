@@ -50,8 +50,8 @@ go test -tags test ./...
 
 -## Current prototype
 
-- Shared FIFO queue manager implemented. Farmer and Barracks enqueue words that are typed **letter by letter**. Completing a Barracks word spawns a Footman.
-- Global queue is rendered near `(400,900)` like a conveyor belt. Mistypes jam the queue until Backspace is pressed.
+- Shared FIFO queue manager implemented. Buildings enqueue words that are processed **letter by letter**. Completing a Barracks word spawns a Footman.
+- Global queue is rendered at `(400,900)` with a simple conveyor animation. Mistypes jam the queue until Backspace is pressed.
 - Mistypes now trigger a brief red flash and a "clank" sound effect.
 - Basic orc grunt waves scale every 45 s.
  - Back-pressure damage: if the queue grows past 20 letters, the base loses 1 HP each second.

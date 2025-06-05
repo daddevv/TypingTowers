@@ -18,6 +18,8 @@ import (
 )
 
 const jamFlashDuration = 0.15
+const conveyorSpeed = 200.0 // pixels per second for queue slide
+const letterWidth = 13.0    // approximate width of a character
 
 var (
 	mousePressed bool
@@ -121,6 +123,8 @@ type Game struct {
 	// Static word processing location
 	wordProcessX float64
 	wordProcessY float64
+	// Visual offset for conveyor belt animation
+	conveyorOffset float64
 }
 
 // Gold returns the player's current gold amount.
@@ -191,6 +195,7 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		military:        NewMilitary(),
 		wordProcessX:    400,
 		wordProcessY:    900,
+		conveyorOffset:  0,
 		commandMode:     false,
 		commandBuffer:   "",
 		towerSelectMode: false,
@@ -237,6 +242,15 @@ func (g *Game) Update() error {
 	}
 	g.lastUpdate = now
 	g.input.Update()
+
+	// Animate conveyor belt offset
+	if g.conveyorOffset > 0 {
+		shift := conveyorSpeed * dt
+		if shift > g.conveyorOffset {
+			shift = g.conveyorOffset
+		}
+		g.conveyorOffset -= shift
+	}
 	if g.queue != nil {
 		g.queue.Update(dt)
 	}
@@ -404,6 +418,7 @@ func (g *Game) Update() error {
 					expected := rune(w.Text[g.queueIndex])
 					if unicode.ToLower(r) == unicode.ToLower(expected) {
 						g.queueIndex++
+						g.conveyorOffset += letterWidth
 						g.typing.Record(true)
 						if g.queueIndex >= len(w.Text) {
 							g.queueIndex = 0
