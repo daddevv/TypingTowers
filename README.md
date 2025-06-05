@@ -67,6 +67,7 @@ for three minutes and verifies that all resources accumulate from zero.
 - Letter unlock order and costs documented (see `docs/LETTER_UNLOCKS.md`).
  - Letters can now be unlocked in-game using King's Points, expanding each building's word pool.
  - Tech trees are defined in YAML under `data/trees/` (see `letters_basic.yaml`). They are loaded at runtime via a Go parser that builds an in-memory graph and verifies all prerequisites.
+ - Skill tree nodes can be purchased with King's Points once prerequisites are met.
 
 ## Tech Tree YAML
 
@@ -115,7 +116,7 @@ See the [ROADMAP.md](./ROADMAP.md) for detailed tasks.
 
 - Press `/` to enter tower selection mode. The screen dims and towers are labeled with letters; press a letter to open that tower's upgrade menu.
 - Press `/` again to open the tech menu. Type to search unlocked technologies and press `Enter` to purchase the highlighted upgrade.
-- Press `F4` to open the skill tree menu. Use arrow keys to switch categories and highlight skills.
+- Press `Tab` to open the global skill tree. Use arrow keys to change categories and highlight skills. Locked and unlocked skills are indicated.
 - Press `:` to enter command mode for quick text commands like `pause` or `quit`.
 
 See docs/REQUIREMENTS.md for the full feature scaffold, ROADMAP.md for planned phases, and TODO.md for sprint tasks.

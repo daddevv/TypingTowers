@@ -80,12 +80,15 @@ type Game struct {
 	achievements []string
 	towerMods    TowerModifiers
 
-	techMenuOpen  bool
-	skillMenuOpen bool
-	searchBuffer  string
-	techCursor    int
-	skillCategory int
-	skillCursor   int
+	skillTree      *SkillTree
+	unlockedSkills map[string]bool
+	skillMenuOpen  bool
+	skillCursor    int
+	skillCategory  SkillCategory
+
+	techMenuOpen bool
+	searchBuffer string
+	techCursor   int
 
 	score           int
 	gameOverHandled bool
@@ -197,6 +200,7 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		unlockStage:     0,
 		techTree:        DefaultTechTree(),
 		skillTree:       func() *SkillTree { t, _ := SampleSkillTree(); return t }(),
+		unlockedSkills:  make(map[string]bool),
 		achievements:    make([]string, 0),
 		towerMods:       TowerModifiers{DamageMult: 1, RangeMult: 1, FireRateMult: 1},
 		typing:          NewTypingStats(),
@@ -212,8 +216,9 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		skillMenuOpen:   false,
 		searchBuffer:    "",
 		techCursor:      0,
-		skillCategory:   0,
+		skillMenuOpen:   false,
 		skillCursor:     0,
+		skillCategory:   SkillOffense,
 		flashTimer:      0,
 		queue:           NewQueueManager(),
 		farmer:          NewFarmer(),
@@ -261,6 +266,9 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 	tower := NewTower(g, float64(tx+16), float64(ty+16))
 	tower.ApplyModifiers(g.towerMods)
 	g.towers = []*Tower{tower}
+	if tree, err := SampleSkillTree(); err == nil {
+		g.skillTree = tree
+	}
 	g.lastUpdate = time.Now()
 	g.hud = NewHUD(g)
 	return g
@@ -1241,6 +1249,7 @@ func (g *Game) handleSkillMenuInput() {
 	if g.input.Up() {
 		g.skillCursor = (g.skillCursor - 1 + len(nodes)) % len(nodes)
 	}
+	return nodes
 }
 
 // enterTowerSelectMode assigns letter labels to towers and activates selection mode.

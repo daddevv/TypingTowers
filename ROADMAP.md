@@ -73,8 +73,8 @@
   - [x] **SKILL-001.1** Define Go structs for skill tree nodes and categories (offense, defense, typing, automation, utility)
   - [x] **SKILL-001.2** Implement in-memory skill tree structure and sample data
   - [x] **SKILL-001.3** Add keyboard UI: open skill tree menu, navigate categories/nodes, show node details
-  - [ ] **SKILL-001.4** Render skill tree overlay: display branches, highlight selected node, show unlock status
-  - [ ] **SKILL-001.5** Implement skill unlock logic: check prerequisites/resources, update state on unlock
+  - [x] **SKILL-001.4** Render skill tree overlay: display branches, highlight selected node, show unlock status
+  - [x] **SKILL-001.5** Implement skill unlock logic: check prerequisites/resources, update state on unlock
   - [ ] **SKILL-001.6** Integrate skill effects with game systems (e.g., global stat boosts, automation unlocks)
   - [ ] **SKILL-001.7** Write unit tests for skill tree navigation, unlocks, and effect application
   - [ ] **SKILL-001.8** Persist skill tree state in save/load system

@@ -100,7 +100,7 @@ func (i *Input) Update() {
 	pressedSlash := inpututil.IsKeyJustPressed(ebiten.KeySlash)
 	i.selectTower = pressedSlash
 	i.techMenu = pressedSlash
-	i.skillMenu = inpututil.IsKeyJustPressed(ebiten.KeyF4)
+	i.skillMenu = inpututil.IsKeyJustPressed(ebiten.KeyTab)
 }
 
 // Reset resets the Input state to its default values.
