@@ -191,7 +191,7 @@ type Game struct {
 	// Event system
 	EventBus *EventBus
 
-	// Event channels for handler pub/sub (T-007)
+	// Event channels for handler pub/sub (T-007, T-008 implemented)
 	EntityEvents  chan Event
 	UIEvents      chan Event
 	TechEvents    chan Event
