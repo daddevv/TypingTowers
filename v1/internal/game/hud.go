@@ -19,8 +19,44 @@ func NewHUD(g *Game) *HUD {
 	return &HUD{game: g}
 }
 
+// drawQueue renders the global typing queue at the top center of the screen.
+func (h *HUD) drawQueue(screen *ebiten.Image) {
+	if h.game.queue == nil {
+		return
+	}
+	words := h.game.queue.Words()
+	if len(words) == 0 {
+		return
+	}
+
+	spacing := 20.0
+	total := 0.0
+	for _, w := range words {
+		total += float64(len(w.Text))*13.0 + spacing
+	}
+	total -= spacing
+	x := (float64(screen.Bounds().Dx()) - total) / 2
+	y := 10.0
+
+	for _, w := range words {
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(x, y)
+		opts.ColorScale.ScaleWithColor(FamilyColor(w.Family))
+		text.Draw(screen, w.Text, BoldFont, opts)
+		x += float64(len(w.Text))*13.0 + spacing
+	}
+
+	if h.game.queueJam {
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(x+10, y)
+		opts.ColorScale.ScaleWithColor(color.RGBA{255, 0, 0, 255})
+		text.Draw(screen, "[JAM]", BoldFont, opts)
+	}
+}
+
 // Draw renders ammo count, tower stats, reload prompts, and shop interface.
 func (h *HUD) Draw(screen *ebiten.Image) {
+	h.drawQueue(screen)
 	var lines []string
 	textX := 10
 	initialY := 30 // Start HUD lower to avoid overlap with mouse/tile debug info
