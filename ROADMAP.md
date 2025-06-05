@@ -22,9 +22,9 @@
   - [x] Palette map + ANSI tests
 - [ ] **Q-002** Back-pressure damage when backlog ≥ 5
   - [ ] Unit test: enqueue 6 words, expect base HP −1
-- [ ] **Q-003** Jam state visual
-  - [ ] Red flash on mistype
-  - [ ] Audio “clank” SFX placeholder
+- [x] **Q-003** Jam state visual
+  - [x] Red flash on mistype
+  - [x] Audio “clank” SFX placeholder
 
 ### Sprint #1 – Resource Loop & HUD
 

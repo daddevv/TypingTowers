@@ -15,6 +15,8 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
+const jamFlashDuration = 0.15
+
 var (
 	mousePressed bool
 	clickedTileX int
@@ -90,6 +92,8 @@ type Game struct {
 
 	sound    *SoundManager
 	settings Settings
+
+	flashTimer float64
 }
 
 // NewGame creates a new instance of the Game.
@@ -113,32 +117,33 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		history:         hist,
 		score:           0,
 		gameOverHandled: false,
-		screen:        ebiten.NewImage(1920, 1080),
-		input:         NewInput(),
-		paused:        false,
-		gold:          0,
-		shopOpen:      false,
-		selectedTower: 0,
-		shopCursor:    0,
-		currentWave:   1,
-		spawnInterval: cfg.SpawnInterval, // already in seconds
-		spawnTicker:   0,
-		mobsToSpawn:   cfg.MobsPerWave,
-		cfg:           &cfg,
-		mobs:          make([]Enemy, 0),
-		projectiles:   make([]*Projectile, 0),
-		letterPool:    make([]rune, 0),
-		unlockStage:   0,
-		techTree:      DefaultTechTree(),
-		achievements:  make([]string, 0),
-		towerMods:     TowerModifiers{DamageMult: 1, RangeMult: 1, FireRateMult: 1},
-		typing:        NewTypingStats(),
-		cursorX:       2,
-		cursorY:       16,
-		sound:         NewSoundManager(),
-		settings:      DefaultSettings(),
-		buildMenuOpen: false,
-		buildCursor:   0,
+		screen:          ebiten.NewImage(1920, 1080),
+		input:           NewInput(),
+		paused:          false,
+		gold:            0,
+		shopOpen:        false,
+		selectedTower:   0,
+		shopCursor:      0,
+		currentWave:     1,
+		spawnInterval:   cfg.SpawnInterval, // already in seconds
+		spawnTicker:     0,
+		mobsToSpawn:     cfg.MobsPerWave,
+		cfg:             &cfg,
+		mobs:            make([]Enemy, 0),
+		projectiles:     make([]*Projectile, 0),
+		letterPool:      make([]rune, 0),
+		unlockStage:     0,
+		techTree:        DefaultTechTree(),
+		achievements:    make([]string, 0),
+		towerMods:       TowerModifiers{DamageMult: 1, RangeMult: 1, FireRateMult: 1},
+		typing:          NewTypingStats(),
+		cursorX:         2,
+		cursorY:         16,
+		sound:           NewSoundManager(),
+		settings:        DefaultSettings(),
+		buildMenuOpen:   false,
+		buildCursor:     0,
+		flashTimer:      0,
 	}
 
 	tx, ty := tilePosition(1, 16)
@@ -170,6 +175,13 @@ func (g *Game) Update() error {
 	}
 	g.lastUpdate = now
 	g.input.Update()
+
+	if g.flashTimer > 0 {
+		g.flashTimer -= dt
+		if g.flashTimer < 0 {
+			g.flashTimer = 0
+		}
+	}
 
 	if g.buildMenuOpen {
 		const optionsCount = 4
@@ -588,6 +600,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	highlightHoverAndClickAndDrag(g.screen, "line")
 
+	if g.flashTimer > 0 {
+		alpha := uint8(255 * (g.flashTimer / jamFlashDuration))
+		vector.DrawFilledRect(g.screen, 0, 0, 1920, 1080, color.RGBA{255, 0, 0, alpha}, false)
+	}
+
 	g.renderFrame(screen)
 }
 
@@ -735,6 +752,17 @@ func (g *Game) randomReloadLetter() rune {
 		return 'f'
 	}
 	return g.letterPool[rand.Intn(len(g.letterPool))]
+}
+
+// MistypeFeedback triggers visual and audio feedback for an incorrect key press.
+func (g *Game) MistypeFeedback() {
+	if g == nil {
+		return
+	}
+	g.flashTimer = jamFlashDuration
+	if g.sound != nil {
+		g.sound.PlayClank()
+	}
 }
 
 // highlightHoverAndClickAndDrag highlights the tile under the mouse cursor.

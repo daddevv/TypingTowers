@@ -44,6 +44,16 @@ func (s *SoundManager) PlayBeep() {
 	p.Play()
 }
 
+// PlayClank plays a lower-pitched clank sound if not muted.
+func (s *SoundManager) PlayClank() {
+	if s == nil || s.mute {
+		return
+	}
+	buf := generateSineWave(220, 0.1)
+	p := (*audio.Context).NewPlayerFromBytes(s.ctx, buf)
+	p.Play()
+}
+
 // generateSineWave returns raw PCM data for a sine wave.
 func generateSineWave(freq float64, dur float64) []byte {
 	length := int(float64(sampleRate) * dur)
