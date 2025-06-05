@@ -15,8 +15,8 @@ type NodeEffects struct {
 	AmmoAdd    int      `yaml:"ammo_add"`
 }
 
-// TechNode represents a node in the tech tree YAML.
-type TechNode struct {
+// YAMLTechNode represents a node in the tech tree YAML.
+type YAMLTechNode struct {
 	ID      string      `yaml:"id"`
 	Name    string      `yaml:"name"`
 	Type    string      `yaml:"type"`
@@ -25,27 +25,27 @@ type TechNode struct {
 	Prereqs []string    `yaml:"prereqs"`
 }
 
-type techFile struct {
-	Nodes []TechNode `yaml:"nodes"`
+type yamlTechFile struct {
+	Nodes []YAMLTechNode `yaml:"nodes"`
 }
 
-// TechTree is an in-memory graph of technology nodes.
-type TechTree struct {
-	Nodes map[string]*TechNode
+// YAMLTechTree is an in-memory graph of technology nodes loaded from YAML.
+type YAMLTechTree struct {
+	Nodes map[string]*YAMLTechNode
 	order []string
 }
 
-// LoadTechTree parses a YAML file into a TechTree and validates it.
-func LoadTechTree(path string) (*TechTree, error) {
+// LoadTechTree parses a YAML file into a YAMLTechTree and validates it.
+func LoadTechTree(path string) (*YAMLTechTree, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-	var f techFile
+	var f yamlTechFile
 	if err := yaml.Unmarshal(data, &f); err != nil {
 		return nil, err
 	}
-	tree := &TechTree{Nodes: map[string]*TechNode{}}
+	tree := &YAMLTechTree{Nodes: map[string]*YAMLTechNode{}}
 	for i := range f.Nodes {
 		n := f.Nodes[i]
 		tree.Nodes[n.ID] = &n
@@ -57,7 +57,7 @@ func LoadTechTree(path string) (*TechTree, error) {
 }
 
 // GetPrerequisites returns the prerequisite IDs for a node.
-func (t *TechTree) GetPrerequisites(id string) []string {
+func (t *YAMLTechTree) GetPrerequisites(id string) []string {
 	if n, ok := t.Nodes[id]; ok {
 		return append([]string(nil), n.Prereqs...)
 	}
@@ -65,12 +65,12 @@ func (t *TechTree) GetPrerequisites(id string) []string {
 }
 
 // UnlockOrder returns a topological order of node IDs.
-func (t *TechTree) UnlockOrder() []string {
+func (t *YAMLTechTree) UnlockOrder() []string {
 	return append([]string(nil), t.order...)
 }
 
 // validate checks for missing prereqs and cycles and builds UnlockOrder.
-func (t *TechTree) validate() error {
+func (t *YAMLTechTree) validate() error {
 	for id, n := range t.Nodes {
 		for _, p := range n.Prereqs {
 			if _, ok := t.Nodes[p]; !ok {

@@ -5,6 +5,7 @@ go 1.22.0
 toolchain go1.23.9
 
 require github.com/hajimehoshi/ebiten/v2 v2.8.8
+
 require gopkg.in/yaml.v2 v2.4.0
 
 require (

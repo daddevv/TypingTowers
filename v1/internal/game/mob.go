@@ -52,9 +52,9 @@ func NewArmoredMob(x, y float64, target *Base, hp, armor int, speed float64) *Mo
 func NewFastMob(x, y float64, target *Base, hp int, speed, burst float64) *Mob {
 	m := NewMob(x, y, target, hp, speed*0.3) // Much slower base movement
 	m.burst = burst
-	m.burstTimer = NewCooldownTimer(4.0)    // Longer cooldown between bursts
-	m.burstActive = NewCooldownTimer(1.0)   // Burst lasts 1 second
-	m.burstActive.remaining = 0             // Start not in burst
+	m.burstTimer = NewCooldownTimer(4.0)  // Longer cooldown between bursts
+	m.burstActive = NewCooldownTimer(1.0) // Burst lasts 1 second
+	m.burstActive.remaining = 0           // Start not in burst
 	m.mobType = MobFast
 	return m
 }

@@ -6,8 +6,42 @@ import (
 )
 
 func TestLoadTechTree(t *testing.T) {
-	path := "../../data/trees/letters_basic.yaml"
-	tree, err := LoadTechTree(path)
+	yaml := `nodes:
+  - id: home_row
+    name: Home Row
+    type: UnlockLetter
+    cost: 0
+    letters: [f, j]
+    prereqs: []
+  - id: index_ext
+    name: Index Extensions
+    type: UnlockLetter
+    cost: 20
+    letters: [d, k]
+    prereqs: [home_row]
+  - id: middle_fingers
+    name: Middle Fingers
+    type: UnlockLetter
+    cost: 30
+    letters: [s, l]
+    prereqs: [index_ext]
+  - id: ring_finger
+    name: Ring Finger
+    type: UnlockLetter
+    cost: 40
+    letters: [a, ;]
+    prereqs: [middle_fingers]
+`
+	tmp, err := os.CreateTemp("", "techtree*.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(tmp.Name())
+	if _, err := tmp.Write([]byte(yaml)); err != nil {
+		t.Fatal(err)
+	}
+	tmp.Close()
+	tree, err := LoadTechTree(tmp.Name())
 	if err != nil {
 		t.Fatalf("load tech tree: %v", err)
 	}
@@ -51,8 +85,42 @@ func TestValidateCycle(t *testing.T) {
 }
 
 func TestUnlockOrder(t *testing.T) {
-	path := "../../data/trees/letters_basic.yaml"
-	tree, err := LoadTechTree(path)
+	yaml := `nodes:
+  - id: home_row
+    name: Home Row
+    type: UnlockLetter
+    cost: 0
+    letters: [f, j]
+    prereqs: []
+  - id: index_ext
+    name: Index Extensions
+    type: UnlockLetter
+    cost: 20
+    letters: [d, k]
+    prereqs: [home_row]
+  - id: middle_fingers
+    name: Middle Fingers
+    type: UnlockLetter
+    cost: 30
+    letters: [s, l]
+    prereqs: [index_ext]
+  - id: ring_finger
+    name: Ring Finger
+    type: UnlockLetter
+    cost: 40
+    letters: [a, ;]
+    prereqs: [middle_fingers]
+`
+	tmp, err := os.CreateTemp("", "techtree*.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(tmp.Name())
+	if _, err := tmp.Write([]byte(yaml)); err != nil {
+		t.Fatal(err)
+	}
+	tmp.Close()
+	tree, err := LoadTechTree(tmp.Name())
 	if err != nil {
 		t.Fatal(err)
 	}

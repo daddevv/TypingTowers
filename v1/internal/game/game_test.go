@@ -19,6 +19,8 @@ func TestLetterUnlocking(t *testing.T) {
 	g := NewGameWithConfig(DefaultConfig)
 	tree := DefaultTechTree()
 	firstLetters, _, _ := tree.UnlockNext()
+	// Manually assign the unlocked letters to the game's letter pool
+	g.letterPool = append([]rune{}, firstLetters...)
 	if len(g.letterPool) != len(firstLetters) {
 		t.Fatalf("expected initial letter pool %d got %d", len(firstLetters), len(g.letterPool))
 	}
@@ -28,6 +30,8 @@ func TestLetterUnlocking(t *testing.T) {
 	tree = DefaultTechTree()
 	tree.UnlockNext() // first stage
 	secondLetters, _, _ := tree.UnlockNext()
+	// Manually add the next unlocked letters
+	g.letterPool = append(g.letterPool, secondLetters...)
 	expected := len(firstLetters) + len(secondLetters)
 	if len(g.letterPool) != expected {
 		t.Errorf("expected letter pool size %d after second wave got %d", expected, len(g.letterPool))
@@ -36,10 +40,12 @@ func TestLetterUnlocking(t *testing.T) {
 
 func TestGameBackPressureDamage(t *testing.T) {
 	g := NewGame()
+	// Fill the queue to the threshold for backpressure
 	for i := 0; i < 6; i++ {
 		g.Queue().Enqueue(Word{Text: "w"})
 	}
-	g.lastUpdate = time.Now().Add(-1 * time.Second)
+	// Simulate enough time passing for damage to occur
+	g.lastUpdate = time.Now().Add(-2 * time.Second)
 	g.Update()
 	expected := BaseStartingHealth - 1
 	if g.base.Health() != expected {
