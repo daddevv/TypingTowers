@@ -43,13 +43,32 @@
 - [x] **HUD-002** Show word processing queue with conveyor belt animation
 - [x] **HUD-003** Tower selection overlay with letter labels
 - [ ] **TEST-RES** Integration test 3 min sim, resources > 0
+  - [ ] **T-001** Create test file `internal/game/resources_integration_test.go` with basic scaffold
+  - [ ] **T-002** Initialize a `Game` instance in test using default config
+  - [ ] **T-003** Simulate update loop for 3 minutes of game time (e.g., step through `Update` calls)
+  - [ ] **T-004** Access `ResourcePool` after simulation and assert each resource > 0
+  - [ ] **T-005** Ensure test runs headlessly and integrate into CI pipeline
 
 ---
 
 ## Tech Tree & Progression
 
 - [ ] **T-002** Tech tree parser + in-memory graph
+  - [ ] **T-002.1** Define Go structs matching YAML schema (TechNode, TechTree, effects/prereqs)
+  - [ ] **T-002.2** Implement YAML loader in Go (use yaml.v2)
+  - [ ] **T-002.3** Validate tech graph (detect cycles, missing prereqs)
+  - [ ] **T-002.4** Build in-memory graph (nodes by ID, adjacency)
+  - [ ] **T-002.5** Expose graph API (GetPrerequisites, UnlockOrder)
+  - [ ] **T-002.6** Write unit tests for parser and validation
 - [ ] **T-003** Keyboard UI for tech purchase (`/` search, `Enter` buy)
+  - [ ] **T-003.1** Add `techMenuOpen`, `searchBuffer`, and selection index fields to `Game`
+  - [ ] **T-003.2** Capture `/` key in `Input.Update` to toggle tech menu mode
+  - [ ] **T-003.3** Render tech menu overlay: list `TechNode.Name`, unlocked letters, and achievements
+  - [ ] **T-003.4** Implement search input handling: append typed chars and backspace to `searchBuffer`
+  - [ ] **T-003.5** Filter `TechTree.nodes` by `searchBuffer` and update displayed list
+  - [ ] **T-003.6** Handle Up/Down arrow keys to move highlight over filtered nodes
+  - [ ] **T-003.7** Handle `Enter` key to purchase selected tech: check prerequisites/resources, call `UnlockNext`
+  - [ ] **T-003.8** Write unit tests for tech menu: toggling, filtering, navigation, and purchase flow
 - [ ] **SKILL-001** Global skill tree UI (offense, defense, typing, automation, utility)
 - [ ] **SKILL-002** Integrate skill tree with building/tech systems
 - [ ] **SKILL-003** Save/load skill tree state
