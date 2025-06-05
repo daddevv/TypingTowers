@@ -53,13 +53,13 @@
 
 ## Tech Tree & Progression
 
-- [ ] **T-002** Tech tree parser + in-memory graph
-  - [ ] **T-002.1** Define Go structs matching YAML schema (TechNode, TechTree, effects/prereqs)
-  - [ ] **T-002.2** Implement YAML loader in Go (use yaml.v2)
-  - [ ] **T-002.3** Validate tech graph (detect cycles, missing prereqs)
-  - [ ] **T-002.4** Build in-memory graph (nodes by ID, adjacency)
-  - [ ] **T-002.5** Expose graph API (GetPrerequisites, UnlockOrder)
-  - [ ] **T-002.6** Write unit tests for parser and validation
+- [x] **T-002** Tech tree parser + in-memory graph
+  - [x] **T-002.1** Define Go structs matching YAML schema (TechNode, TechTree, effects/prereqs)
+  - [x] **T-002.2** Implement YAML loader in Go (use yaml.v2)
+  - [x] **T-002.3** Validate tech graph (detect cycles, missing prereqs)
+  - [x] **T-002.4** Build in-memory graph (nodes by ID, adjacency)
+  - [x] **T-002.5** Expose graph API (GetPrerequisites, UnlockOrder)
+  - [x] **T-002.6** Write unit tests for parser and validation
 - [ ] **T-003** Keyboard UI for tech purchase (`/` search, `Enter` buy)
   - [ ] **T-003.1** Add `techMenuOpen`, `searchBuffer`, and selection index fields to `Game`
   - [ ] **T-003.2** Capture `/` key in `Input.Update` to toggle tech menu mode

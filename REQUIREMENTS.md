@@ -103,6 +103,8 @@ All new features are optional enhancements, preserving the educational and acces
 - **TREE-2** Node types: `UnlockLetter`, `StatBoost`, `NewUnit`, `CDReduction`, `GlobalPassive`.  
 - **TREE-3** Infinite spiral: on outer-ring completion, costs×2, effects×1.1.
 - **TREE-4** Each YAML node defines `type`, `cost`, `effects`, and `prereqs` fields.
+- **TREE-5** Tech trees are loaded at runtime from YAML via `LoadTechTree`.
+- **TREE-6** The loader validates graphs, rejecting cycles or missing prerequisites.
 
 *Planned: Skill tree expands to 100+ nodes, with branches for offense, defense, typing proficiency, automation, and utility. Certain nodes require WPM/accuracy milestones.*
 
