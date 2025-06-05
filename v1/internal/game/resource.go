@@ -115,6 +115,29 @@ func (f *Food) Amount() int { return f.amount }
 // Set sets the food amount directly.
 func (f *Food) Set(n int) { f.amount = n }
 
+// KingsPoints tracks special currency used for letter unlocks.
+type KingsPoints struct {
+	amount int
+}
+
+// Add increases the points amount.
+func (k *KingsPoints) Add(n int) { k.amount += n }
+
+// Spend subtracts the given amount if available and returns true.
+func (k *KingsPoints) Spend(n int) bool {
+	if k.amount < n {
+		return false
+	}
+	k.amount -= n
+	return true
+}
+
+// Amount returns the current points total.
+func (k *KingsPoints) Amount() int { return k.amount }
+
+// Set sets the points amount directly.
+func (k *KingsPoints) Set(n int) { k.amount = n }
+
 // ResourcePool aggregates all resource types for the player.
 type ResourcePool struct {
 	Gold  Gold
@@ -122,6 +145,7 @@ type ResourcePool struct {
 	Wood  Wood
 	Stone Stone
 	Iron  Iron
+	Kings KingsPoints
 }
 
 // AddGold adds the specified amount of gold.
@@ -135,3 +159,12 @@ func (r *ResourcePool) GoldAmount() int { return r.Gold.Amount() }
 
 // FoodAmount returns the current food total.
 func (r *ResourcePool) FoodAmount() int { return r.Food.Amount() }
+
+// AddKingsPoints adds the specified amount of King's Points.
+func (r *ResourcePool) AddKingsPoints(n int) { r.Kings.Add(n) }
+
+// SpendKingsPoints attempts to spend the given amount and returns true on success.
+func (r *ResourcePool) SpendKingsPoints(n int) bool { return r.Kings.Spend(n) }
+
+// KingsAmount returns the current King's Points total.
+func (r *ResourcePool) KingsAmount() int { return r.Kings.Amount() }

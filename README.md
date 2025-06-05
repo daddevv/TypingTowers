@@ -57,6 +57,7 @@ go test ./...
 - Typing speed/accuracy multiplier working.
 - Vim navigation for pause/menu/shop implemented.
 - Letter unlock order and costs documented (see `docs/LETTER_UNLOCKS.md`).
+- Letters can now be unlocked in-game using King's Points, expanding each building's word pool.
 
 ---
 

@@ -36,10 +36,10 @@
 - [ ] **INT-006** Integrate Jam State Visuals and Audio
   - [ ] Implement red flash on mistype.
   - [ ] Implement "clank" SFX placeholder on mistype.
-- [ ] **INT-007** Implement Letter Unlock System
-  - [ ] Create UI for viewing and purchasing letter unlocks as per `docs/LETTER_UNLOCKS.md`.
-  - [ ] Connect letter unlocks to word generation logic for buildings.
-  - [ ] Ensure resource costs for unlocks are deducted correctly.
+- [x] **INT-007** Implement Letter Unlock System
+  - [x] Create UI for viewing and purchasing letter unlocks as per `docs/LETTER_UNLOCKS.md`.
+  - [x] Connect letter unlocks to word generation logic for buildings.
+  - [x] Ensure resource costs for unlocks are deducted correctly.
 - [ ] **TEST-CORELOOP** End-to-end playtest of the core loop
   - [ ] Verify resource gathering from Farmer.
   - [ ] Verify letter unlocking and its effect on word generation.

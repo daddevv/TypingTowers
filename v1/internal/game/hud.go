@@ -84,6 +84,7 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 		lines = append(lines, "-- SHOP --")
 		lines = append(lines, fmt.Sprintf("Gold: %d", gold))
 		lines = append(lines, fmt.Sprintf("Food: %d", h.game.resources.FoodAmount()))
+		lines = append(lines, fmt.Sprintf("KP: %d", h.game.resources.KingsAmount()))
 
 		var foresight int
 		if len(h.game.towers) > 0 {
@@ -96,6 +97,8 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 			"[3] Upgrade Fire Rate (faster): 5 gold",
 			"[4] Upgrade Ammo Capacity (+2): 10 gold",
 			fmt.Sprintf("[5] Foresight (+2 letters) [%d]", foresight),
+			fmt.Sprintf("[6] Unlock Farmer Letters (%d KP)", h.game.farmer.NextUnlockCost()),
+			fmt.Sprintf("[7] Unlock Barracks Letters (%d KP)", h.game.barracks.NextUnlockCost()),
 			"Start Next Wave",
 		}
 
@@ -181,7 +184,7 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 		if h.game.base != nil {
 			lines = append(lines, fmt.Sprintf("Base HP: %d", h.game.base.Health()))
 		}
-		lines = append(lines, fmt.Sprintf("Wave %d | Gold %d | Food %d | Score %d | Mobs %d", h.game.currentWave, h.game.Gold(), h.game.resources.FoodAmount(), h.game.score, len(h.game.mobs)))
+		lines = append(lines, fmt.Sprintf("Wave %d | Gold %d | Food %d | KP %d | Score %d | Mobs %d", h.game.currentWave, h.game.Gold(), h.game.resources.FoodAmount(), h.game.resources.KingsAmount(), h.game.score, len(h.game.mobs)))
 		acc := h.game.typing.Accuracy() * 100
 		wpm := h.game.typing.WPM()
 		lines = append(lines, fmt.Sprintf("Accuracy: %.0f%% | WPM: %.1f", acc, wpm))

@@ -92,6 +92,7 @@ All new features are optional enhancements, preserving the educational and acces
 
 - **ECO-1** The game maintains a `ResourcePool` struct aggregating Gold, Food, Wood, Stone and Iron.
 - **ECO-2** Buildings like the Farmer deposit resources into this pool when their words are completed.
+- **ECO-3** King's Points are tracked in the `ResourcePool` and spent on letter unlocks.
 
 ---
 
