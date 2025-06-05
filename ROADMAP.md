@@ -42,12 +42,12 @@
 - [x] **HUD-001** Top bar resource icons (`G`, `W`, `S`, `I`, `M`)
 - [x] **HUD-002** Show word processing queue with conveyor belt animation
 - [x] **HUD-003** Tower selection overlay with letter labels
-- [ ] **TEST-RES** Integration test 3 min sim, resources > 0
-  - [ ] **T-001** Create test file `internal/game/resources_integration_test.go` with basic scaffold
-  - [ ] **T-002** Initialize a `Game` instance in test using default config
-  - [ ] **T-003** Simulate update loop for 3 minutes of game time (e.g., step through `Update` calls)
-  - [ ] **T-004** Access `ResourcePool` after simulation and assert each resource > 0
-  - [ ] **T-005** Ensure test runs headlessly and integrate into CI pipeline
+- [x] **TEST-RES** Integration test 3 min sim, resources > 0
+  - [x] **T-001** Create test file `internal/game/resources_integration_test.go` with basic scaffold
+  - [x] **T-002** Initialize a `Game` instance in test using default config
+  - [x] **T-003** Simulate update loop for 3 minutes of game time (e.g., step through `Update` calls)
+  - [x] **T-004** Access `ResourcePool` after simulation and assert each resource > 0
+  - [x] **T-005** Ensure test runs headlessly and integrate into CI pipeline
 
 ---
 
