@@ -109,15 +109,15 @@ type Game struct {
 	// Typing state for the queue - process individual letters
 	queueIndex int
 	queueJam   bool
-	
+
 	// Command mode for power users
 	commandMode   bool
 	commandBuffer string
-	
+
 	// Tower selection system
 	towerSelectMode bool
 	towerLabels     map[string]int // label -> tower index
-	
+
 	// Static word processing location
 	wordProcessX float64
 	wordProcessY float64
@@ -397,27 +397,32 @@ func (g *Game) Update() error {
 			if g.queueJam {
 				if g.input.Backspace() {
 					g.queueJam = false
+					g.queueIndex = 0
 				}
 			} else {
 				for _, r := range g.input.TypedChars() {
-					expected := rune(w.Text[0]) // Process single letters
+					expected := rune(w.Text[g.queueIndex])
 					if unicode.ToLower(r) == unicode.ToLower(expected) {
-						// Successfully typed the letter
-						dq, _ := g.queue.TryDequeue(w.Text)
-						switch dq.Source {
-						case "Farmer":
-							g.farmer.OnWordCompleted(dq.Text, &g.resources)
-						case "Barracks":
-							if unit := g.barracks.OnWordCompleted(dq.Text); unit != nil {
-								g.military.AddUnit(unit)
+						g.queueIndex++
+						g.typing.Record(true)
+						if g.queueIndex >= len(w.Text) {
+							g.queueIndex = 0
+							dq, _ := g.queue.TryDequeue(w.Text)
+							switch dq.Source {
+							case "Farmer":
+								g.farmer.OnWordCompleted(dq.Text, &g.resources)
+							case "Barracks":
+								if unit := g.barracks.OnWordCompleted(dq.Text); unit != nil {
+									g.military.AddUnit(unit)
+								}
 							}
 						}
-						g.typing.Record(true)
 						break
 					} else {
 						g.typing.Record(false)
 						g.MistypeFeedback()
 						g.queueJam = true
+						g.queueIndex = 0
 						break
 					}
 				}
