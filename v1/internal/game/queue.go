@@ -10,16 +10,37 @@ type Word struct {
 // QueueManager maintains a global FIFO queue of words.
 type QueueManager struct {
 	queue []Word
+	base  *Base
+	timer float64
 }
 
 // NewQueueManager initializes an empty queue.
 func NewQueueManager() *QueueManager {
-	return &QueueManager{queue: make([]Word, 0)}
+	return &QueueManager{queue: make([]Word, 0), base: nil, timer: 0}
 }
 
 // Enqueue adds a word to the end of the queue.
 func (q *QueueManager) Enqueue(w Word) {
 	q.queue = append(q.queue, w)
+}
+
+// SetBase assigns a Base that will take damage from backlog pressure.
+func (q *QueueManager) SetBase(b *Base) { q.base = b }
+
+// Update applies back-pressure damage if backlog length exceeds threshold.
+func (q *QueueManager) Update(dt float64) {
+	if q.base == nil {
+		return
+	}
+	if len(q.queue) >= 5 {
+		q.timer += dt
+		if q.timer >= 1 {
+			q.base.Damage(1)
+			q.timer = 0
+		}
+	} else {
+		q.timer = 0
+	}
 }
 
 // Len returns the number of words currently in the queue.
