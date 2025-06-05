@@ -27,18 +27,18 @@
   - [ ] Assert OrcGrunt is defeated in under 8 seconds
   - [ ] Add test to CI pipeline
 
-- [ ] **TEST-COMBAT-EDGE** Simulation unit tests for all common and edge cases
-  - [ ] Footman survives after killing a single grunt (verify HP > 0)
-  - [ ] Footman dies if grunt damage is lethal (verify removal from military)
-  - [ ] Multiple Footmen vs multiple Grunts: all combinations (1v2, 2v1, 2v2)
-  - [ ] Simultaneous combat: overlapping units resolve damage correctly
-  - [ ] No combat occurs if units do not overlap (verify no HP loss)
-  - [ ] Dead units are removed from the military/orc lists immediately
-  - [ ] Units with 0 HP cannot attack or be attacked further
-  - [ ] Combat does not occur if either unit is already dead
-  - [ ] Test for correct handling of edge cases (e.g., both units die in same tick)
-  - [ ] Test for no panics or index errors when removing units during iteration
-  - [ ] Add all tests to CI pipeline
+- [x] **TEST-COMBAT-EDGE** Simulation unit tests for all common and edge cases
+  - [x] Footman survives after killing a single grunt (verify HP > 0)
+  - [x] Footman dies if grunt damage is lethal (verify removal from military)
+  - [x] Multiple Footmen vs multiple Grunts: all combinations (1v2, 2v1, 2v2)
+  - [x] Simultaneous combat: overlapping units resolve damage correctly
+  - [x] No combat occurs if units do not overlap (verify no HP loss)
+  - [x] Dead units are removed from the military/orc lists immediately
+  - [x] Units with 0 HP cannot attack or be attacked further
+  - [x] Combat does not occur if either unit is already dead
+  - [x] Test for correct handling of edge cases (e.g., both units die in same tick)
+  - [x] Test for no panics or index errors when removing units during iteration
+  - [x] Add all tests to CI pipeline
 
 ---
 
