@@ -132,11 +132,11 @@
 
 ## Art, Audio & Polish
 
-- [ ] **ART-001** 16×16 farmer, lumberjack, miner idle sprites
+- [ ] **ART-001** 32x32 farmer, lumberjack, miner idle sprites
   - [ ] **T-001** Define sprite requirements and animation frames for each character
-  - [ ] **T-002** Create initial 16×16 pixel art for farmer idle sprite
-  - [ ] **T-003** Create initial 16×16 pixel art for lumberjack idle sprite
-  - [ ] **T-004** Create initial 16×16 pixel art for miner idle sprite
+  - [ ] **T-002** Create initial 32x32 pixel art for farmer idle sprite
+  - [ ] **T-003** Create initial 32x32 pixel art for lumberjack idle sprite
+  - [ ] **T-004** Create initial 32x32 pixel art for miner idle sprite
   - [ ] **T-005** Export spritesheets in required format (e.g., PNG)
   - [ ] **T-006** Integrate sprites into game asset pipeline
   - [ ] **T-007** Update entity rendering logic to use new idle sprites
@@ -144,8 +144,8 @@
 
 - [ ] **ART-002** Orc grunt walk + hit animation
   - [ ] **T-001** Define animation frame count and timing for walk and hit actions
-  - [ ] **T-002** Create 16×16 orc grunt walk animation frames
-  - [ ] **T-003** Create 16×16 orc grunt hit animation frames
+  - [ ] **T-002** Create 32x32 orc grunt walk animation frames
+  - [ ] **T-003** Create 32x32 orc grunt hit animation frames
   - [ ] **T-004** Export animation spritesheets in required format
   - [ ] **T-005** Integrate orc grunt animations into asset pipeline
   - [ ] **T-006** Update orc grunt entity logic to trigger walk/hit animations
