@@ -1,3 +1,5 @@
-.github
 .venv
+.github/prompts/*
+.github/instructions/*
+
 bin
