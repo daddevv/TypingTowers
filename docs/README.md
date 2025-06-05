@@ -87,6 +87,8 @@ Code should be formatted with `gofmt` and accompanied by unit tests when possibl
 - Real-time configuration reloading
 - Projectile intercept calculations for moving targets
 - Bouncing projectile mechanics
+- Barracks building spawns footman units via typed words
+- Footman units engage mobs in melee combat
 - Upgrade purchasing system using gold between waves (damage, range, fire rate upgrades implemented and tested)
 - Technology tree loaded from `tech_tree.yaml` with keyboard-driven purchase menu (`/` to search, `Enter` to buy)
 - **Keyboard-driven navigation for all menus and gameplay**

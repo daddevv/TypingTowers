@@ -46,6 +46,8 @@ type Game struct {
 	towers      []*Tower
 	mobs        []Enemy
 	projectiles []*Projectile
+	units       []*Footman
+	barracks    []*Barracks
 	base        *Base
 	hud         *HUD
 	gameOver    bool
@@ -136,6 +138,8 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		cfg:             &cfg,
 		mobs:            make([]Enemy, 0),
 		projectiles:     make([]*Projectile, 0),
+		units:           make([]*Footman, 0),
+		barracks:        make([]*Barracks, 0),
 		letterPool:      make([]rune, 0),
 		unlockStage:     0,
 		techTree:        tree,
@@ -167,6 +171,11 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 	tower := NewTower(g, float64(tx+16), float64(ty+16))
 	tower.ApplyModifiers(g.towerMods)
 	g.towers = []*Tower{tower}
+
+	// Create initial barracks near the base
+	bx, by := tilePosition(3, 16)
+	bar := NewBarracks(g, float64(bx+24), float64(by+24))
+	g.barracks = []*Barracks{bar}
 	g.startWave()
 	g.lastUpdate = time.Now()
 	g.hud = NewHUD(g)
@@ -265,6 +274,10 @@ func (g *Game) Update() error {
 			g.buildTowerAtCursorType(TowerRapid)
 			g.buildMenuOpen = false
 		}
+		if inpututil.IsKeyJustPressed(ebiten.Key4) {
+			g.buildBarracksAtCursor()
+			g.buildMenuOpen = false
+		}
 		if g.input.Enter() {
 			switch g.buildCursor {
 			case 0:
@@ -273,6 +286,8 @@ func (g *Game) Update() error {
 				g.buildTowerAtCursorType(TowerSniper)
 			case 2:
 				g.buildTowerAtCursorType(TowerRapid)
+			case 3:
+				g.buildBarracksAtCursor()
 			}
 			g.buildMenuOpen = false
 		}
@@ -502,6 +517,20 @@ func (g *Game) Update() error {
 		t.Update(dt)
 	}
 
+	for _, b := range g.barracks {
+		b.Update(dt)
+	}
+
+	for i := 0; i < len(g.units); {
+		u := g.units[i]
+		u.Update(dt)
+		if !u.Alive() {
+			g.units = append(g.units[:i], g.units[i+1:]...)
+			continue
+		}
+		i++
+	}
+
 	g.base.Update(dt)
 
 	for i := 0; i < len(g.projectiles); {
@@ -602,6 +631,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			bx, by, bw, bh := t.Bounds()
 			vector.StrokeRect(g.screen, float32(bx-2), float32(by-2), float32(bw+4), float32(bh+4), 2, color.RGBA{255, 0, 0, 200}, false)
 		}
+	}
+	for _, b := range g.barracks {
+		b.Draw(g.screen)
+	}
+	for _, u := range g.units {
+		u.Draw(g.screen)
 	}
 	for _, p := range g.projectiles {
 		p.Draw(g.screen)
@@ -762,6 +797,26 @@ func (g *Game) buildTowerAtCursorType(tt TowerType) {
 	t := NewTowerWithType(g, float64(tx+TileSize/2), float64(ty+TileSize/2), tt)
 	t.ApplyModifiers(g.towerMods)
 	g.towers = append(g.towers, t)
+	g.gold -= cost
+}
+
+func (g *Game) buildBarracksAtCursor() {
+	if g.cfg == nil {
+		return
+	}
+	cost := g.cfg.TowerConstructionCost
+	if cost == 0 {
+		cost = DefaultConfig.TowerConstructionCost
+	}
+	if g.gold < cost {
+		return
+	}
+	if !g.validTowerPosition(g.cursorX, g.cursorY) {
+		return
+	}
+	tx, ty := tilePosition(g.cursorX, g.cursorY)
+	b := NewBarracks(g, float64(tx+TileSize/2), float64(ty+TileSize/2))
+	g.barracks = append(g.barracks, b)
 	g.gold -= cost
 }
 
