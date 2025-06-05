@@ -52,3 +52,41 @@ func TestSelectTowerOpensUpgrade(t *testing.T) {
 		t.Errorf("expected tower 1 selected got %d", g.selectedTower)
 	}
 }
+
+type stubInputSelect struct{ selectTower bool }
+
+func (s *stubInputSelect) TypedChars() []rune { return nil }
+func (s *stubInputSelect) Update()            {}
+func (s *stubInputSelect) Reset()             { s.selectTower = false }
+func (s *stubInputSelect) Backspace() bool    { return false }
+func (s *stubInputSelect) Space() bool        { return false }
+func (s *stubInputSelect) Quit() bool         { return false }
+func (s *stubInputSelect) Reload() bool       { return false }
+func (s *stubInputSelect) Enter() bool        { return false }
+func (s *stubInputSelect) Left() bool         { return false }
+func (s *stubInputSelect) Right() bool        { return false }
+func (s *stubInputSelect) Up() bool           { return false }
+func (s *stubInputSelect) Down() bool         { return false }
+func (s *stubInputSelect) Build() bool        { return false }
+func (s *stubInputSelect) Save() bool         { return false }
+func (s *stubInputSelect) Load() bool         { return false }
+func (s *stubInputSelect) SelectTower() bool  { v := s.selectTower; s.selectTower = false; return v }
+func (s *stubInputSelect) Command() bool      { return false }
+
+func TestSlashOpensTowerSelect(t *testing.T) {
+	g := NewGame()
+	g.phase = PhasePlaying
+	g.towers = []*Tower{NewTower(g, 0, 0)}
+	inp := &stubInputSelect{selectTower: true}
+	g.input = inp
+	g.lastUpdate = time.Now()
+	if err := g.Update(); err != nil {
+		t.Fatal(err)
+	}
+	if !g.towerSelectMode {
+		t.Fatalf("expected tower selection mode to activate")
+	}
+	if len(g.towerLabels) == 0 {
+		t.Fatalf("labels should be assigned when selection mode starts")
+	}
+}
