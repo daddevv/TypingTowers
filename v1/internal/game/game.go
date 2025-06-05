@@ -129,6 +129,7 @@ type Game struct {
 	// High level state
 	phase    GamePhase
 	mainMenu *MainMenu
+	preGame  *PreGame
 	quit     bool
 }
 
@@ -207,6 +208,7 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		towerLabels:     make(map[string]int),
 		phase:           PhaseMenu,
 		mainMenu:        NewMainMenu(),
+		preGame:         NewPreGame(),
 	}
 	if g.sound != nil {
 		g.sound.StartMusic()
@@ -258,6 +260,9 @@ func (g *Game) Update() error {
 
 	if g.phase == PhaseMenu {
 		return g.mainMenu.Update(g, dt)
+	}
+	if g.phase == PhasePreGame {
+		return g.preGame.Update(g, dt)
 	}
 
 	// Animate conveyor belt offset
@@ -667,6 +672,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.screen.Clear()
 	if g.phase == PhaseMenu {
 		g.mainMenu.Draw(g, g.screen)
+		g.renderFrame(screen)
+		return
+	}
+	if g.phase == PhasePreGame {
+		g.preGame.Draw(g, g.screen)
 		g.renderFrame(screen)
 		return
 	}

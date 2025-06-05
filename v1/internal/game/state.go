@@ -5,5 +5,6 @@ type GamePhase int
 
 const (
 	PhaseMenu GamePhase = iota
+	PhasePreGame
 	PhasePlaying
 )

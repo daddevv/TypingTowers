@@ -54,8 +54,8 @@ func (m *MainMenu) Update(g *Game, dt float64) error {
 	if g.input.Enter() {
 		switch m.cursor {
 		case 0:
-			g.phase = PhasePlaying
-			g.startWave()
+			g.phase = PhasePreGame
+			g.preGame = NewPreGame()
 			if g.sound != nil {
 				g.sound.StopMusic()
 				g.sound.PlayBeep()

@@ -29,8 +29,8 @@
   - [ ] `:` to enter command mode, basic and advanced commands
 - [x] **TITLE-001** Title screen and main menu
   - [x] MainMenuState, logo, background music, animated background, settings
-- [ ] **PREGAME-001** Pre-game setup and tutorial
-  - [ ] Character/difficulty selection, tutorial, typing test, mode selection
+- [x] **PREGAME-001** Pre-game setup and tutorial
+  - [x] Character/difficulty selection, tutorial, typing test, mode selection
 
 ---
 
