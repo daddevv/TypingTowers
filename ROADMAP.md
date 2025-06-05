@@ -23,10 +23,10 @@
 - [x] **INT-002** Integrate Military (Barracks) building with unit spawning (M-001, M-002)
   - [x] Barracks spawns Footman entities upon word completion.
   - [x] Spawned units are tracked by the military system.
-- [ ] **INT-003** Integrate Shared Queue Manager with HUD and building inputs
-  - [ ] Display color-coded words (per building `family`) in the typing queue.
-  - [ ] Ensure words from Farmer and Barracks correctly populate the global queue.
-  - [ ] Typing validation and word dequeue logic functions as expected.
+- [x] **INT-003** Integrate Shared Queue Manager with HUD and building inputs
+  - [x] Display color-coded words (per building `family`) in the typing queue.
+  - [x] Ensure words from Farmer and Barracks correctly populate the global queue.
+  - [x] Typing validation and word dequeue logic functions as expected.
 - [x] **INT-004** Integrate Per-Building Cooldown Timers with UI
   - [x] Display visual cooldown progress for Farmer and Barracks.
   - [x] Cooldowns reset correctly after word completion.

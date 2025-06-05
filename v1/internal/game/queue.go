@@ -67,3 +67,8 @@ func (q *QueueManager) TryDequeue(input string) (Word, bool) {
 	}
 	return Word{}, false
 }
+
+// Words returns the slice of queued words (read-only).
+func (q *QueueManager) Words() []Word {
+	return q.queue
+}
