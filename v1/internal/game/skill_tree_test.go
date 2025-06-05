@@ -44,3 +44,38 @@ func TestSkillTreeCycleDetect(t *testing.T) {
 		t.Fatalf("expected cycle error")
 	}
 }
+
+func TestSkillUnlockFlow(t *testing.T) {
+	tree, err := SampleSkillTree()
+	if err != nil {
+		t.Fatalf("sample tree: %v", err)
+	}
+	pool := &ResourcePool{}
+	pool.AddKingsPoints(50)
+
+	// cannot unlock rapid_fire before sharp_arrows
+	if tree.Unlock("rapid_fire", pool) {
+		t.Fatalf("rapid_fire unlocked without prereq")
+	}
+
+	if !tree.Unlock("sharp_arrows", pool) {
+		t.Fatalf("failed to unlock sharp_arrows")
+	}
+	if !tree.unlocked["sharp_arrows"] {
+		t.Fatalf("sharp_arrows not marked unlocked")
+	}
+
+	if pool.KingsAmount() != 40 {
+		t.Fatalf("expected 40 KP remaining got %d", pool.KingsAmount())
+	}
+
+	if !tree.Unlock("rapid_fire", pool) {
+		t.Fatalf("failed to unlock rapid_fire after prereq")
+	}
+	if pool.KingsAmount() != 20 {
+		t.Fatalf("expected 20 KP remaining got %d", pool.KingsAmount())
+	}
+	if !tree.unlocked["rapid_fire"] {
+		t.Fatalf("rapid_fire not marked unlocked")
+	}
+}

@@ -111,7 +111,8 @@ All new features are optional enhancements, preserving the educational and acces
 - **SKILL-1** The global skill tree organizes nodes into Offense, Defense, Typing, Automation, and Utility categories.
 - **SKILL-2** Go structs `SkillCategory`, `SkillNode`, and `SkillTree` define the skill tree in memory.
 - **SKILL-3** `SampleSkillTree` provides a validated in-memory tree with example nodes for each category.
-- **SKILL-4** `Tab` opens the skill tree menu. Arrow keys switch categories and navigate nodes, highlighting the current selection and showing locked/unlocked status.
+- **SKILL-4** Skills can be unlocked by spending King's Points once prerequisites are met.
+- **SKILL-5** `Tab` opens the skill tree menu. Arrow keys switch categories and navigate nodes, highlighting the current selection and showing locked/unlocked status.
 
 ---
 
