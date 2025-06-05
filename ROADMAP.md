@@ -7,14 +7,14 @@
 
 ## Core Gameplay Loop Demo (Highest Priority)
 
-- [ ] **CORE-DEMO** Achieve a working demo of the core gameplay loop:
-  - [ ] Farmer and Barracks buildings enqueue words to the global queue
-  - [ ] Typing words processes queue, produces resources, and spawns units
-  - [ ] Shared queue manager with jam/back-pressure mechanics
-  - [ ] Per-building cooldowns and letter unlocks
-  - [ ] HUD displays queue, cooldowns, and resources
-  - [ ] Basic enemy waves and base HP system
-  - [ ] End-to-end test: survive 5+ waves with resource/typing feedback
+- [x] **CORE-DEMO** Achieve a working demo of the core gameplay loop:
+  - [x] Farmer and Barracks buildings enqueue words to the global queue
+  - [x] Typing words processes queue, produces resources, and spawns units
+  - [x] Shared queue manager with jam/back-pressure mechanics
+  - [x] Per-building cooldowns and letter unlocks
+  - [x] HUD displays queue, cooldowns, and resources
+  - [x] Basic enemy waves and base HP system
+  - [x] End-to-end test: survive 5+ waves with resource/typing feedback
 
 ---
 

@@ -50,11 +50,11 @@ go test -tags test ./...
 
 -## Current prototype
 
-- Shared FIFO queue manager implemented. Farmer and Barracks enqueue words (f j pool) that must be typed in order. Completing a Barracks word spawns a Footman.
-- Global queue is displayed on the HUD with colour-coded words. Mistypes jam the queue until Backspace is pressed.
+- Shared FIFO queue manager implemented. Farmer and Barracks enqueue words that are typed **letter by letter**. Completing a Barracks word spawns a Footman.
+- Global queue is rendered near `(400,900)` like a conveyor belt. Mistypes jam the queue until Backspace is pressed.
 - Mistypes now trigger a brief red flash and a "clank" sound effect.
 - Basic orc grunt waves scale every 45 s.
-- Back-pressure damage: if the queue grows to 5 words, the base loses 1 HP each second.
+ - Back-pressure damage: if the queue grows past 20 letters, the base loses 1 HP each second.
 - Typing speed/accuracy multiplier working.
 - Vim navigation for pause/menu/shop implemented.
 - Letter unlock order and costs documented (see `docs/LETTER_UNLOCKS.md`).
