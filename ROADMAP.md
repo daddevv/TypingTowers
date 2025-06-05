@@ -41,7 +41,7 @@
   - [x] Balance numbers in `config.json`
 - [x] **HUD-001** Top bar resource icons (`G`, `W`, `S`, `I`, `M`)
 - [x] **HUD-002** Show word processing queue with conveyor belt animation
-- [ ] **HUD-003** Tower selection overlay with letter labels
+- [x] **HUD-003** Tower selection overlay with letter labels
 - [ ] **TEST-RES** Integration test 3 min sim, resources > 0
 
 ---

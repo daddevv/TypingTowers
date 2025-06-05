@@ -856,7 +856,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			bx, by, bw, bh := t.Bounds()
 			vector.StrokeRect(g.screen, float32(bx-2), float32(by-2), float32(bw+4), float32(bh+4), 2, color.RGBA{255, 0, 0, 200}, false)
 		}
-		if g.towerSelectMode {
+	}
+
+	if g.towerSelectMode {
+		// Dim the background to highlight tower labels
+		vector.DrawFilledRect(g.screen, 0, 0, 1920, 1080, color.RGBA{0, 0, 0, 120}, false)
+		for i, t := range g.towers {
 			label := ""
 			for k, idx := range g.towerLabels {
 				if idx == i {
@@ -865,8 +870,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 				}
 			}
 			if label != "" {
+				x, y := t.Position()
 				opts := &text.DrawOptions{}
-				opts.GeoM.Translate(float64(t.pos.X)-6, float64(t.pos.Y)-30)
+				opts.GeoM.Translate(x-6, y-30)
 				opts.ColorScale.ScaleWithColor(color.White)
 				text.Draw(g.screen, label, BoldFont, opts)
 			}
