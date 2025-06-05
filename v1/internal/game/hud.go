@@ -35,6 +35,20 @@ func NewHUD(g *Game) *HUD {
 	return &HUD{game: g}
 }
 
+// drawResources renders a simple resource bar at the top left.
+func (h *HUD) drawResources(screen *ebiten.Image) {
+	gold := h.game.resources.GoldAmount()
+	wood := h.game.resources.WoodAmount()
+	stone := h.game.resources.StoneAmount()
+	iron := h.game.resources.IronAmount()
+	mana := 0
+	textStr := fmt.Sprintf("G:%d W:%d S:%d I:%d M:%d", gold, wood, stone, iron, mana)
+	opts := &text.DrawOptions{}
+	opts.GeoM.Translate(10, 10)
+	opts.ColorScale.ScaleWithColor(color.White)
+	text.Draw(screen, textStr, BoldFont, opts)
+}
+
 // drawQueue renders the global typing queue at the top center of the screen.
 func (h *HUD) drawQueue(screen *ebiten.Image) {
 	if h.game.queue == nil {
@@ -72,6 +86,7 @@ func (h *HUD) drawQueue(screen *ebiten.Image) {
 
 // Draw renders ammo count, tower stats, reload prompts, and shop interface.
 func (h *HUD) Draw(screen *ebiten.Image) {
+	h.drawResources(screen)
 	h.drawQueue(screen)
 	var lines []string
 	textX := 10

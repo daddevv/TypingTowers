@@ -77,6 +77,18 @@ See the [ROADMAP.md](./ROADMAP.md) for detailed tasks.
 - The Farmer's cooldown, letter pool, and word length can be configured and extended for progression.
 - See `v1/internal/game/farmer.go` for implementation and `farmer_test.go` for tests.
 
+## Lumberjack (Gathering Building)
+
+- The Lumberjack produces Wood and Gold when its queued word is typed.
+- Shares similar mechanics to the Farmer with a 1.5s base cooldown.
+- Implementation lives in `v1/internal/game/lumberjack.go`.
+
+## Miner (Gathering Building)
+
+- The Miner yields Stone and Iron plus a bit of Gold on completion.
+- Follows the same word-based workflow and cooldown system.
+- See `v1/internal/game/miner.go` for code and tests.
+
 -## Barracks (Military Building)
 
 - The Barracks building generates a word from its letter pool every 2 seconds.

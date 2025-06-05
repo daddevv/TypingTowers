@@ -52,6 +52,12 @@ func (g *Game) Step(dt float64) error {
 	if g.farmer != nil {
 		g.farmer.Update(dt)
 	}
+	if g.lumberjack != nil {
+		g.lumberjack.Update(dt)
+	}
+	if g.miner != nil {
+		g.miner.Update(dt)
+	}
 	if g.barracks != nil {
 		g.barracks.Update(dt)
 	}

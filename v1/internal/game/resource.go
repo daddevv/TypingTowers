@@ -154,11 +154,29 @@ func (r *ResourcePool) AddGold(n int) { r.Gold.Add(n) }
 // AddFood adds the specified amount of food.
 func (r *ResourcePool) AddFood(n int) { r.Food.Add(n) }
 
+// AddWood adds the specified amount of wood.
+func (r *ResourcePool) AddWood(n int) { r.Wood.Add(n) }
+
+// AddStone adds the specified amount of stone.
+func (r *ResourcePool) AddStone(n int) { r.Stone.Add(n) }
+
+// AddIron adds the specified amount of iron.
+func (r *ResourcePool) AddIron(n int) { r.Iron.Add(n) }
+
 // GoldAmount returns the current gold total.
 func (r *ResourcePool) GoldAmount() int { return r.Gold.Amount() }
 
 // FoodAmount returns the current food total.
 func (r *ResourcePool) FoodAmount() int { return r.Food.Amount() }
+
+// WoodAmount returns the current wood total.
+func (r *ResourcePool) WoodAmount() int { return r.Wood.Amount() }
+
+// StoneAmount returns the current stone total.
+func (r *ResourcePool) StoneAmount() int { return r.Stone.Amount() }
+
+// IronAmount returns the current iron total.
+func (r *ResourcePool) IronAmount() int { return r.Iron.Amount() }
 
 // AddKingsPoints adds the specified amount of King's Points.
 func (r *ResourcePool) AddKingsPoints(n int) { r.Kings.Add(n) }

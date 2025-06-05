@@ -99,10 +99,12 @@ type Game struct {
 	flashTimer float64
 
 	// Building integration
-	queue    *QueueManager
-	farmer   *Farmer
-	barracks *Barracks
-	military *Military
+	queue      *QueueManager
+	farmer     *Farmer
+	lumberjack *Lumberjack
+	miner      *Miner
+	barracks   *Barracks
+	military   *Military
 
 	// Typing state for the queue
 	queueIndex int
@@ -171,6 +173,8 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		flashTimer:      0,
 		queue:           NewQueueManager(),
 		farmer:          NewFarmer(),
+		lumberjack:      NewLumberjack(),
+		miner:           NewMiner(),
 		barracks:        NewBarracks(),
 		military:        NewMilitary(),
 	}
@@ -191,6 +195,8 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 	// Wire up shared systems
 	g.queue.SetBase(g.base)
 	g.farmer.SetQueue(g.queue)
+	g.lumberjack.SetQueue(g.queue)
+	g.miner.SetQueue(g.queue)
 	g.barracks.SetQueue(g.queue)
 	g.barracks.SetMilitary(g.military)
 
@@ -531,6 +537,16 @@ func (g *Game) Update() error {
 	if g.farmer != nil {
 		if w := g.farmer.Update(dt); w != "" {
 			g.farmer.OnWordCompleted(w, &g.resources)
+		}
+	}
+	if g.lumberjack != nil {
+		if w := g.lumberjack.Update(dt); w != "" {
+			g.lumberjack.OnWordCompleted(w, &g.resources)
+		}
+	}
+	if g.miner != nil {
+		if w := g.miner.Update(dt); w != "" {
+			g.miner.OnWordCompleted(w, &g.resources)
 		}
 	}
 	if g.barracks != nil {
