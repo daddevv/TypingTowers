@@ -13,6 +13,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
+	"unicode"
 )
 
 const jamFlashDuration = 0.15
@@ -56,6 +57,9 @@ type Game struct {
 	paused      bool
 	resources   ResourcePool
 
+	farmer   *Farmer
+	barracks *Barracks
+
 	shopOpen bool
 
 	selectedTower int
@@ -96,6 +100,16 @@ type Game struct {
 	settings Settings
 
 	flashTimer float64
+
+	// Building integration
+	queue    *QueueManager
+	farmer   *Farmer
+	barracks *Barracks
+	military *Military
+
+	// Typing state for the queue
+	queueIndex int
+	queueJam   bool
 }
 
 // Gold returns the player's current gold amount.
@@ -159,6 +173,10 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		buildMenuOpen:   false,
 		buildCursor:     0,
 		flashTimer:      0,
+		queue:           NewQueueManager(),
+		farmer:          NewFarmer(),
+		barracks:        NewBarracks(),
+		military:        NewMilitary(),
 	}
 
 	tx, ty := tilePosition(1, 16)
@@ -173,6 +191,12 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 	if g.queue != nil {
 		g.queue.SetBase(g.base)
 	}
+
+	// Wire up shared systems
+	g.queue.SetBase(g.base)
+	g.farmer.SetQueue(g.queue)
+	g.barracks.SetQueue(g.queue)
+	g.barracks.SetMilitary(g.military)
 
 	tx, ty = tilePosition(2, 16)
 	tower := NewTower(g, float64(tx+16), float64(ty+16))
@@ -346,6 +370,44 @@ func (g *Game) Update() error {
 		return nil
 	}
 
+	// ---- Global typing queue processing ----
+	if g.queue != nil {
+		g.queue.Update(dt)
+		if w, ok := g.queue.Peek(); ok {
+			if g.queueJam {
+				if g.input.Backspace() {
+					g.queueJam = false
+					g.queueIndex = 0
+				}
+			} else {
+				for _, r := range g.input.TypedChars() {
+					expected := rune(w.Text[g.queueIndex])
+					if unicode.ToLower(r) == unicode.ToLower(expected) {
+						g.queueIndex++
+						g.typing.Record(true)
+						if g.queueIndex >= len(w.Text) {
+							g.queueIndex = 0
+							dq, _ := g.queue.TryDequeue(w.Text)
+							switch dq.Source {
+							case "Farmer":
+								g.farmer.OnWordCompleted(dq.Text, &g.resources)
+							case "Barracks":
+								if unit := g.barracks.OnWordCompleted(dq.Text); unit != nil {
+									g.military.AddUnit(unit)
+								}
+							}
+						}
+					} else {
+						g.typing.Record(false)
+						g.MistypeFeedback()
+						g.queueJam = true
+						break
+					}
+				}
+			}
+		}
+	}
+
 	if len(g.towers) > 0 {
 		if g.input.Down() {
 			g.selectedTower = (g.selectedTower + 1) % len(g.towers)
@@ -450,6 +512,20 @@ func (g *Game) Update() error {
 		}
 	} else if len(g.mobs) == 0 {
 		g.shopOpen = true
+	}
+
+	// Update buildings and units
+	if g.military != nil {
+		g.military.Update(dt)
+	if g.farmer != nil {
+		if w := g.farmer.Update(dt); w != "" {
+			g.farmer.OnWordCompleted(w, &g.resources)
+		}
+	}
+	if g.barracks != nil {
+		if w := g.barracks.Update(dt); w != "" {
+			g.barracks.OnWordCompleted(w)
+		}
 	}
 
 	for _, t := range g.towers {
@@ -562,6 +638,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 	for _, m := range g.mobs {
 		m.Draw(g.screen)
+	}
+	if g.military != nil {
+		for _, u := range g.military.Units() {
+			u.Draw(g.screen)
+		}
 	}
 
 	if !g.shopOpen {

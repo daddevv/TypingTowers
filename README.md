@@ -51,6 +51,7 @@ go test ./...
 -## Current prototype
 
 - Shared FIFO queue manager implemented. Farmer and Barracks enqueue words (f j pool) that must be typed in order. Completing a Barracks word spawns a Footman.
+- Global queue is displayed on the HUD with colour-coded words. Mistypes jam the queue until Backspace is pressed.
 - Basic orc grunt waves scale every 45 s.
 - Back-pressure damage: if the queue grows to 5 words, the base loses 1 HP each second.
 - Typing speed/accuracy multiplier working.
@@ -80,6 +81,7 @@ See the [ROADMAP.md](./ROADMAP.md) for detailed tasks.
 - Typing the generated word spawns a Footman unit.
 - Spawned units are tracked by the new `Military` system.
 - Word generation logic and cooldown behavior are tested in `barracks_test.go`.
+- HUD now shows cooldown progress bars for the Farmer and Barracks.
 
 See docs/REQUIREMENTS.md for the full feature scaffold, ROADMAP.md for planned phases, and TODO.md for sprint tasks.
 

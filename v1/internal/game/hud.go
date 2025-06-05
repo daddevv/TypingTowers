@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"image/color"
+	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
@@ -14,13 +15,64 @@ type HUD struct {
 	game *Game
 }
 
+// progressBar returns a simple ASCII progress bar of the given width.
+func progressBar(progress float64, width int) string {
+	if progress < 0 {
+		progress = 0
+	}
+	if progress > 1 {
+		progress = 1
+	}
+	filled := int(progress * float64(width))
+	if filled > width {
+		filled = width
+	}
+	return "[" + strings.Repeat("#", filled) + strings.Repeat("-", width-filled) + "]"
+}
+
 // NewHUD creates a new HUD bound to the given game.
 func NewHUD(g *Game) *HUD {
 	return &HUD{game: g}
 }
 
+// drawQueue renders the global typing queue at the top center of the screen.
+func (h *HUD) drawQueue(screen *ebiten.Image) {
+	if h.game.queue == nil {
+		return
+	}
+	words := h.game.queue.Words()
+	if len(words) == 0 {
+		return
+	}
+
+	spacing := 20.0
+	total := 0.0
+	for _, w := range words {
+		total += float64(len(w.Text))*13.0 + spacing
+	}
+	total -= spacing
+	x := (float64(screen.Bounds().Dx()) - total) / 2
+	y := 10.0
+
+	for _, w := range words {
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(x, y)
+		opts.ColorScale.ScaleWithColor(FamilyColor(w.Family))
+		text.Draw(screen, w.Text, BoldFont, opts)
+		x += float64(len(w.Text))*13.0 + spacing
+	}
+
+	if h.game.queueJam {
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(x+10, y)
+		opts.ColorScale.ScaleWithColor(color.RGBA{255, 0, 0, 255})
+		text.Draw(screen, "[JAM]", BoldFont, opts)
+	}
+}
+
 // Draw renders ammo count, tower stats, reload prompts, and shop interface.
 func (h *HUD) Draw(screen *ebiten.Image) {
+	h.drawQueue(screen)
 	var lines []string
 	textX := 10
 	initialY := 30 // Start HUD lower to avoid overlap with mouse/tile debug info
@@ -133,6 +185,14 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 		acc := h.game.typing.Accuracy() * 100
 		wpm := h.game.typing.WPM()
 		lines = append(lines, fmt.Sprintf("Accuracy: %.0f%% | WPM: %.1f", acc, wpm))
+		if h.game.farmer != nil {
+			prog := h.game.farmer.CooldownProgress()
+			lines = append(lines, "Farmer "+progressBar(prog, 10))
+		}
+		if h.game.barracks != nil {
+			prog := h.game.barracks.CooldownProgress()
+			lines = append(lines, "Barracks "+progressBar(prog, 10))
+		}
 		cost := h.game.cfg.TowerConstructionCost
 		if cost == 0 {
 			cost = DefaultConfig.TowerConstructionCost
