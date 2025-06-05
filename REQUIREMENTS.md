@@ -110,6 +110,7 @@ All new features are optional enhancements, preserving the educational and acces
 
 - **SKILL-1** The global skill tree organizes nodes into Offense, Defense, Typing, Automation, and Utility categories.
 - **SKILL-2** Go structs `SkillCategory`, `SkillNode`, and `SkillTree` define the skill tree in memory.
+- **SKILL-3** `SampleSkillTree` provides a validated in-memory tree with example nodes for each category.
 
 ---
 
