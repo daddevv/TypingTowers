@@ -237,6 +237,25 @@ func (h *HUD) drawSlotMenu(screen *ebiten.Image) {
 	drawMenu(screen, lines, 860, 480)
 }
 
+// drawWordStats displays the last completed word's accuracy and time.
+func (h *HUD) drawWordStats(screen *ebiten.Image) {
+	hist := h.game.WordHistory()
+	if len(hist) == 0 {
+		return
+	}
+	stat := hist[len(hist)-1]
+	acc := 1.0
+	total := stat.Correct + stat.Incorrect
+	if total > 0 {
+		acc = float64(stat.Correct) / float64(total)
+	}
+	line := fmt.Sprintf("%s %.0f%% %.1fs", stat.Text, acc*100, stat.Duration.Seconds())
+	opts := &text.DrawOptions{}
+	opts.GeoM.Translate(10, 80)
+	opts.ColorScale.ScaleWithColor(color.White)
+	text.Draw(screen, line, BoldFont, opts)
+}
+
 // drawSkillTreeOverlay renders the global skill tree when active.
 func (h *HUD) drawSkillTreeOverlay(screen *ebiten.Image) {
 	if !h.game.skillMenuOpen {
@@ -285,6 +304,7 @@ func drawMenu(screen *ebiten.Image, lines []string, x, y int) {
 // Draw renders the HUD elements on screen
 func (h *HUD) Draw(screen *ebiten.Image) {
 	h.drawResourceIcons(screen)
+	h.drawWordStats(screen)
 	h.drawQueue(screen)
 	h.drawTowerSelectionOverlay(screen)
 	h.drawTechMenu(screen)
