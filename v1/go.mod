@@ -2,7 +2,7 @@ module github.com/daddevv/type-defense
 
 go 1.22.0
 
-toolchain go1.23.9
+toolchain go1.23.8
 
 require github.com/hajimehoshi/ebiten/v2 v2.8.8
 
