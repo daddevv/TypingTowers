@@ -72,6 +72,7 @@ func (s *stubInputSelect) Save() bool         { return false }
 func (s *stubInputSelect) Load() bool         { return false }
 func (s *stubInputSelect) SelectTower() bool  { v := s.selectTower; s.selectTower = false; return v }
 func (s *stubInputSelect) Command() bool      { return false }
+func (s *stubInputSelect) TechMenu() bool     { return false }
 
 func TestSlashOpensTowerSelect(t *testing.T) {
 	g := NewGame()

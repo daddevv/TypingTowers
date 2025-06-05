@@ -30,6 +30,7 @@ func (p *pgInput) Save() bool         { return false }
 func (p *pgInput) Load() bool         { return false }
 func (p *pgInput) SelectTower() bool  { return false }
 func (p *pgInput) Command() bool      { return false }
+func (p *pgInput) TechMenu() bool     { return false }
 
 // TestPreGameFlow ensures the setup screens progress to playing state.
 func TestPreGameFlow(t *testing.T) {

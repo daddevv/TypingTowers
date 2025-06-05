@@ -46,7 +46,8 @@ type stubInput struct {
 	typed []rune
 }
 
-func (s *stubInput) Save() bool         { return false }
-func (s *stubInput) Load() bool         { return false }
-func (s *stubInput) SelectTower() bool  { return false }
-func (s *stubInput) Command() bool      { return false }
+func (s *stubInput) Save() bool        { return false }
+func (s *stubInput) Load() bool        { return false }
+func (s *stubInput) SelectTower() bool { return false }
+func (s *stubInput) Command() bool     { return false }
+func (s *stubInput) TechMenu() bool    { return false }

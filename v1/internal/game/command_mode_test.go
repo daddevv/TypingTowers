@@ -30,6 +30,7 @@ func (c *cmdInput) Save() bool         { return false }
 func (c *cmdInput) Load() bool         { return false }
 func (c *cmdInput) SelectTower() bool  { return false }
 func (c *cmdInput) Command() bool      { v := c.command; c.command = false; return v }
+func (c *cmdInput) TechMenu() bool     { return false }
 
 func TestEnterCommandMode(t *testing.T) {
 	g := NewGame()
