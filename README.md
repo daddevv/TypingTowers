@@ -109,6 +109,7 @@ See the [ROADMAP.md](./ROADMAP.md) for detailed tasks.
 
 - The Barracks generates a word from its letter pool every few seconds.
 - Each letter must be typed in order. When the final letter is entered a Footman unit spawns.
+- Footmen start with **10 HP**, deal **1 damage** and move at a speed of **50 px/s**.
 - Spawned units are tracked by the `Military` system.
 - Word generation logic, cooldown behaviour, and letter-by-letter queue processing are tested in `barracks_test.go`.
 - The HUD highlights progress on the first queued word so you can see partially typed letters.
