@@ -11,10 +11,11 @@ type Farmer struct {
 	letterPool  []rune  // available letters for word generation
 	wordLenMin  int
 	wordLenMax  int
-	lastWord    string // last generated word (for testing/debug)
-	pendingWord string // word currently in queue (if any)
-	resourceOut int    // amount of Food to output per completion
-	active      bool   // is the Farmer running?
+	lastWord    string        // last generated word (for testing/debug)
+	pendingWord string        // word currently in queue (if any)
+	resourceOut int           // amount of Food to output per completion
+	active      bool          // is the Farmer running?
+	queue       *QueueManager // optional global queue manager
 }
 
 // NewFarmer creates a new Farmer with default settings.
@@ -27,6 +28,7 @@ func NewFarmer() *Farmer {
 		wordLenMax:  3,
 		resourceOut: 1,
 		active:      true,
+		queue:       nil,
 	}
 }
 
@@ -40,6 +42,9 @@ func (f *Farmer) Update(dt float64) string {
 	if f.cooldown <= 0 {
 		word := f.generateWord()
 		f.pendingWord = word
+		if f.queue != nil {
+			f.queue.Enqueue(Word{Text: word, Source: "Farmer"})
+		}
 		f.cooldown = f.interval
 		return word
 	}
@@ -79,3 +84,6 @@ func (f *Farmer) SetLetterPool(pool []rune) {
 func (f *Farmer) SetActive(active bool) {
 	f.active = active
 }
+
+// SetQueue assigns a QueueManager for global word management.
+func (f *Farmer) SetQueue(q *QueueManager) { f.queue = q }

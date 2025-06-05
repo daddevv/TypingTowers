@@ -25,10 +25,10 @@
   - [x] Barracks cooldown logic
   - [x] Barracks word generation from letter pool
   - [x] Unit spawn on word completion
-- [ ] **P-003** Shared queue manager
-  - [ ] Global FIFO queue structure
-  - [ ] Enqueue from multiple buildings
-  - [ ] Dequeue and typing validation
+- [x] **P-003** Shared queue manager
+  - [x] Global FIFO queue structure
+  - [x] Enqueue from multiple buildings
+  - [x] Dequeue and typing validation
 - [ ] **P-004** Per-building cooldown timers
   - [ ] Timer tick/update logic
   - [ ] Cooldown reset on word completion
