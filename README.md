@@ -83,49 +83,17 @@ validated in-memory graph.
 
 ## Prototype Sprint
 
-The current focus is on prototyping the Gathering (Farmer) and Military (Barracks) families, implementing a shared queue manager, per-building cooldowns, and playtesting word density.  
-See the [ROADMAP.md](./ROADMAP.md) for detailed tasks.
+The current focus is on integrating the global skill tree, combat test automation, and minigame/metrics systems.  
+See the [ROADMAP.md](./ROADMAP.md) for the up-to-date backlog and [TODO_ARCHIVE.md](./TODO_ARCHIVE.md) for completed sprints.
 
 ---
 
--## Farmer (Gathering Building)
-
-- The Farmer building is now implemented as a Gathering structure that generates a word from its letter pool every cooldown cycle (default 1.5s).
-- Typing the generated word completes the cycle and produces Food and Gold, which are added to the global resource pool.
-- Each building's cooldown timer pauses once a word is queued and only resets after that word is typed.
-- The Farmer's cooldown, letter pool, and word length can be configured and extended for progression.
-- See `v1/internal/game/farmer.go` for implementation and `farmer_test.go` for tests.
-
-## Lumberjack (Gathering Building)
-
-- The Lumberjack produces Wood and Gold when its queued word is typed.
-- Shares similar mechanics to the Farmer with a 1.5s base cooldown.
-- Implementation lives in `v1/internal/game/lumberjack.go`.
-
-## Miner (Gathering Building)
-
-- The Miner yields Stone and Iron plus a bit of Gold on completion.
-- Follows the same word-based workflow and cooldown system.
-- See `v1/internal/game/miner.go` for code and tests.
-
--## Barracks (Military Building)
-
-- The Barracks generates a word from its letter pool every few seconds.
-- Each letter must be typed in order. When the final letter is entered a Footman unit spawns.
-- Footmen start with **10 HP**, deal **1 damage** and move at a speed of **50 px/s**.
-- Spawned units are tracked by the `Military` system.
-- Word generation logic, cooldown behaviour, and letter-by-letter queue processing are tested in `barracks_test.go`.
-- The HUD highlights progress on the first queued word so you can see partially typed letters.
-- Cooldown progress bars for the Farmer and Barracks are shown along with resource icons.
-
-- Press `/` to enter tower selection mode. The screen dims and towers are labeled with letters; press a letter to open that tower's upgrade menu.
-- Press `/` again to open the tech menu. Type to search unlocked technologies and press `Enter` to purchase the highlighted upgrade.
-- Press `Tab` to open the global skill tree. Use arrow keys to change categories and highlight skills. Locked and unlocked skills are indicated.
-- Unlocking a skill immediately applies its bonuses and is saved with your game.
-- Press `:` to enter command mode for quick text commands like `pause` or `quit`.
-- Press `F2` or `F3` to open the save/load slot menu. Select a slot with the arrow keys and confirm with `Enter`.
-- The game auto-saves to the active slot whenever a wave ends.
-
-See docs/REQUIREMENTS.md for the full feature scaffold, ROADMAP.md for planned phases, and TODO.md for sprint tasks.
+- Farmer, Lumberjack, and Miner buildings are implemented and generate resources via typing.
+- Barracks spawns Footmen when words are completed; combat is resolved against orc grunts.
+- Shared FIFO queue manager processes words letter-by-letter, with jam/back-pressure mechanics.
+- HUD displays queue, cooldowns, resources, and tower selection overlays.
+- Title screen, pre-game setup, and save/load systems are in place.
+- Tech trees and skill trees are loaded from YAML and can be navigated and unlocked via keyboard.
+- See `docs/REQUIREMENTS.md` for the full feature scaffold.
 
 Happy typing & may your catapults stay jam-free!
