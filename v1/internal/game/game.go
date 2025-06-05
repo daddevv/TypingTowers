@@ -9,11 +9,12 @@ import (
 	"os"
 	"time"
 
+	"unicode"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
-	"unicode"
 )
 
 const jamFlashDuration = 0.15
@@ -50,15 +51,11 @@ type Game struct {
 	towers      []*Tower
 	mobs        []Enemy
 	projectiles []*Projectile
-	queue       *QueueManager
 	base        *Base
 	hud         *HUD
 	gameOver    bool
 	paused      bool
 	resources   ResourcePool
-
-	farmer   *Farmer
-	barracks *Barracks
 
 	shopOpen bool
 
@@ -159,7 +156,6 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		cfg:             &cfg,
 		mobs:            make([]Enemy, 0),
 		projectiles:     make([]*Projectile, 0),
-		queue:           NewQueueManager(),
 		letterPool:      make([]rune, 0),
 		unlockStage:     0,
 		techTree:        DefaultTechTree(),
@@ -517,6 +513,7 @@ func (g *Game) Update() error {
 	// Update buildings and units
 	if g.military != nil {
 		g.military.Update(dt)
+	}
 	if g.farmer != nil {
 		if w := g.farmer.Update(dt); w != "" {
 			g.farmer.OnWordCompleted(w, &g.resources)
