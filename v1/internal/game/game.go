@@ -7,6 +7,7 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"sort"
 	"time"
 
 	"strings"
@@ -75,6 +76,7 @@ type Game struct {
 	letterPool   []rune
 	unlockStage  int
 	techTree     *TechTree
+	skillTree    *SkillTree
 	achievements []string
 	towerMods    TowerModifiers
 
@@ -197,7 +199,7 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		letterPool:      make([]rune, 0),
 		unlockStage:     0,
 		techTree:        DefaultTechTree(),
-		skillTree:       nil,
+		skillTree:       func() *SkillTree { t, _ := SampleSkillTree(); return t }(),
 		unlockedSkills:  make(map[string]bool),
 		achievements:    make([]string, 0),
 		towerMods:       TowerModifiers{DamageMult: 1, RangeMult: 1, FireRateMult: 1},
@@ -211,6 +213,7 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		upgradeMenuOpen: false,
 		upgradeCursor:   0,
 		techMenuOpen:    false,
+		skillMenuOpen:   false,
 		searchBuffer:    "",
 		techCursor:      0,
 		skillMenuOpen:   false,
@@ -280,6 +283,10 @@ func (g *Game) Update() error {
 	}
 	g.lastUpdate = now
 	g.input.Update()
+	g.handleSkillMenuInput()
+	if g.skillMenuOpen {
+		return nil
+	}
 
 	if !g.commandMode && g.input.Command() {
 		g.commandMode = true
@@ -1190,43 +1197,57 @@ func (g *Game) randomReloadLetter() rune {
 	return g.letterPool[rand.Intn(len(g.letterPool))]
 }
 
-// skillMenuNodes handles input for the skill tree menu and returns the nodes for the current category.
-func (g *Game) skillMenuNodes() []*SkillNode {
+// skillNodesByCategory returns all skill nodes for the given category.
+func (g *Game) skillNodesByCategory(cat SkillCategory) []*SkillNode {
 	if g.skillTree == nil {
 		return nil
+	}
+	var out []*SkillNode
+	for _, n := range g.skillTree.Nodes {
+		if n.Category == cat {
+			out = append(out, n)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].ID < out[j].ID })
+	return out
+}
+
+// handleSkillMenuInput processes keyboard input for the skill tree menu.
+func (g *Game) handleSkillMenuInput() {
+	if g.skillTree == nil {
+		return
 	}
 	if g.input.SkillMenu() {
 		g.skillMenuOpen = !g.skillMenuOpen
 		if g.skillMenuOpen {
-			g.skillCategory = SkillOffense
+			g.skillCategory = 0
 			g.skillCursor = 0
 		}
-		return nil
+		return
 	}
 	if !g.skillMenuOpen {
-		return nil
+		return
 	}
-
-	if g.input.Left() {
-		g.skillCategory = (g.skillCategory - 1 + 5) % 5
-		g.skillCursor = 0
-	}
+	categories := []SkillCategory{SkillOffense, SkillDefense, SkillTyping, SkillAutomation, SkillUtility}
 	if g.input.Right() {
-		g.skillCategory = (g.skillCategory + 1) % 5
+		g.skillCategory = (g.skillCategory + 1) % len(categories)
 		g.skillCursor = 0
+		return
 	}
-
-	nodes := g.skillTree.NodesByCategory(g.skillCategory)
-	if len(nodes) > 0 {
-		if g.input.Down() {
-			g.skillCursor = (g.skillCursor + 1) % len(nodes)
-		}
-		if g.input.Up() {
-			g.skillCursor = (g.skillCursor - 1 + len(nodes)) % len(nodes)
-		}
-		if g.input.Enter() {
-			g.skillMenuOpen = false
-		}
+	if g.input.Left() {
+		g.skillCategory = (g.skillCategory - 1 + len(categories)) % len(categories)
+		g.skillCursor = 0
+		return
+	}
+	nodes := g.skillNodesByCategory(categories[g.skillCategory])
+	if len(nodes) == 0 {
+		return
+	}
+	if g.input.Down() {
+		g.skillCursor = (g.skillCursor + 1) % len(nodes)
+	}
+	if g.input.Up() {
+		g.skillCursor = (g.skillCursor - 1 + len(nodes)) % len(nodes)
 	}
 	return nodes
 }
