@@ -28,7 +28,7 @@ func TestFootmanSurvivesAfterKill(t *testing.T) {
 
 	for steps := 0; o.Alive() && steps < 10; steps++ {
 		orcs = updateOrcs(orcs, 0.1)
-		m.Update(0.1, orcs)
+		orcs = m.Update(0.1, orcs)
 	}
 
 	if o.Alive() {
@@ -52,7 +52,7 @@ func TestFootmanDiesLethalDamage(t *testing.T) {
 	orcs := []*OrcGrunt{o}
 
 	orcs = updateOrcs(orcs, 0.1)
-	m.Update(0.1, orcs)
+	orcs = m.Update(0.1, orcs)
 
 	if m.Count() != 0 {
 		t.Fatalf("expected footman removed after death")
@@ -77,7 +77,7 @@ func TestCombatMultipleCombinations(t *testing.T) {
 
 		for steps := 0; steps < 20 && m.Count() > 0 && len(orcs) > 0; steps++ {
 			orcs = updateOrcs(orcs, 0.1)
-			m.Update(0.1, orcs)
+			orcs = m.Update(0.1, orcs)
 		}
 
 		if m.Count() == 0 && len(orcs) == 0 {
@@ -111,7 +111,7 @@ func TestSimultaneousDamage(t *testing.T) {
 	orcs := []*OrcGrunt{o}
 
 	orcs = updateOrcs(orcs, 0.1)
-	m.Update(0.1, orcs)
+	orcs = m.Update(0.1, orcs)
 
 	if f.Alive() || o.Alive() {
 		t.Fatalf("both units should die in the same tick")
@@ -131,7 +131,7 @@ func TestNoCombatWithoutOverlap(t *testing.T) {
 	orcs = updateOrcs(orcs, 0.1)
 	hpF := f.Health()
 	hpO := o.Health()
-	m.Update(0.1, orcs)
+	orcs = m.Update(0.1, orcs)
 
 	if f.Health() != hpF || o.Health() != hpO {
 		t.Fatalf("hp changed despite no overlap")
@@ -150,7 +150,7 @@ func TestImmediateRemovalOfDeadUnits(t *testing.T) {
 
 	for steps := 0; steps < 10 && len(orcs) > 0; steps++ {
 		orcs = updateOrcs(orcs, 0.1)
-		m.Update(0.1, orcs)
+		orcs = m.Update(0.1, orcs)
 	}
 
 	if len(orcs) != 0 {
@@ -174,12 +174,12 @@ func TestDeadUnitsCannotAttack(t *testing.T) {
 	orcs := []*OrcGrunt{o}
 
 	orcs = updateOrcs(orcs, 0.1)
-	m.Update(0.1, orcs)
+	orcs = m.Update(0.1, orcs)
 
 	hp := f.Health()
 	// update again with same (dead) orc in list
 	orcs = updateOrcs(orcs, 0.1)
-	m.Update(0.1, orcs)
+	orcs = m.Update(0.1, orcs)
 
 	if f.Health() != hp {
 		t.Fatalf("dead orc continued to deal damage")
@@ -199,7 +199,7 @@ func TestNoCombatWithDeadUnit(t *testing.T) {
 
 	orcs = updateOrcs(orcs, 0.1)
 	hp := o.Health()
-	m.Update(0.1, orcs)
+	orcs = m.Update(0.1, orcs)
 
 	if o.Health() != hp {
 		t.Fatalf("combat occurred with dead footman")
@@ -221,7 +221,7 @@ func TestBothUnitsDieSameTick(t *testing.T) {
 	orcs := []*OrcGrunt{o}
 
 	orcs = updateOrcs(orcs, 0.1)
-	m.Update(0.1, orcs)
+	orcs = m.Update(0.1, orcs)
 
 	if m.Count() != 0 || len(orcs) != 0 {
 		t.Fatalf("both units should be removed when they die in the same tick")
@@ -251,6 +251,6 @@ func TestRemovalDuringIterationNoPanic(t *testing.T) {
 
 	for steps := 0; steps < 5 && (m.Count() > 0 || len(orcs) > 0); steps++ {
 		orcs = updateOrcs(orcs, 0.1)
-		m.Update(0.1, orcs)
+		orcs = m.Update(0.1, orcs)
 	}
 }

@@ -24,7 +24,7 @@ func rectOverlap(ax, ay, aw, ah, bx, by, bw, bh int) bool {
 
 // Update advances all units, resolves combat with orc grunts, and removes any
 // that are no longer alive.
-func (m *Military) Update(dt float64, orcs []*OrcGrunt) {
+func (m *Military) Update(dt float64, orcs []*OrcGrunt) []*OrcGrunt {
 	for i := 0; i < len(m.units); {
 		u := m.units[i]
 		u.Update(dt)
@@ -54,6 +54,14 @@ func (m *Military) Update(dt float64, orcs []*OrcGrunt) {
 		}
 		i++
 	}
+	// Remove dead orcs from the slice
+	liveOrcs := orcs[:0]
+	for _, o := range orcs {
+		if o.Alive() {
+			liveOrcs = append(liveOrcs, o)
+		}
+	}
+	return liveOrcs
 }
 
 // Units returns the list of active Footmen.

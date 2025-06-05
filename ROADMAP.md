@@ -7,25 +7,19 @@
 
 ## Core Gameplay Loop Demo (Highest Priority)
 
-- [ ] **SKILL-001** Global skill tree UI (offense, defense, typing, automation, utility)
-  - [ ] Define Go structs for skill tree nodes and categories
-  - [ ] Implement in-memory skill tree structure and sample data
-  - [ ] Add keyboard UI: open skill tree menu, navigate categories/nodes, show node details
-  - [ ] Render skill tree overlay: display branches, highlight selected node, show unlock status
-  - [ ] Implement skill unlock logic: check prerequisites/resources, update state on unlock
-  - [ ] Integrate skill effects with game systems (e.g., global stat boosts, automation unlocks)
-  - [ ] Write unit tests for skill tree navigation, unlocks, and effect application
-  - [ ] Persist skill tree state in save/load system
+- [x] **SKILL-001** Global skill tree UI (offense, defense, typing, automation, utility)
+  - [x] Define Go structs for skill tree nodes and categories
+  - [x] Implement in-memory skill tree structure and sample data
+  - [x] Add keyboard UI: open skill tree menu, navigate categories/nodes, show node details
+  - [x] Render skill tree overlay: display branches, highlight selected node, show unlock status
+  - [x] Implement skill unlock logic: check prerequisites/resources, update state on unlock
+  - [x] Integrate skill effects with game systems (e.g., global stat boosts, automation unlocks)
+  - [x] Write unit tests for skill tree navigation, unlocks, and effect application
+  - [x] Persist skill tree state in save/load system
 
 ---
 
 ## Combat & Military
-
-- [ ] **TEST-COMBAT** Unit kills grunt in <8 s with perfect typing
-  - [ ] Create integration test simulating perfect typing input
-  - [ ] Spawn Footman and OrcGrunt, simulate combat loop
-  - [ ] Assert OrcGrunt is defeated in under 8 seconds
-  - [ ] Add test to CI pipeline
 
 - [x] **TEST-COMBAT-EDGE** Simulation unit tests for all common and edge cases
   - [x] Footman survives after killing a single grunt (verify HP > 0)
