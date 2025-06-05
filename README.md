@@ -50,7 +50,7 @@ go test ./...
 
 -## Current prototype
 
- - Shared FIFO queue manager implemented. Farmer and Barracks enqueue words (f j pool) that must be typed in order. Completing a Barracks word spawns a Footman.
+- Shared FIFO queue manager implemented. Farmer and Barracks enqueue words (f j pool) that must be typed in order. Completing a Barracks word spawns a Footman.
 - Basic orc grunt waves scale every 45 s.
 - Typing speed/accuracy multiplier working.
 - Vim navigation for pause/menu/shop implemented.
