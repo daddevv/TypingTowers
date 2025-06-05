@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"image/color"
+	"strconv"
 	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -35,18 +36,42 @@ func NewHUD(g *Game) *HUD {
 	return &HUD{game: g}
 }
 
-// drawResources renders a simple resource bar at the top left.
-func (h *HUD) drawResources(screen *ebiten.Image) {
-	gold := h.game.resources.GoldAmount()
-	wood := h.game.resources.WoodAmount()
-	stone := h.game.resources.StoneAmount()
-	iron := h.game.resources.IronAmount()
-	mana := 0
-	textStr := fmt.Sprintf("G:%d W:%d S:%d I:%d M:%d", gold, wood, stone, iron, mana)
-	opts := &text.DrawOptions{}
-	opts.GeoM.Translate(10, 10)
-	opts.ColorScale.ScaleWithColor(color.White)
-	text.Draw(screen, textStr, BoldFont, opts)
+// drawResourceIcons renders resource amounts as letter icons at the top left.
+func (h *HUD) drawResourceIcons(screen *ebiten.Image) {
+	type icon struct {
+		label  string
+		amount int
+		clr    color.RGBA
+	}
+
+	icons := []icon{
+		{"G", h.game.resources.GoldAmount(), color.RGBA{255, 215, 0, 255}},
+		{"W", h.game.resources.WoodAmount(), color.RGBA{139, 69, 19, 255}},
+		{"S", h.game.resources.StoneAmount(), color.RGBA{128, 128, 128, 255}},
+		{"I", h.game.resources.IronAmount(), color.RGBA{169, 169, 169, 255}},
+		{"M", 0, color.RGBA{75, 0, 130, 255}},
+	}
+
+	size := 20.0
+	x := 10.0
+	y := 10.0
+
+	for _, ic := range icons {
+		vector.DrawFilledRect(screen, float32(x), float32(y), float32(size), float32(size), ic.clr, false)
+
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(x+4, y+4)
+		opts.ColorScale.ScaleWithColor(color.Black)
+		text.Draw(screen, ic.label, BoldFont, opts)
+
+		numStr := strconv.Itoa(ic.amount)
+		opts = &text.DrawOptions{}
+		opts.GeoM.Translate(x+size+4, y+14)
+		opts.ColorScale.ScaleWithColor(color.White)
+		text.Draw(screen, numStr, BoldFont, opts)
+
+		x += size + float64(len(numStr))*13.0 + 16
+	}
 }
 
 // drawQueue renders the global typing queue at the top center of the screen.
@@ -86,7 +111,7 @@ func (h *HUD) drawQueue(screen *ebiten.Image) {
 
 // Draw renders ammo count, tower stats, reload prompts, and shop interface.
 func (h *HUD) Draw(screen *ebiten.Image) {
-	h.drawResources(screen)
+	h.drawResourceIcons(screen)
 	h.drawQueue(screen)
 	if h.game.commandMode {
 		drawMenu(screen, []string{":" + h.game.commandBuffer}, 860, 1020)
