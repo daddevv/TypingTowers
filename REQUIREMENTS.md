@@ -29,6 +29,7 @@ All new features are optional enhancements, preserving the educational and acces
 | **Q-QUEUE-3** | If ≥ 5 words backlog → base takes chip damage each second (prevent AFK). |
 | **Q-QUEUE-4** | Queue is rendered top center with colour coding by building family and word length caps (Basic 2-3, Power 4-6, Epic 6-8). |
 | **Q-QUEUE-5** | Queue items are processed letter-by-letter; words remain in the queue until all letters are typed correctly. |
+| **Q-QUEUE-6** | Per-word accuracy and completion time are recorded and stored in a history log. |
 
 ### 1.1 Letter Pools
 

@@ -111,6 +111,10 @@ type Game struct {
 
 	typing TypingStats
 
+	// Per-word metrics
+	currentWord WordStat
+	wordHistory []WordStat
+
 	pauseCursor    int
 	settingsOpen   bool
 	settingsCursor int
@@ -176,6 +180,9 @@ func (g *Game) AddGold(n int) { g.resources.AddGold(n) }
 
 // Queue returns the global word queue manager.
 func (g *Game) Queue() *QueueManager { return g.queue }
+
+// WordHistory returns the slice of completed word statistics.
+func (g *Game) WordHistory() []WordStat { return g.wordHistory }
 
 // SpendGold attempts to deduct the given amount of gold and returns true on success.
 func (g *Game) SpendGold(n int) bool { return g.resources.Gold.Spend(n) }
@@ -279,6 +286,8 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		phase:           PhaseMainMenu,
 		mainMenu:        NewMainMenu(),
 		preGame:         NewPreGame(),
+		currentWord:     WordStat{},
+		wordHistory:     make([]WordStat, 0),
 	}
 	if g.sound != nil {
 		g.sound.StartMusic()
@@ -598,7 +607,18 @@ func (g *Game) Update() error {
 					if match {
 						g.conveyorOffset += letterWidth
 						g.typing.Record(true)
+
+						if g.currentWord.Text == "" {
+							g.currentWord.Text = dq.Text
+						}
+						g.currentWord.Start()
+						g.currentWord.Correct++
+
 						if done {
+							g.currentWord.Finish()
+							g.wordHistory = append(g.wordHistory, g.currentWord)
+							g.currentWord = WordStat{}
+
 							switch dq.Source {
 							case "Farmer":
 								g.farmer.OnWordCompleted(dq.Text, &g.resources)
@@ -610,6 +630,7 @@ func (g *Game) Update() error {
 						}
 					} else {
 						g.typing.Record(false)
+						g.currentWord.Incorrect++
 						g.MistypeFeedback()
 						g.queueJam = true
 					}

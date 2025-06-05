@@ -85,12 +85,12 @@
 
 ## Typing Metrics & Minigames
 
-- [ ] **MET-001** Capture per-word accuracy & time
-  - [ ] Define data structures to store per-word accuracy and completion time
-  - [ ] Update queue processing logic to record accuracy and time for each word
-  - [ ] Store per-word stats in a history buffer or log
-  - [ ] Add unit tests to verify per-word stats are captured correctly
-  - [ ] Expose per-word stats to HUD or stats panel
+- [x] **MET-001** Capture per-word accuracy & time
+  - [x] Define data structures to store per-word accuracy and completion time
+  - [x] Update queue processing logic to record accuracy and time for each word
+  - [x] Store per-word stats in a history buffer or log
+  - [x] Add unit tests to verify per-word stats are captured correctly
+  - [x] Expose per-word stats to HUD or stats panel
 
 - [ ] **MET-002** Rolling WPM (last 30 s)
   - [ ] Implement a time-based buffer to track recent typing events
