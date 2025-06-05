@@ -8,6 +8,7 @@ import (
 type Farmer struct {
 	timer       CooldownTimer // cooldown timer for word generation
 	letterPool  []rune        // available letters for word generation
+	unlockStage int           // next letter stage index
 	wordLenMin  int
 	wordLenMax  int
 	lastWord    string        // last generated word (for testing/debug)
@@ -21,9 +22,10 @@ type Farmer struct {
 func NewFarmer() *Farmer {
 	return &Farmer{
 		// Shorter cooldown to hit ~1 word/sec with Barracks combined
-		timer:      NewCooldownTimer(1.5), // 1.5 seconds base cooldown
-		letterPool: []rune{'f', 'j'},
-		wordLenMin: 2,
+		timer:       NewCooldownTimer(1.5), // 1.5 seconds base cooldown
+		letterPool:  []rune{'f', 'j'},
+		unlockStage: 0,
+		wordLenMin:  2,
 		// Slightly longer words to balance the faster rate
 		wordLenMax:  4,
 		resourceOut: 1,
@@ -105,3 +107,25 @@ func (f *Farmer) CooldownProgress() float64 { return f.timer.Progress() }
 
 // CooldownRemaining exposes the remaining cooldown time.
 func (f *Farmer) CooldownRemaining() float64 { return f.timer.Remaining() }
+
+// NextUnlockCost returns the King's Point cost for the next letter stage.
+func (f *Farmer) NextUnlockCost() int {
+	stage := f.unlockStage + 1
+	return LetterStageCost(stage)
+}
+
+// UnlockNext attempts to unlock the next letter stage using the provided pool.
+func (f *Farmer) UnlockNext(pool *ResourcePool) bool {
+	stage := f.unlockStage + 1
+	letters := LetterStageLetters(stage)
+	cost := LetterStageCost(stage)
+	if letters == nil || cost < 0 {
+		return false
+	}
+	if pool != nil && pool.SpendKingsPoints(cost) {
+		f.unlockStage = stage
+		f.letterPool = append(f.letterPool, letters...)
+		return true
+	}
+	return false
+}

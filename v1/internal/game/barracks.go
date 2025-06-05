@@ -6,6 +6,7 @@ import "math/rand"
 type Barracks struct {
 	timer       CooldownTimer // cooldown timer for word generation
 	letterPool  []rune        // available letters for word generation
+	unlockStage int           // next letter stage index
 	wordLenMin  int
 	wordLenMax  int
 	lastWord    string        // last generated word (for testing/debug)
@@ -19,8 +20,9 @@ type Barracks struct {
 func NewBarracks() *Barracks {
 	return &Barracks{
 		// Faster cadence to match farmer and reach 1–1.5 words/sec total
-		timer:      NewCooldownTimer(2.0), // 2 seconds base cooldown
-		letterPool: []rune{'f', 'j'},
+		timer:       NewCooldownTimer(2.0), // 2 seconds base cooldown
+		letterPool:  []rune{'f', 'j'},
+		unlockStage: 0,
 		// Barracks words are slightly longer for difficulty
 		wordLenMin: 3,
 		wordLenMax: 5,
@@ -97,3 +99,25 @@ func (b *Barracks) CooldownProgress() float64 { return b.timer.Progress() }
 
 // CooldownRemaining exposes the remaining cooldown time.
 func (b *Barracks) CooldownRemaining() float64 { return b.timer.Remaining() }
+
+// NextUnlockCost returns the King's Point cost for the next letter stage.
+func (b *Barracks) NextUnlockCost() int {
+	stage := b.unlockStage + 1
+	return LetterStageCost(stage)
+}
+
+// UnlockNext attempts to unlock the next letter stage for the Barracks.
+func (b *Barracks) UnlockNext(pool *ResourcePool) bool {
+	stage := b.unlockStage + 1
+	letters := LetterStageLetters(stage)
+	cost := LetterStageCost(stage)
+	if letters == nil || cost < 0 {
+		return false
+	}
+	if pool != nil && pool.SpendKingsPoints(cost) {
+		b.unlockStage = stage
+		b.letterPool = append(b.letterPool, letters...)
+		return true
+	}
+	return false
+}

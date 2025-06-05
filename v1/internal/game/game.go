@@ -421,7 +421,7 @@ func (g *Game) Update() error {
 			upgradeFireRateCost  = 5
 			upgradeAmmoCost      = 10
 			upgradeForesightCost = 5
-			optionsCount         = 6
+			optionsCount         = 8
 		)
 
 		if g.input.Down() {
@@ -464,6 +464,14 @@ func (g *Game) Update() error {
 						tower.UpgradeForesight(2)
 						return true
 					}
+				case 5:
+					if g.farmer != nil {
+						return g.farmer.UnlockNext(&g.resources)
+					}
+				case 6:
+					if g.barracks != nil {
+						return g.barracks.UnlockNext(&g.resources)
+					}
 				}
 				return false
 			}
@@ -484,9 +492,15 @@ func (g *Game) Update() error {
 			if inpututil.IsKeyJustPressed(ebiten.Key5) {
 				purchase(4)
 			}
+			if inpututil.IsKeyJustPressed(ebiten.Key6) {
+				purchase(5)
+			}
+			if inpututil.IsKeyJustPressed(ebiten.Key7) {
+				purchase(6)
+			}
 
 			if g.input.Enter() {
-				if g.shopCursor < 5 {
+				if g.shopCursor < 7 {
 					purchase(g.shopCursor)
 				} else {
 					g.shopOpen = false

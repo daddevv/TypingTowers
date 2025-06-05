@@ -60,3 +60,17 @@ func TestIron(t *testing.T) {
 		t.Fatalf("spend should fail when empty")
 	}
 }
+
+func TestKingsPoints(t *testing.T) {
+	var k KingsPoints
+	k.Add(50)
+	if k.Amount() != 50 {
+		t.Fatalf("expected 50 got %d", k.Amount())
+	}
+	if !k.Spend(20) || k.Amount() != 30 {
+		t.Fatalf("unexpected spend result %d", k.Amount())
+	}
+	if k.Spend(40) {
+		t.Fatalf("spend should fail when insufficient")
+	}
+}
