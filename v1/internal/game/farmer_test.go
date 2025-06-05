@@ -5,8 +5,8 @@ import "testing"
 func TestFarmerCooldownAndWordGeneration(t *testing.T) {
 	f := NewFarmer()
 	f.SetLetterPool([]rune{'f', 'j'})
-	f.interval = 0.1
-	f.cooldown = 0.1
+	f.SetInterval(0.1)
+	f.SetCooldown(0.1)
 	words := make(map[string]struct{})
 	for i := 0; i < 10; i++ {
 		word := f.Update(0.11)
@@ -22,9 +22,28 @@ func TestFarmerCooldownAndWordGeneration(t *testing.T) {
 			}
 		}
 		words[word] = struct{}{}
+		// simulate typing completion to reset cooldown
+		f.OnWordCompleted(word)
 	}
 	if len(words) < 2 {
 		t.Errorf("Expected at least 2 unique words, got %d", len(words))
+	}
+}
+
+func TestFarmerWaitsForCompletion(t *testing.T) {
+	f := NewFarmer()
+	f.SetInterval(0.1)
+	f.SetCooldown(0.1)
+	first := f.Update(0.11)
+	if first == "" {
+		t.Fatalf("expected word on cooldown expiry")
+	}
+	if next := f.Update(0.11); next != "" {
+		t.Fatalf("expected no new word until completion")
+	}
+	f.OnWordCompleted(first)
+	if w := f.Update(0.11); w == "" {
+		t.Fatalf("expected new word after completion")
 	}
 }
 

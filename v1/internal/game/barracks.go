@@ -4,9 +4,8 @@ import "math/rand"
 
 // Barracks represents a Military building that trains Footman units.
 type Barracks struct {
-	cooldown    float64 // seconds until next word is pushed
-	interval    float64 // base cooldown interval (seconds)
-	letterPool  []rune  // available letters for word generation
+	timer       CooldownTimer // cooldown timer for word generation
+	letterPool  []rune        // available letters for word generation
 	wordLenMin  int
 	wordLenMax  int
 	lastWord    string        // last generated word (for testing/debug)
@@ -18,8 +17,7 @@ type Barracks struct {
 // NewBarracks creates a new Barracks with default settings.
 func NewBarracks() *Barracks {
 	return &Barracks{
-		interval:   5.0, // 5 seconds base cooldown
-		cooldown:   5.0,
+		timer:      NewCooldownTimer(5.0), // 5 seconds base cooldown
 		letterPool: []rune{'f', 'j'},
 		wordLenMin: 2,
 		wordLenMax: 3,
@@ -30,17 +28,15 @@ func NewBarracks() *Barracks {
 
 // Update ticks the Barracks cooldown and returns a word when ready.
 func (b *Barracks) Update(dt float64) string {
-	if !b.active {
+	if !b.active || b.pendingWord != "" {
 		return ""
 	}
-	b.cooldown -= dt
-	if b.cooldown <= 0 {
+	if b.timer.Tick(dt) {
 		word := b.generateWord()
 		b.pendingWord = word
 		if b.queue != nil {
 			b.queue.Enqueue(Word{Text: word, Source: "Barracks"})
 		}
-		b.cooldown = b.interval
 		return word
 	}
 	return ""
@@ -64,6 +60,7 @@ func (b *Barracks) generateWord() string {
 func (b *Barracks) OnWordCompleted(word string) *Footman {
 	if word == b.pendingWord {
 		b.pendingWord = ""
+		b.timer.Reset()
 		return NewFootman(0, 0)
 	}
 	return nil
@@ -74,6 +71,12 @@ func (b *Barracks) SetLetterPool(pool []rune) { b.letterPool = pool }
 
 // SetActive enables or disables the Barracks.
 func (b *Barracks) SetActive(active bool) { b.active = active }
+
+// SetInterval changes the base cooldown interval.
+func (b *Barracks) SetInterval(interval float64) { b.timer.SetInterval(interval) }
+
+// SetCooldown sets the remaining cooldown directly (for testing).
+func (b *Barracks) SetCooldown(c float64) { b.timer.remaining = c }
 
 // SetQueue assigns a QueueManager for global word management.
 func (b *Barracks) SetQueue(q *QueueManager) { b.queue = q }
