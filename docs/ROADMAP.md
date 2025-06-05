@@ -117,3 +117,9 @@ A keyboard-focused tower defense game that combines strategic placement with typ
 - [x] T-001 YAML schema for node graph
 - [x] T-002 Parser + in-memory graph
 - [x] T-003 Keyboard UI for tech purchase (`/` search, `Enter` buy)
+
+## Military Prototype
+- [x] M-001 Barracks building pushes unit words
+- [x] M-002 Footman entity (HP, dmg, speed)
+- [x] M-003 Combat resolution attacker vs orc grunt
+

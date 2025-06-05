@@ -12,7 +12,7 @@ import (
 var (
 	// assetPrefix allows tests to override asset path prefix.
 	assetPrefix = ""
-	
+
 	ImgBackgroundBasicTiles *ebiten.Image
 	ImgBackgroundTile       *ebiten.Image
 	ImgHighlightTile        *ebiten.Image
@@ -22,6 +22,8 @@ var (
 	ImgMobA                 *ebiten.Image
 	ImgMobB                 *ebiten.Image
 	ImgProjectile           *ebiten.Image
+	ImgBarracks             *ebiten.Image
+	ImgFootman              *ebiten.Image
 )
 
 // InitImages loads all image assets. Must be called after setting assetPrefix.
@@ -34,6 +36,8 @@ func InitImages() {
 	ImgMobA = generateMobImage(color.RGBA{255, 0, 0, 255})
 	ImgMobB = generateMobImage(color.RGBA{255, 128, 0, 255})
 	ImgProjectile = generateProjectileImage()
+	ImgBarracks = generateBarracksImage()
+	ImgFootman = generateFootmanImage()
 	ImgBackgroundBasicTiles = generateBackground()
 }
 
@@ -104,5 +108,17 @@ func generateProjectileImage() *ebiten.Image {
 			}
 		}
 	}
+	return img
+}
+
+func generateBarracksImage() *ebiten.Image {
+	img := ebiten.NewImage(48, 48)
+	img.Fill(color.RGBA{150, 75, 0, 255})
+	return img
+}
+
+func generateFootmanImage() *ebiten.Image {
+	img := ebiten.NewImage(16, 16)
+	img.Fill(color.RGBA{0, 200, 0, 255})
 	return img
 }
