@@ -57,6 +57,7 @@ go test -tags test ./...
  - Back-pressure damage: if the queue grows past 20 letters, the base loses 1 HP each second.
 - Typing speed/accuracy multiplier working.
 - Vim navigation for pause/menu/shop implemented.
+- Title screen with animated background and keyboard-only menu.
 - Letter unlock order and costs documented (see `docs/LETTER_UNLOCKS.md`).
 - Letters can now be unlocked in-game using King's Points, expanding each building's word pool.
 - Tech trees are defined in YAML under `data/trees/` (see `letters_basic.yaml`).

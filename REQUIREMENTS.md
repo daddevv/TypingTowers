@@ -118,6 +118,8 @@ All new features are optional enhancements, preserving the educational and acces
 | **UI-NAV-4** | Hot-reload config `F5`. |
 | **UI-NAV-5** | Key-rebinder supports QWERTY, Colemak, Dvorak. |
 | **UI-BUILD-1** | HUD displays cooldown progress for Farmer and Barracks. |
+| **UI-TITLE-1** | Game starts at a title screen with Start, Settings and Quit options. |
+| **UI-TITLE-2** | Title screen has a simple animated background and is keyboard navigable. |
 
 *Planned: Typed commands for minion management, skill tree navigation, and minigames. All new features remain keyboard-only.*
 
@@ -128,6 +130,7 @@ All new features are optional enhancements, preserving the educational and acces
 - **SND-1** 8-bit SFX for key hits, crits, jams.
 - **FX-1** Mistyped letters briefly flash the screen red and play a "clank" sound.
 - **SND-2** Optional voice-over reads next word for early readers (accessibility toggle).
+- **SND-3** Background music loops on the title screen.
 
 ---
 
