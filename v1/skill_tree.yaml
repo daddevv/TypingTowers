@@ -1,0 +1,5 @@
+[
+  {"id":"offense_basic","name":"Sharpened Tips","category":"offense","req_wpm":0,"req_accuracy":0,"effects":{"damage_mult":1.05},"prereqs":[]},
+  {"id":"typing_focus","name":"Focus Training","category":"typing","req_wpm":30,"req_accuracy":0.9,"effects":{"fire_rate_mult":0.95},"prereqs":["offense_basic"]},
+  {"id":"automation_reload","name":"Auto-Reload","category":"automation","req_wpm":40,"req_accuracy":0.95,"effects":{"ammo_add":2},"prereqs":["typing_focus"]}
+]

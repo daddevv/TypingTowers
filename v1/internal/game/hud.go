@@ -65,6 +65,17 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 			}
 			lines = append(lines, fmt.Sprintf("%s%s (%d)", prefix, n.Name, n.Cost))
 		}
+	} else if h.game.skillMenuOpen {
+		lines = append(lines, "-- SKILLS --")
+		lines = append(lines, "Search: "+h.game.skillSearch)
+		avail := h.game.skillTree.Available(h.game.skillSearch, h.game.typing)
+		for i, n := range avail {
+			prefix := "  "
+			if i == h.game.skillCursor {
+				prefix = "> "
+			}
+			lines = append(lines, fmt.Sprintf("%s%s [%s]", prefix, n.Name, n.Category))
+		}
 	} else if h.game.buildMenuOpen {
 		cost := h.game.cfg.TowerConstructionCost
 		if cost == 0 {
