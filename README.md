@@ -61,6 +61,14 @@ go test -run Fuzz -fuzz FuzzGameRandomInput ./...
 The fuzz harness reports the game's internal state and a full stack trace on
 any panic so unexpected crashes are easy to diagnose.
 
+## Modular Handler Architecture
+
+Game logic is organized into modules under `internal/` (`entity`, `ui`, `tech`,
+`tower`, `phase`, `content`, `sprite`, and `event`). Each module exposes a
+`Handler` with an `Update(dt)` method. Handlers communicate through a lightweight
+event bus, and `game.Game` coordinates rendering using the state from all
+handlers.
+
 -## Current prototype
 
 - Shared FIFO queue manager implemented. Buildings enqueue words that are processed **letter by letter**. Completing a Barracks word spawns a Footman.
