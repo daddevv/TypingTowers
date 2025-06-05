@@ -9,11 +9,13 @@ type TypingStats struct {
 	incorrect int
 	combo     int
 	maxCombo  int
+	events    []time.Time
+	now       func() time.Time
 }
 
 // NewTypingStats initializes a TypingStats value.
 func NewTypingStats() TypingStats {
-	return TypingStats{start: time.Now()}
+	return TypingStats{start: time.Now(), now: time.Now}
 }
 
 // Record updates the stats with whether a typed letter was correct.
@@ -28,6 +30,36 @@ func (ts *TypingStats) Record(correct bool) {
 		ts.incorrect++
 		ts.combo = 0
 	}
+	ts.recordEvent(ts.now())
+}
+
+// recordEvent adds a timestamped entry and prunes old events.
+func (ts *TypingStats) recordEvent(t time.Time) {
+	ts.events = append(ts.events, t)
+	ts.trimOld(t)
+}
+
+// trimOld removes events older than 30 seconds from the provided time.
+func (ts *TypingStats) trimOld(now time.Time) {
+	cutoff := now.Add(-30 * time.Second)
+	idx := 0
+	for _, e := range ts.events {
+		if e.After(cutoff) {
+			break
+		}
+		idx++
+	}
+	if idx > 0 {
+		ts.events = ts.events[idx:]
+	}
+}
+
+// RollingWPM returns the words per minute calculated from
+// typing events within the last 30 seconds.
+func (ts *TypingStats) RollingWPM() float64 {
+	now := ts.now()
+	ts.trimOld(now)
+	return (float64(len(ts.events)) / 5.0) / 0.5 // 30s = 0.5 min
 }
 
 // Total returns the total number of recorded letters.

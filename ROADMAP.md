@@ -86,12 +86,12 @@
   - [x] Add unit tests to verify per-word stats are captured correctly
   - [x] Expose per-word stats to HUD or stats panel
 
-- [ ] **MET-002** Rolling WPM (last 30 s)
-  - [ ] Implement a time-based buffer to track recent typing events
-  - [ ] Calculate rolling WPM using only events from the last 30 seconds
-  - [ ] Add method to TypingStats or a new struct for rolling WPM
-  - [ ] Write tests to verify rolling WPM calculation
-  - [ ] Display rolling WPM in the HUD or stats panel
+- [x] **MET-002** Rolling WPM (last 30 s)
+  - [x] Implement a time-based buffer to track recent typing events
+  - [x] Calculate rolling WPM using only events from the last 30 seconds
+  - [x] Add method to TypingStats or a new struct for rolling WPM
+  - [x] Write tests to verify rolling WPM calculation
+  - [x] Display rolling WPM in the HUD or stats panel
 
 - [ ] **UI-MET** Toggle stats panel (`Tab`)
   - [ ] Add a boolean field to Game for stats panel visibility
