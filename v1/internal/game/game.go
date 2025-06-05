@@ -78,6 +78,12 @@ type Game struct {
 	achievements []string
 	towerMods    TowerModifiers
 
+	skillTree      *SkillTree
+	unlockedSkills map[string]bool
+	skillMenuOpen  bool
+	skillCursor    int
+	skillCategory  SkillCategory
+
 	techMenuOpen bool
 	searchBuffer string
 	techCursor   int
@@ -191,6 +197,8 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		letterPool:      make([]rune, 0),
 		unlockStage:     0,
 		techTree:        DefaultTechTree(),
+		skillTree:       nil,
+		unlockedSkills:  make(map[string]bool),
 		achievements:    make([]string, 0),
 		towerMods:       TowerModifiers{DamageMult: 1, RangeMult: 1, FireRateMult: 1},
 		typing:          NewTypingStats(),
@@ -205,6 +213,9 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		techMenuOpen:    false,
 		searchBuffer:    "",
 		techCursor:      0,
+		skillMenuOpen:   false,
+		skillCursor:     0,
+		skillCategory:   SkillOffense,
 		flashTimer:      0,
 		queue:           NewQueueManager(),
 		farmer:          NewFarmer(),
@@ -252,6 +263,9 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 	tower := NewTower(g, float64(tx+16), float64(ty+16))
 	tower.ApplyModifiers(g.towerMods)
 	g.towers = []*Tower{tower}
+	if tree, err := SampleSkillTree(); err == nil {
+		g.skillTree = tree
+	}
 	g.lastUpdate = time.Now()
 	g.hud = NewHUD(g)
 	return g
@@ -1174,6 +1188,47 @@ func (g *Game) randomReloadLetter() rune {
 		return 'f'
 	}
 	return g.letterPool[rand.Intn(len(g.letterPool))]
+}
+
+// skillMenuNodes handles input for the skill tree menu and returns the nodes for the current category.
+func (g *Game) skillMenuNodes() []*SkillNode {
+	if g.skillTree == nil {
+		return nil
+	}
+	if g.input.SkillMenu() {
+		g.skillMenuOpen = !g.skillMenuOpen
+		if g.skillMenuOpen {
+			g.skillCategory = SkillOffense
+			g.skillCursor = 0
+		}
+		return nil
+	}
+	if !g.skillMenuOpen {
+		return nil
+	}
+
+	if g.input.Left() {
+		g.skillCategory = (g.skillCategory - 1 + 5) % 5
+		g.skillCursor = 0
+	}
+	if g.input.Right() {
+		g.skillCategory = (g.skillCategory + 1) % 5
+		g.skillCursor = 0
+	}
+
+	nodes := g.skillTree.NodesByCategory(g.skillCategory)
+	if len(nodes) > 0 {
+		if g.input.Down() {
+			g.skillCursor = (g.skillCursor + 1) % len(nodes)
+		}
+		if g.input.Up() {
+			g.skillCursor = (g.skillCursor - 1 + len(nodes)) % len(nodes)
+		}
+		if g.input.Enter() {
+			g.skillMenuOpen = false
+		}
+	}
+	return nodes
 }
 
 // enterTowerSelectMode assigns letter labels to towers and activates selection mode.

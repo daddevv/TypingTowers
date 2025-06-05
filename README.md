@@ -115,6 +115,7 @@ See the [ROADMAP.md](./ROADMAP.md) for detailed tasks.
 
 - Press `/` to enter tower selection mode. The screen dims and towers are labeled with letters; press a letter to open that tower's upgrade menu.
 - Press `/` again to open the tech menu. Type to search unlocked technologies and press `Enter` to purchase the highlighted upgrade.
+- Press `Tab` to open the global skill tree. Use arrow keys to change categories and highlight skills. Locked and unlocked skills are indicated.
 - Press `:` to enter command mode for quick text commands like `pause` or `quit`.
 
 See docs/REQUIREMENTS.md for the full feature scaffold, ROADMAP.md for planned phases, and TODO.md for sprint tasks.
