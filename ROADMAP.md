@@ -35,10 +35,10 @@
 - [x] **P-005** Playtest word density
   - [x] Simulate 5 min session, measure words/sec
   - [x] Adjust cooldowns/word lengths for 1–1.5 words/sec target
-- [ ] **P-006** Letter unlock order & cost curves
-  - [ ] Draft full unlock order for all buildings
-  - [ ] Define cost progression for each letter unlock
-  - [ ] Document in `docs/LETTER_UNLOCKS.md`
+- [x] **P-006** Letter unlock order & cost curves
+  - [x] Draft full unlock order for all buildings
+  - [x] Define cost progression for each letter unlock
+  - [x] Document in `docs/LETTER_UNLOCKS.md`
 
 ---
 

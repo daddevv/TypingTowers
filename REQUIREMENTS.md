@@ -34,7 +34,8 @@ All new features are optional enhancements, preserving the educational and acces
 - **LP-1** Start pool = `f j`.  
 - **LP-2** Letter unlock order is ergonomic (see `docs/LETTER_UNLOCKS.md`).  
 - **LP-3** Each building stores its **own unlock pointer** so two buildings may request different letters at the same tech tier.  
-- **LP-4** Future option: purchase letters directly with Gold (tech-tree node).  
+- **LP-4** Future option: purchase letters directly with Gold (tech-tree node).
+- **LP-5** Unlocking each letter stage costs King's Points and scales per stage (see `docs/LETTER_UNLOCKS.md`).
 
 ---
 

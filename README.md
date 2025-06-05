@@ -54,6 +54,7 @@ go test ./...
 - Basic orc grunt waves scale every 45 s.
 - Typing speed/accuracy multiplier working.
 - Vim navigation for pause/menu/shop implemented.
+- Letter unlock order and costs documented (see `docs/LETTER_UNLOCKS.md`).
 
 ---
 
