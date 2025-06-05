@@ -683,10 +683,6 @@ func (g *Game) validTowerPosition(tileX, tileY int) bool {
 	return true
 }
 
-func (g *Game) buildTowerAtCursor() {
-	g.buildTowerAtCursorType(TowerBasic)
-}
-
 func (g *Game) buildTowerAtCursorType(tt TowerType) {
 	if g.cfg == nil {
 		return

@@ -1,6 +1,6 @@
 # Sprint Archive
 
-## Prototype Sprint – Gathering & Military Core
+## Gathering & Military Core
 
 - [x] **P-001** Implement Gathering (Farmer) building
   - [x] Farmer cooldown logic
@@ -26,3 +26,16 @@
   - [x] Document in `docs/LETTER_UNLOCKS.md`
 
 ---
+
+## Queue MVP Hardening
+
+- [x] **Q-001** Refactor global queue to support color-coding per building
+  - [x] Add `family` field to `Word` struct
+  - [x] Palette map + ANSI tests
+- [x] **Q-002** Back-pressure damage when backlog ≥ 5
+  - [x] Unit test: enqueue 6 words, expect base HP −1
+- [x] **Q-003** Jam state visual
+  - [x] Red flash on mistype
+  - [x] Audio “clank” SFX placeholder
+
+  ---

@@ -17,7 +17,6 @@ type Mob struct {
 	burst    float64
 	burstCD  float64
 	burstDur float64
-	word     string
 	mobType  MobType
 }
 
