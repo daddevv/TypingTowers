@@ -123,3 +123,10 @@ A keyboard-focused tower defense game that combines strategic placement with typ
 - [x] M-002 Footman entity (HP, dmg, speed)
 - [x] M-003 Combat resolution attacker vs orc grunt
 
+## Skill Tree & Progression
+- [x] SKILL-001 Design and implement global skill tree UI
+  - [x] Node categories: offense, defense, typing, automation, utility
+  - [x] WPM/accuracy gating for advanced nodes
+- [x] SKILL-002 Integrate skill tree with building/tech systems
+- [x] SKILL-003 Save/load skill tree state
+

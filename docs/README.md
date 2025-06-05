@@ -37,12 +37,15 @@ All UI and gameplay interactions are designed for Vim/Qutebrowser-style keyboard
 - **Enter**: Confirm selection or action
 - **Space**: Pause/unpause the game
 - **F5**: Reload configuration file
+- **F2**: Save game
+- **F3**: Load game
 - **Escape**: Quit game or exit to previous mode
 - **F/J**: Reload ammunition when prompted
 - **Backspace**: Clear jammed tower
 - **1-5**: Purchase upgrades in shop (when available)
 - **: (colon)**: Enter command mode (for advanced actions, e.g., `:quit`, `:save`)
 - **/ (slash)**: Search/select towers or upgrades
+- **?**: Open skill tree menu
 
 ## Structure
 
@@ -91,8 +94,10 @@ Code should be formatted with `gofmt` and accompanied by unit tests when possibl
 - Footman units engage mobs in melee combat
 - Upgrade purchasing system using gold between waves (damage, range, fire rate upgrades implemented and tested)
 - Technology tree loaded from `tech_tree.yaml` with keyboard-driven purchase menu (`/` to search, `Enter` to buy)
+- Global skill tree (`?` to open) with categories (offense, defense, typing, automation, utility) and unlocks gated by WPM/accuracy
 - **Keyboard-driven navigation for all menus and gameplay**
 - Typing accuracy and WPM tracking with bonuses and penalties
+- Save and load game progress (F2 to save, F3 to load) including unlocked skills
 
 ## Automation
 

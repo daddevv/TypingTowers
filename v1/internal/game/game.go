@@ -36,6 +36,7 @@ type savedGame struct {
 	Wave     int
 	BaseHP   int
 	Towers   []savedTower
+	Skills   []string
 	Settings Settings
 }
 
@@ -69,6 +70,7 @@ type Game struct {
 	letterPool   []rune
 	unlockStage  int
 	techTree     *TechTree
+	skillTree    *SkillTree
 	achievements []string
 	towerMods    TowerModifiers
 
@@ -93,6 +95,10 @@ type Game struct {
 	techMenuOpen bool
 	techCursor   int
 	techSearch   string
+
+	skillMenuOpen bool
+	skillCursor   int
+	skillSearch   string
 
 	sound    *SoundManager
 	settings Settings
@@ -119,6 +125,10 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 	if err != nil {
 		tree = DefaultTechTree()
 	}
+	skills, err := LoadSkillTree("skill_tree.yaml")
+	if err != nil {
+		skills = DefaultSkillTree()
+	}
 
 	g := &Game{
 		history:         hist,
@@ -143,9 +153,13 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		letterPool:      make([]rune, 0),
 		unlockStage:     0,
 		techTree:        tree,
+		skillTree:       skills,
 		techMenuOpen:    false,
 		techCursor:      0,
 		techSearch:      "",
+		skillMenuOpen:   false,
+		skillCursor:     0,
+		skillSearch:     "",
 		achievements:    make([]string, 0),
 		towerMods:       TowerModifiers{DamageMult: 1, RangeMult: 1, FireRateMult: 1},
 		typing:          NewTypingStats(),
@@ -201,6 +215,12 @@ func (g *Game) Update() error {
 			g.techCursor = 0
 		} else if g.techMenuOpen {
 			g.techSearch += string(r)
+		} else if r == '?' && !g.skillMenuOpen && !g.shopOpen && !g.buildMenuOpen && !g.paused {
+			g.skillMenuOpen = true
+			g.skillSearch = ""
+			g.skillCursor = 0
+		} else if g.skillMenuOpen {
+			g.skillSearch += string(r)
 		}
 	}
 
@@ -249,6 +269,42 @@ func (g *Game) Update() error {
 			// pressing enter after purchase or '/' again closes menu
 			if len(avail) == 0 || (len(typed) > 0 && typed[0] == '/') {
 				g.techMenuOpen = false
+			}
+		}
+		return nil
+	}
+
+	if g.skillMenuOpen {
+		if g.input.Backspace() && len(g.skillSearch) > 0 {
+			g.skillSearch = g.skillSearch[:len(g.skillSearch)-1]
+		}
+		avail := g.skillTree.Available(g.skillSearch, g.typing)
+		if len(avail) > 0 {
+			g.skillCursor = (g.skillCursor%len(avail) + len(avail)) % len(avail)
+		} else {
+			g.skillCursor = 0
+		}
+		if g.input.Down() && len(avail) > 0 {
+			g.skillCursor = (g.skillCursor + 1) % len(avail)
+		}
+		if g.input.Up() && len(avail) > 0 {
+			g.skillCursor = (g.skillCursor - 1 + len(avail)) % len(avail)
+		}
+		if g.input.Enter() && len(avail) > 0 {
+			node := avail[g.skillCursor]
+			mods, ok := g.skillTree.Unlock(node.ID, g.typing)
+			if ok {
+				if mods != (TowerModifiers{}) {
+					g.towerMods = g.towerMods.Merge(mods)
+					for _, t := range g.towers {
+						t.ApplyModifiers(mods)
+					}
+				}
+			}
+		}
+		if g.input.Enter() || (len(typed) > 0 && typed[0] == '?') {
+			if len(avail) == 0 || (len(typed) > 0 && typed[0] == '?') {
+				g.skillMenuOpen = false
 			}
 		}
 		return nil
@@ -1041,6 +1097,7 @@ func (g *Game) saveGame(path string) {
 		Gold:     g.gold,
 		Wave:     g.currentWave,
 		BaseHP:   g.base.Health(),
+		Skills:   g.skillTree.Unlocked(),
 		Settings: g.settings,
 	}
 	for _, t := range g.towers {
@@ -1076,6 +1133,7 @@ func (g *Game) loadGame(path string) error {
 	if g.sound != nil && g.settings.Mute {
 		g.sound.mute = true
 	}
+	g.skillTree.SetUnlocked(sg.Skills)
 	g.towers = nil
 	for _, st := range sg.Towers {
 		t := NewTower(g, st.X, st.Y)
