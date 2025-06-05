@@ -1,23 +1,28 @@
-# Letter Unlock Progression
+# Letter Unlock Order & Costs
 
-Reload prompts begin with only **F** and **J**. After each wave, new letters become available in the following order:
+This document defines the planned order in which letters become available to each building family and the King's Point cost to unlock them. Every building tracks its own progress pointer, so you can prioritize certain structures. The sequence is designed to introduce letters from the home row outward for ergonomic learning.
 
-1. **F J** – starting home row index fingers
-2. **D K** – remaining index fingers
-3. **S L** – middle fingers
-4. **A** – ring finger
-5. **G H** – inner index letters
-6. **Q P** – pinky top row
-7. **E I** – middle top row
-8. **R U** – inner index top row
-9. **T Y** – outer index top row
-10. **W O** – ring/pinky top row
-11. **C M** – bottom row center
-12. **V N** – bottom row index
-13. **X Z** – bottom row outside
+## Global Unlock Sequence
 
-Additional waves after the final stage continue using the full unlocked pool. Future upgrades may allow purchasing letter unlocks directly from the shop instead of relying solely on wave progression.
+| Stage | Letters Unlocked | Cost (King's Points) |
+|------:|-----------------|---------------------:|
+| 0 | `f`, `j` | 0 |
+| 1 | `d`, `k` | 20 |
+| 2 | `s`, `l` | 40 |
+| 3 | `a` | 60 |
+| 4 | `g`, `h` | 90 |
+| 5 | `q`, `p` | 120 |
+| 6 | `e`, `i` | 150 |
+| 7 | `r`, `u` | 180 |
+| 8 | `t`, `y` | 210 |
+| 9 | `w`, `o` | 240 |
+|10 | `c`, `m` | 270 |
+|11 | `v`, `n` | 310 |
+|12 | `x`, `z` | 350 |
 
-## Tech Tree System
+Costs increase roughly every stage to encourage planning and resource management. Later stages may be gated behind additional tech-tree requirements.
 
-The letter unlock sequence is now driven by a technology tree. Each wave unlocks the next node, adding its letters to the global pool and granting an achievement. Nodes can also grant global tower upgrades such as bonus damage, range, or ammo. Towers have levels 1&ndash;5 for their base stats, and tech upgrades modify these stats further across all towers.
+## Building Families
+
+All building families (Gathering, Military, Craft & Defense, Economy, Spiritual, Housing) follow this sequence. Because each building stores its own unlock pointer, you might have a Farmer with access up to stage 5 while your Barracks is still at stage 2. Future iterations may diverge per family, but this baseline keeps early progression simple.
+

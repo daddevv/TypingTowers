@@ -8,9 +8,6 @@ import (
 // ConfigFile is the default path for configuration data.
 const ConfigFile = "config.json"
 
-// TechTreeFile is the default path for technology tree data.
-const TechTreeFile = "tech_tree.yaml"
-
 // Config holds tunable parameters for balancing and upgrades.
 type Config struct {
 	A float64

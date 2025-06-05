@@ -9,11 +9,15 @@ import (
 	"os"
 	"time"
 
+	"unicode"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
+
+const jamFlashDuration = 0.15
 
 var (
 	mousePressed bool
@@ -33,10 +37,10 @@ type savedTower struct {
 
 type savedGame struct {
 	Gold     int
+	Food     int
 	Wave     int
 	BaseHP   int
 	Towers   []savedTower
-	Skills   []string
 	Settings Settings
 }
 
@@ -47,13 +51,11 @@ type Game struct {
 	towers      []*Tower
 	mobs        []Enemy
 	projectiles []*Projectile
-	units       []*Footman
-	barracks    []*Barracks
 	base        *Base
 	hud         *HUD
 	gameOver    bool
 	paused      bool
-	gold        int
+	resources   ResourcePool
 
 	shopOpen bool
 
@@ -70,7 +72,6 @@ type Game struct {
 	letterPool   []rune
 	unlockStage  int
 	techTree     *TechTree
-	skillTree    *SkillTree
 	achievements []string
 	towerMods    TowerModifiers
 
@@ -92,17 +93,35 @@ type Game struct {
 	buildMenuOpen bool
 	buildCursor   int
 
-	techMenuOpen bool
-	techCursor   int
-	techSearch   string
-
-	skillMenuOpen bool
-	skillCursor   int
-	skillSearch   string
-
 	sound    *SoundManager
 	settings Settings
+
+	flashTimer float64
+
+	// Building integration
+	queue      *QueueManager
+	farmer     *Farmer
+	lumberjack *Lumberjack
+	miner      *Miner
+	barracks   *Barracks
+	military   *Military
+
+	// Typing state for the queue
+	queueIndex int
+	queueJam   bool
 }
+
+// Gold returns the player's current gold amount.
+func (g *Game) Gold() int { return g.resources.GoldAmount() }
+
+// AddGold increases the player's gold.
+func (g *Game) AddGold(n int) { g.resources.AddGold(n) }
+
+// Queue returns the global word queue manager.
+func (g *Game) Queue() *QueueManager { return g.queue }
+
+// SpendGold attempts to deduct the given amount of gold and returns true on success.
+func (g *Game) SpendGold(n int) bool { return g.resources.Gold.Spend(n) }
 
 // NewGame creates a new instance of the Game.
 func NewGame() *Game {
@@ -121,15 +140,6 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	// ebiten.SetFullscreen(true)
 
-	tree, err := LoadTechTree(TechTreeFile)
-	if err != nil {
-		tree = DefaultTechTree()
-	}
-	skills, err := LoadSkillTree("skill_tree.yaml")
-	if err != nil {
-		skills = DefaultSkillTree()
-	}
-
 	g := &Game{
 		history:         hist,
 		score:           0,
@@ -137,7 +147,7 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		screen:          ebiten.NewImage(1920, 1080),
 		input:           NewInput(),
 		paused:          false,
-		gold:            0,
+		resources:       ResourcePool{},
 		shopOpen:        false,
 		selectedTower:   0,
 		shopCursor:      0,
@@ -148,18 +158,9 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		cfg:             &cfg,
 		mobs:            make([]Enemy, 0),
 		projectiles:     make([]*Projectile, 0),
-		units:           make([]*Footman, 0),
-		barracks:        make([]*Barracks, 0),
 		letterPool:      make([]rune, 0),
 		unlockStage:     0,
-		techTree:        tree,
-		skillTree:       skills,
-		techMenuOpen:    false,
-		techCursor:      0,
-		techSearch:      "",
-		skillMenuOpen:   false,
-		skillCursor:     0,
-		skillSearch:     "",
+		techTree:        DefaultTechTree(),
 		achievements:    make([]string, 0),
 		towerMods:       TowerModifiers{DamageMult: 1, RangeMult: 1, FireRateMult: 1},
 		typing:          NewTypingStats(),
@@ -169,6 +170,13 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		settings:        DefaultSettings(),
 		buildMenuOpen:   false,
 		buildCursor:     0,
+		flashTimer:      0,
+		queue:           NewQueueManager(),
+		farmer:          NewFarmer(),
+		lumberjack:      NewLumberjack(),
+		miner:           NewMiner(),
+		barracks:        NewBarracks(),
+		military:        NewMilitary(),
 	}
 
 	tx, ty := tilePosition(1, 16)
@@ -180,16 +188,22 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		hp = BaseStartingHealth
 	}
 	g.base = NewBase(float64(tx+32), float64(ty+16), hp)
+	if g.queue != nil {
+		g.queue.SetBase(g.base)
+	}
+
+	// Wire up shared systems
+	g.queue.SetBase(g.base)
+	g.farmer.SetQueue(g.queue)
+	g.lumberjack.SetQueue(g.queue)
+	g.miner.SetQueue(g.queue)
+	g.barracks.SetQueue(g.queue)
+	g.barracks.SetMilitary(g.military)
 
 	tx, ty = tilePosition(2, 16)
 	tower := NewTower(g, float64(tx+16), float64(ty+16))
 	tower.ApplyModifiers(g.towerMods)
 	g.towers = []*Tower{tower}
-
-	// Create initial barracks near the base
-	bx, by := tilePosition(3, 16)
-	bar := NewBarracks(g, float64(bx+24), float64(by+24))
-	g.barracks = []*Barracks{bar}
 	g.startWave()
 	g.lastUpdate = time.Now()
 	g.hud = NewHUD(g)
@@ -205,109 +219,15 @@ func (g *Game) Update() error {
 	}
 	g.lastUpdate = now
 	g.input.Update()
-	typed := g.input.TypedChars()
-
-	// Handle tech menu activation with '/' key
-	for _, r := range typed {
-		if r == '/' && !g.techMenuOpen && !g.shopOpen && !g.buildMenuOpen && !g.paused {
-			g.techMenuOpen = true
-			g.techSearch = ""
-			g.techCursor = 0
-		} else if g.techMenuOpen {
-			g.techSearch += string(r)
-		} else if r == '?' && !g.skillMenuOpen && !g.shopOpen && !g.buildMenuOpen && !g.paused {
-			g.skillMenuOpen = true
-			g.skillSearch = ""
-			g.skillCursor = 0
-		} else if g.skillMenuOpen {
-			g.skillSearch += string(r)
-		}
+	if g.queue != nil {
+		g.queue.Update(dt)
 	}
 
-	if g.techMenuOpen {
-		if g.input.Backspace() && len(g.techSearch) > 0 {
-			g.techSearch = g.techSearch[:len(g.techSearch)-1]
+	if g.flashTimer > 0 {
+		g.flashTimer -= dt
+		if g.flashTimer < 0 {
+			g.flashTimer = 0
 		}
-		avail := g.techTree.Available(g.techSearch, g.gold)
-		if len(avail) > 0 {
-			g.techCursor = (g.techCursor%len(avail) + len(avail)) % len(avail)
-		} else {
-			g.techCursor = 0
-		}
-		if g.input.Down() && len(avail) > 0 {
-			g.techCursor = (g.techCursor + 1) % len(avail)
-		}
-		if g.input.Up() && len(avail) > 0 {
-			g.techCursor = (g.techCursor - 1 + len(avail)) % len(avail)
-		}
-		if g.input.Enter() && len(avail) > 0 {
-			node := avail[g.techCursor]
-			letters, ach, mods, cost, ok := g.techTree.Purchase(node.ID, g.gold)
-			if ok {
-				g.gold -= cost
-				existing := make(map[rune]struct{})
-				for _, r := range g.letterPool {
-					existing[r] = struct{}{}
-				}
-				for _, r := range letters {
-					if _, ok := existing[r]; !ok {
-						g.letterPool = append(g.letterPool, r)
-					}
-				}
-				if mods != (TowerModifiers{}) {
-					g.towerMods = g.towerMods.Merge(mods)
-					for _, t := range g.towers {
-						t.ApplyModifiers(mods)
-					}
-				}
-				if ach != "" {
-					g.achievements = append(g.achievements, ach)
-				}
-			}
-		}
-		if g.input.Enter() || (len(typed) > 0 && typed[0] == '/') {
-			// pressing enter after purchase or '/' again closes menu
-			if len(avail) == 0 || (len(typed) > 0 && typed[0] == '/') {
-				g.techMenuOpen = false
-			}
-		}
-		return nil
-	}
-
-	if g.skillMenuOpen {
-		if g.input.Backspace() && len(g.skillSearch) > 0 {
-			g.skillSearch = g.skillSearch[:len(g.skillSearch)-1]
-		}
-		avail := g.skillTree.Available(g.skillSearch, g.typing)
-		if len(avail) > 0 {
-			g.skillCursor = (g.skillCursor%len(avail) + len(avail)) % len(avail)
-		} else {
-			g.skillCursor = 0
-		}
-		if g.input.Down() && len(avail) > 0 {
-			g.skillCursor = (g.skillCursor + 1) % len(avail)
-		}
-		if g.input.Up() && len(avail) > 0 {
-			g.skillCursor = (g.skillCursor - 1 + len(avail)) % len(avail)
-		}
-		if g.input.Enter() && len(avail) > 0 {
-			node := avail[g.skillCursor]
-			mods, ok := g.skillTree.Unlock(node.ID, g.typing)
-			if ok {
-				if mods != (TowerModifiers{}) {
-					g.towerMods = g.towerMods.Merge(mods)
-					for _, t := range g.towers {
-						t.ApplyModifiers(mods)
-					}
-				}
-			}
-		}
-		if g.input.Enter() || (len(typed) > 0 && typed[0] == '?') {
-			if len(avail) == 0 || (len(typed) > 0 && typed[0] == '?') {
-				g.skillMenuOpen = false
-			}
-		}
-		return nil
 	}
 
 	if g.buildMenuOpen {
@@ -330,10 +250,6 @@ func (g *Game) Update() error {
 			g.buildTowerAtCursorType(TowerRapid)
 			g.buildMenuOpen = false
 		}
-		if inpututil.IsKeyJustPressed(ebiten.Key4) {
-			g.buildBarracksAtCursor()
-			g.buildMenuOpen = false
-		}
 		if g.input.Enter() {
 			switch g.buildCursor {
 			case 0:
@@ -342,8 +258,6 @@ func (g *Game) Update() error {
 				g.buildTowerAtCursorType(TowerSniper)
 			case 2:
 				g.buildTowerAtCursorType(TowerRapid)
-			case 3:
-				g.buildBarracksAtCursor()
 			}
 			g.buildMenuOpen = false
 		}
@@ -458,6 +372,44 @@ func (g *Game) Update() error {
 		return nil
 	}
 
+	// ---- Global typing queue processing ----
+	if g.queue != nil {
+		g.queue.Update(dt)
+		if w, ok := g.queue.Peek(); ok {
+			if g.queueJam {
+				if g.input.Backspace() {
+					g.queueJam = false
+					g.queueIndex = 0
+				}
+			} else {
+				for _, r := range g.input.TypedChars() {
+					expected := rune(w.Text[g.queueIndex])
+					if unicode.ToLower(r) == unicode.ToLower(expected) {
+						g.queueIndex++
+						g.typing.Record(true)
+						if g.queueIndex >= len(w.Text) {
+							g.queueIndex = 0
+							dq, _ := g.queue.TryDequeue(w.Text)
+							switch dq.Source {
+							case "Farmer":
+								g.farmer.OnWordCompleted(dq.Text, &g.resources)
+							case "Barracks":
+								if unit := g.barracks.OnWordCompleted(dq.Text); unit != nil {
+									g.military.AddUnit(unit)
+								}
+							}
+						}
+					} else {
+						g.typing.Record(false)
+						g.MistypeFeedback()
+						g.queueJam = true
+						break
+					}
+				}
+			}
+		}
+	}
+
 	if len(g.towers) > 0 {
 		if g.input.Down() {
 			g.selectedTower = (g.selectedTower + 1) % len(g.towers)
@@ -475,7 +427,7 @@ func (g *Game) Update() error {
 			upgradeFireRateCost  = 5
 			upgradeAmmoCost      = 10
 			upgradeForesightCost = 5
-			optionsCount         = 6
+			optionsCount         = 8
 		)
 
 		if g.input.Down() {
@@ -491,37 +443,40 @@ func (g *Game) Update() error {
 			purchase := func(opt int) bool {
 				switch opt {
 				case 0:
-					if g.gold >= upgradeDamageCost {
-						g.gold -= upgradeDamageCost
+					if g.SpendGold(upgradeDamageCost) {
 						tower.damage++
 						return true
 					}
 				case 1:
-					if g.gold >= upgradeRangeCost {
-						g.gold -= upgradeRangeCost
+					if g.SpendGold(upgradeRangeCost) {
 						tower.rangeDst += 50
 						tower.rangeImg = generateRangeImage(tower.rangeDst)
 						return true
 					}
 				case 2:
-					if g.gold >= upgradeFireRateCost {
-						g.gold -= upgradeFireRateCost
+					if g.SpendGold(upgradeFireRateCost) {
 						if tower.rate > 10 {
 							tower.rate -= 10
 						}
 						return true
 					}
 				case 3:
-					if g.gold >= upgradeAmmoCost {
-						g.gold -= upgradeAmmoCost
+					if g.SpendGold(upgradeAmmoCost) {
 						tower.UpgradeAmmoCapacity(2)
 						return true
 					}
 				case 4:
-					if g.gold >= upgradeForesightCost {
-						g.gold -= upgradeForesightCost
+					if g.SpendGold(upgradeForesightCost) {
 						tower.UpgradeForesight(2)
 						return true
+					}
+				case 5:
+					if g.farmer != nil {
+						return g.farmer.UnlockNext(&g.resources)
+					}
+				case 6:
+					if g.barracks != nil {
+						return g.barracks.UnlockNext(&g.resources)
 					}
 				}
 				return false
@@ -543,9 +498,15 @@ func (g *Game) Update() error {
 			if inpututil.IsKeyJustPressed(ebiten.Key5) {
 				purchase(4)
 			}
+			if inpututil.IsKeyJustPressed(ebiten.Key6) {
+				purchase(5)
+			}
+			if inpututil.IsKeyJustPressed(ebiten.Key7) {
+				purchase(6)
+			}
 
 			if g.input.Enter() {
-				if g.shopCursor < 5 {
+				if g.shopCursor < 7 {
 					purchase(g.shopCursor)
 				} else {
 					g.shopOpen = false
@@ -569,22 +530,33 @@ func (g *Game) Update() error {
 		g.shopOpen = true
 	}
 
+	// Update buildings and units
+	if g.military != nil {
+		g.military.Update(dt)
+	}
+	if g.farmer != nil {
+		if w := g.farmer.Update(dt); w != "" {
+			g.farmer.OnWordCompleted(w, &g.resources)
+		}
+	}
+	if g.lumberjack != nil {
+		if w := g.lumberjack.Update(dt); w != "" {
+			g.lumberjack.OnWordCompleted(w, &g.resources)
+		}
+	}
+	if g.miner != nil {
+		if w := g.miner.Update(dt); w != "" {
+			g.miner.OnWordCompleted(w, &g.resources)
+		}
+	}
+	if g.barracks != nil {
+		if w := g.barracks.Update(dt); w != "" {
+			g.barracks.OnWordCompleted(w)
+		}
+	}
+
 	for _, t := range g.towers {
 		t.Update(dt)
-	}
-
-	for _, b := range g.barracks {
-		b.Update(dt)
-	}
-
-	for i := 0; i < len(g.units); {
-		u := g.units[i]
-		u.Update(dt)
-		if !u.Alive() {
-			g.units = append(g.units[:i], g.units[i+1:]...)
-			continue
-		}
-		i++
 	}
 
 	g.base.Update(dt)
@@ -618,7 +590,7 @@ func (g *Game) Update() error {
 			if reward < 1 {
 				reward = 1
 			}
-			g.gold += reward
+			g.AddGold(reward)
 			g.score += reward
 			continue
 		}
@@ -688,17 +660,16 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			vector.StrokeRect(g.screen, float32(bx-2), float32(by-2), float32(bw+4), float32(bh+4), 2, color.RGBA{255, 0, 0, 200}, false)
 		}
 	}
-	for _, b := range g.barracks {
-		b.Draw(g.screen)
-	}
-	for _, u := range g.units {
-		u.Draw(g.screen)
-	}
 	for _, p := range g.projectiles {
 		p.Draw(g.screen)
 	}
 	for _, m := range g.mobs {
 		m.Draw(g.screen)
+	}
+	if g.military != nil {
+		for _, u := range g.military.Units() {
+			u.Draw(g.screen)
+		}
 	}
 
 	if !g.shopOpen {
@@ -752,6 +723,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 
 	highlightHoverAndClickAndDrag(g.screen, "line")
+
+	if g.flashTimer > 0 {
+		alpha := uint8(255 * (g.flashTimer / jamFlashDuration))
+		vector.DrawFilledRect(g.screen, 0, 0, 1920, 1080, color.RGBA{255, 0, 0, alpha}, false)
+	}
 
 	g.renderFrame(screen)
 }
@@ -831,10 +807,6 @@ func (g *Game) validTowerPosition(tileX, tileY int) bool {
 	return true
 }
 
-func (g *Game) buildTowerAtCursor() {
-	g.buildTowerAtCursorType(TowerBasic)
-}
-
 func (g *Game) buildTowerAtCursorType(tt TowerType) {
 	if g.cfg == nil {
 		return
@@ -843,7 +815,7 @@ func (g *Game) buildTowerAtCursorType(tt TowerType) {
 	if cost == 0 {
 		cost = DefaultConfig.TowerConstructionCost
 	}
-	if g.gold < cost {
+	if g.Gold() < cost {
 		return
 	}
 	if !g.validTowerPosition(g.cursorX, g.cursorY) {
@@ -853,27 +825,7 @@ func (g *Game) buildTowerAtCursorType(tt TowerType) {
 	t := NewTowerWithType(g, float64(tx+TileSize/2), float64(ty+TileSize/2), tt)
 	t.ApplyModifiers(g.towerMods)
 	g.towers = append(g.towers, t)
-	g.gold -= cost
-}
-
-func (g *Game) buildBarracksAtCursor() {
-	if g.cfg == nil {
-		return
-	}
-	cost := g.cfg.TowerConstructionCost
-	if cost == 0 {
-		cost = DefaultConfig.TowerConstructionCost
-	}
-	if g.gold < cost {
-		return
-	}
-	if !g.validTowerPosition(g.cursorX, g.cursorY) {
-		return
-	}
-	tx, ty := tilePosition(g.cursorX, g.cursorY)
-	b := NewBarracks(g, float64(tx+TileSize/2), float64(ty+TileSize/2))
-	g.barracks = append(g.barracks, b)
-	g.gold -= cost
+	g.SpendGold(cost)
 }
 
 // startWave initializes spawn counters for the next wave.
@@ -920,6 +872,18 @@ func (g *Game) randomReloadLetter() rune {
 		return 'f'
 	}
 	return g.letterPool[rand.Intn(len(g.letterPool))]
+}
+
+// MistypeFeedback triggers a red flash and "clank" sound for an incorrect key press.
+// The flash duration is controlled by jamFlashDuration.
+func (g *Game) MistypeFeedback() {
+	if g == nil {
+		return
+	}
+	g.flashTimer = jamFlashDuration
+	if g.sound != nil {
+		g.sound.PlayClank()
+	}
 }
 
 // highlightHoverAndClickAndDrag highlights the tile under the mouse cursor.
@@ -1094,10 +1058,10 @@ func (g *Game) reloadConfig(path string) error {
 
 func (g *Game) saveGame(path string) {
 	sg := savedGame{
-		Gold:     g.gold,
+		Gold:     g.resources.GoldAmount(),
+		Food:     g.resources.FoodAmount(),
 		Wave:     g.currentWave,
 		BaseHP:   g.base.Health(),
-		Skills:   g.skillTree.Unlocked(),
 		Settings: g.settings,
 	}
 	for _, t := range g.towers {
@@ -1126,14 +1090,14 @@ func (g *Game) loadGame(path string) error {
 		return err
 	}
 	*g = *NewGameWithConfig(*g.cfg)
-	g.gold = sg.Gold
+	g.resources.Gold.Set(sg.Gold)
+	g.resources.Food.Set(sg.Food)
 	g.currentWave = sg.Wave
 	g.base.health = sg.BaseHP
 	g.settings = sg.Settings
 	if g.sound != nil && g.settings.Mute {
 		g.sound.mute = true
 	}
-	g.skillTree.SetUnlocked(sg.Skills)
 	g.towers = nil
 	for _, st := range sg.Towers {
 		t := NewTower(g, st.X, st.Y)
@@ -1172,14 +1136,14 @@ func (g *Game) evaluatePerformanceAchievements() {
 
 	if wpm >= 60 {
 		add("Speed Demon")
-		g.gold += 5
+		g.AddGold(5)
 	}
 	if acc >= 0.95 {
 		add("Sharpshooter")
-		g.gold += 5
+		g.AddGold(5)
 	}
 	if g.typing.MaxCombo() >= 10 {
 		add("Combo Master")
-		g.gold += 5
+		g.AddGold(5)
 	}
 }

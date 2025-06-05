@@ -116,35 +116,35 @@ func NewTowerWithTypeAndLevel(g *Game, x, y float64, tt TowerType, level int) *T
 
 	// Generate range image
 	t.rangeImg = generateRangeImage(t.rangeDst)
-	
+
 	// Apply game config if available
 	if g.cfg != nil {
 		t.ApplyConfig(*g.cfg)
 	}
-	
+
 	// Apply tower type-specific stats AFTER config application
 	// to ensure tower types maintain their unique characteristics
 	switch tt {
 	case TowerSniper:
 		t.damage *= 3
-		t.rangeDst *= 2.0      // Ensure sniper has significantly longer range
-		t.rate *= 2.5          // slower fire rate (higher value = slower)
+		t.rangeDst *= 2.0 // Ensure sniper has significantly longer range
+		t.rate *= 2.5     // slower fire rate (higher value = slower)
 		t.ammoCapacity = 3
 	case TowerRapid:
 		if t.damage > 1 {
 			t.damage /= 2
 		}
 		t.rangeDst *= 0.7
-		t.rate *= 0.4          // faster fire rate (lower value = faster)
+		t.rate *= 0.4 // faster fire rate (lower value = faster)
 		t.ammoCapacity = 6
 	}
 
 	// Apply level upgrades after all type-specific modifications
 	t.applyLevel()
-	
+
 	// Regenerate range image with the final range distance
 	t.rangeImg = generateRangeImage(t.rangeDst)
-	
+
 	// Ensure ammo capacity is consistent with the queue size
 	if len(t.ammoQueue) != t.ammoCapacity {
 		newAmmoQueue := make([]bool, t.ammoCapacity)
@@ -156,7 +156,7 @@ func NewTowerWithTypeAndLevel(g *Game, x, y float64, tt TowerType, level int) *T
 		}
 		t.ammoQueue = newAmmoQueue
 	}
-	
+
 	return t
 }
 
@@ -405,6 +405,7 @@ func (t *Tower) Update(dt float64) {
 				// Wrong letter - jam the tower
 				if t.game != nil {
 					t.game.typing.Record(false)
+					t.game.MistypeFeedback()
 				}
 				t.jammed = true
 				t.jammedLetter = t.reloadQueue[0] // preserve current letter

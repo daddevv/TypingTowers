@@ -17,7 +17,6 @@ type Mob struct {
 	burst    float64
 	burstCD  float64
 	burstDur float64
-	word     string
 	mobType  MobType
 }
 
@@ -53,8 +52,8 @@ func NewArmoredMob(x, y float64, target *Base, hp, armor int, speed float64) *Mo
 func NewFastMob(x, y float64, target *Base, hp int, speed, burst float64) *Mob {
 	m := NewMob(x, y, target, hp, speed)
 	m.burst = burst
-	m.burstCD = 2.0 // Start with cooldown
-	m.burstDur = 0  // Not in burst phase initially
+	m.burstCD = 2.0  // Start with cooldown
+	m.burstDur = 0   // Not in burst phase initially
 	m.mobType = MobFast
 	return m
 }
@@ -63,13 +62,6 @@ func NewFastMob(x, y float64, target *Base, hp int, speed, burst float64) *Mob {
 func NewBossMob(x, y float64, target *Base, hp int, speed float64) *Mob {
 	m := NewMob(x, y, target, hp, speed)
 	m.mobType = MobBoss
-	return m
-}
-
-// NewOrcGrunt creates a basic orc grunt enemy.
-func NewOrcGrunt(x, y float64, target *Base) *Mob {
-	m := NewMob(x, y, target, 5, 0.6)
-	m.mobType = MobBasic
 	return m
 }
 
@@ -85,7 +77,7 @@ func (m *Mob) Update(dt float64) error {
 			if m.burstCD <= 0 {
 				// Cooldown finished, start burst phase
 				m.burstCD = 0
-				m.burstDur = 0.5 // Set burst duration
+				m.burstDur = 0.5  // Set burst duration
 			}
 		} else if m.burstDur > 0 {
 			// Burst phase - apply speed multiplier
@@ -94,7 +86,7 @@ func (m *Mob) Update(dt float64) error {
 			if m.burstDur <= 0 {
 				// Burst finished, reset to cooldown
 				m.burstDur = 0
-				m.burstCD = 2.0 // Reset cooldown
+				m.burstCD = 2.0  // Reset cooldown
 			}
 		}
 	}
