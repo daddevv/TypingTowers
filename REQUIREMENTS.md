@@ -108,6 +108,9 @@ All new features are optional enhancements, preserving the educational and acces
 
 *Planned: Skill tree expands to 100+ nodes, with branches for offense, defense, typing proficiency, automation, and utility. Certain nodes require WPM/accuracy milestones.*
 
+- **SKILL-1** The global skill tree organizes nodes into Offense, Defense, Typing, Automation, and Utility categories.
+- **SKILL-2** Go structs `SkillCategory`, `SkillNode`, and `SkillTree` define the skill tree in memory.
+
 ---
 
 ## 6 UI / Input

@@ -26,6 +26,7 @@ All new features remain optional enhancements on top of the base game, ensuring 
 | **Incremental & Idle Mechanics** | Optional idle progression: auto-collection, offline progress, auto-reloading towers, and upgradable generators allow for meaningful progress with minimal input. Prestige/reset mechanics extend replayability. |
 | **Typing Minigames & Challenges** | Speed trials, accuracy challenges, word puzzles, and boss practice modes provide fun breaks, reinforce typing skills, and grant in-game rewards. |
 | **Multiple Playstyle Support** | Grind, optimize, idle, or embrace chaos—each playstyle is valid and rewarding, with systems and skill tree branches to support them. |
+| **Global Skill Tree Foundations** | Structs define offense, defense, typing, automation and utility categories for upcoming upgrades. |
 | **Pixel-art Charm** | SNES-style sprites & slap-stick combat (exploding cabbages, bouncing arrows, comic “BONK!” bubbles). Violence stays E10+ but feels impactful. |
 
 ---
