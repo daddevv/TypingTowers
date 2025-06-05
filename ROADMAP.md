@@ -84,23 +84,23 @@
 ## Military Prototype
 
 - [ ] **M-001** Barracks building pushes unit words (letter-by-letter)
-  - [ ] **T-001** Refactor Barracks to enqueue words to the global queue letter-by-letter
-  - [ ] **T-002** Update queue manager to support partial word progress and per-letter validation
-  - [ ] **T-003** Ensure Barracks cooldown only resets after full word is typed
-  - [ ] **T-004** Add unit tests for Barracks letter-by-letter queue logic
-  - [ ] **T-005** Integrate Barracks with HUD to show letter-by-letter progress
+  - [ ] **M-001.1** Refactor Barracks to enqueue words to the global queue letter-by-letter
+  - [ ] **M-001.2** Update queue manager to support partial word progress and per-letter validation
+  - [ ] **M-001.3** Ensure Barracks cooldown only resets after full word is typed
+  - [ ] **M-001.4** Add unit tests for Barracks letter-by-letter queue logic
+  - [ ] **M-001.5** Integrate Barracks with HUD to show letter-by-letter progress
 
 - [ ] **M-002** Footman entity (HP, dmg, speed)
-  - [ ] **T-001** Define Footman struct with HP, damage, and speed fields
-  - [ ] **T-002** Implement Footman movement and update logic
-  - [ ] **T-003** Add Footman spawn logic to Barracks on word completion
-  - [ ] **T-004** Write unit tests for Footman creation and state updates
+  - [ ] **M-002.1** Define Footman struct with HP, damage, and speed fields
+  - [ ] **M-002.2** Implement Footman movement and update logic
+  - [ ] **M-002.3** Add Footman spawn logic to Barracks on word completion
+  - [ ] **M-002.4** Write unit tests for Footman creation and state updates
 
 - [ ] **M-003** Combat resolution attacker vs orc grunt
-  - [ ] **T-001** Define OrcGrunt struct with HP and damage
-  - [ ] **T-002** Implement combat logic between Footman and OrcGrunt
-  - [ ] **T-003** Update military system to resolve combat each tick
-  - [ ] **T-004** Add tests for combat outcomes and edge cases
+  - [ ] **M-003.1** Define OrcGrunt struct with HP and damage
+  - [ ] **M-003.2** Implement combat logic between Footman and OrcGrunt
+  - [ ] **M-003.3** Update military system to resolve combat each tick
+  - [ ] **M-003.4** Add tests for combat outcomes and edge cases
 
 - [ ] **TEST-COMBAT** Unit kills grunt in <8 s with perfect typing
   - [ ] **T-001** Create integration test simulating perfect typing input
