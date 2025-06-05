@@ -112,3 +112,8 @@ A keyboard-focused tower defense game that combines strategic placement with typ
 - **Progressive Difficulty**: Gentle introduction with meaningful skill gates
 - **Immediate Feedback**: Clear visual and audio cues for all actions
 - **Meaningful Choice**: Every upgrade and strategy should feel impactful
+
+## Tech Tree Loader
+- [x] T-001 YAML schema for node graph
+- [x] T-002 Parser + in-memory graph
+- [x] T-003 Keyboard UI for tech purchase (`/` search, `Enter` buy)

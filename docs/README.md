@@ -88,6 +88,7 @@ Code should be formatted with `gofmt` and accompanied by unit tests when possibl
 - Projectile intercept calculations for moving targets
 - Bouncing projectile mechanics
 - Upgrade purchasing system using gold between waves (damage, range, fire rate upgrades implemented and tested)
+- Technology tree loaded from `tech_tree.yaml` with keyboard-driven purchase menu (`/` to search, `Enter` to buy)
 - **Keyboard-driven navigation for all menus and gameplay**
 - Typing accuracy and WPM tracking with bonuses and penalties
 

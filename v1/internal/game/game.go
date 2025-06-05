@@ -88,6 +88,10 @@ type Game struct {
 	buildMenuOpen bool
 	buildCursor   int
 
+	techMenuOpen bool
+	techCursor   int
+	techSearch   string
+
 	sound    *SoundManager
 	settings Settings
 }
@@ -109,36 +113,44 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	// ebiten.SetFullscreen(true)
 
+	tree, err := LoadTechTree(TechTreeFile)
+	if err != nil {
+		tree = DefaultTechTree()
+	}
+
 	g := &Game{
 		history:         hist,
 		score:           0,
 		gameOverHandled: false,
-		screen:        ebiten.NewImage(1920, 1080),
-		input:         NewInput(),
-		paused:        false,
-		gold:          0,
-		shopOpen:      false,
-		selectedTower: 0,
-		shopCursor:    0,
-		currentWave:   1,
-		spawnInterval: cfg.SpawnInterval, // already in seconds
-		spawnTicker:   0,
-		mobsToSpawn:   cfg.MobsPerWave,
-		cfg:           &cfg,
-		mobs:          make([]Enemy, 0),
-		projectiles:   make([]*Projectile, 0),
-		letterPool:    make([]rune, 0),
-		unlockStage:   0,
-		techTree:      DefaultTechTree(),
-		achievements:  make([]string, 0),
-		towerMods:     TowerModifiers{DamageMult: 1, RangeMult: 1, FireRateMult: 1},
-		typing:        NewTypingStats(),
-		cursorX:       2,
-		cursorY:       16,
-		sound:         NewSoundManager(),
-		settings:      DefaultSettings(),
-		buildMenuOpen: false,
-		buildCursor:   0,
+		screen:          ebiten.NewImage(1920, 1080),
+		input:           NewInput(),
+		paused:          false,
+		gold:            0,
+		shopOpen:        false,
+		selectedTower:   0,
+		shopCursor:      0,
+		currentWave:     1,
+		spawnInterval:   cfg.SpawnInterval, // already in seconds
+		spawnTicker:     0,
+		mobsToSpawn:     cfg.MobsPerWave,
+		cfg:             &cfg,
+		mobs:            make([]Enemy, 0),
+		projectiles:     make([]*Projectile, 0),
+		letterPool:      make([]rune, 0),
+		unlockStage:     0,
+		techTree:        tree,
+		techMenuOpen:    false,
+		techCursor:      0,
+		techSearch:      "",
+		achievements:    make([]string, 0),
+		towerMods:       TowerModifiers{DamageMult: 1, RangeMult: 1, FireRateMult: 1},
+		typing:          NewTypingStats(),
+		cursorX:         2,
+		cursorY:         16,
+		sound:           NewSoundManager(),
+		settings:        DefaultSettings(),
+		buildMenuOpen:   false,
+		buildCursor:     0,
 	}
 
 	tx, ty := tilePosition(1, 16)
@@ -170,6 +182,68 @@ func (g *Game) Update() error {
 	}
 	g.lastUpdate = now
 	g.input.Update()
+	typed := g.input.TypedChars()
+
+	// Handle tech menu activation with '/' key
+	for _, r := range typed {
+		if r == '/' && !g.techMenuOpen && !g.shopOpen && !g.buildMenuOpen && !g.paused {
+			g.techMenuOpen = true
+			g.techSearch = ""
+			g.techCursor = 0
+		} else if g.techMenuOpen {
+			g.techSearch += string(r)
+		}
+	}
+
+	if g.techMenuOpen {
+		if g.input.Backspace() && len(g.techSearch) > 0 {
+			g.techSearch = g.techSearch[:len(g.techSearch)-1]
+		}
+		avail := g.techTree.Available(g.techSearch, g.gold)
+		if len(avail) > 0 {
+			g.techCursor = (g.techCursor%len(avail) + len(avail)) % len(avail)
+		} else {
+			g.techCursor = 0
+		}
+		if g.input.Down() && len(avail) > 0 {
+			g.techCursor = (g.techCursor + 1) % len(avail)
+		}
+		if g.input.Up() && len(avail) > 0 {
+			g.techCursor = (g.techCursor - 1 + len(avail)) % len(avail)
+		}
+		if g.input.Enter() && len(avail) > 0 {
+			node := avail[g.techCursor]
+			letters, ach, mods, cost, ok := g.techTree.Purchase(node.ID, g.gold)
+			if ok {
+				g.gold -= cost
+				existing := make(map[rune]struct{})
+				for _, r := range g.letterPool {
+					existing[r] = struct{}{}
+				}
+				for _, r := range letters {
+					if _, ok := existing[r]; !ok {
+						g.letterPool = append(g.letterPool, r)
+					}
+				}
+				if mods != (TowerModifiers{}) {
+					g.towerMods = g.towerMods.Merge(mods)
+					for _, t := range g.towers {
+						t.ApplyModifiers(mods)
+					}
+				}
+				if ach != "" {
+					g.achievements = append(g.achievements, ach)
+				}
+			}
+		}
+		if g.input.Enter() || (len(typed) > 0 && typed[0] == '/') {
+			// pressing enter after purchase or '/' again closes menu
+			if len(avail) == 0 || (len(typed) > 0 && typed[0] == '/') {
+				g.techMenuOpen = false
+			}
+		}
+		return nil
+	}
 
 	if g.buildMenuOpen {
 		const optionsCount = 4

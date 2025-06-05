@@ -53,6 +53,18 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 			}
 			lines = append(lines, prefix+opt)
 		}
+	} else if h.game.techMenuOpen {
+		lines = append(lines, "-- TECH --")
+		lines = append(lines, fmt.Sprintf("Gold: %d", h.game.gold))
+		lines = append(lines, "Search: "+h.game.techSearch)
+		avail := h.game.techTree.Available(h.game.techSearch, h.game.gold)
+		for i, n := range avail {
+			prefix := "  "
+			if i == h.game.techCursor {
+				prefix = "> "
+			}
+			lines = append(lines, fmt.Sprintf("%s%s (%d)", prefix, n.Name, n.Cost))
+		}
 	} else if h.game.buildMenuOpen {
 		cost := h.game.cfg.TowerConstructionCost
 		if cost == 0 {
