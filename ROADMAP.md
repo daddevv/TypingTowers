@@ -70,7 +70,7 @@
   - [x] **T-003.7** Handle `Enter` key to purchase selected tech: check prerequisites/resources, call `UnlockNext`
   - [x] **T-003.8** Write unit tests for tech menu: toggling, filtering, navigation, and purchase flow
 - [ ] **SKILL-001** Global skill tree UI (offense, defense, typing, automation, utility)
-  - [ ] **SKILL-001.1** Define Go structs for skill tree nodes and categories (offense, defense, typing, automation, utility)
+  - [x] **SKILL-001.1** Define Go structs for skill tree nodes and categories (offense, defense, typing, automation, utility)
   - [ ] **SKILL-001.2** Implement in-memory skill tree structure and sample data
   - [ ] **SKILL-001.3** Add keyboard UI: open skill tree menu, navigate categories/nodes, show node details
   - [ ] **SKILL-001.4** Render skill tree overlay: display branches, highlight selected node, show unlock status
