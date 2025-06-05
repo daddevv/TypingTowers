@@ -251,9 +251,6 @@ func (g *Game) Update() error {
 		}
 		g.conveyorOffset -= shift
 	}
-	if g.queue != nil {
-		g.queue.Update(dt)
-	}
 
 	if g.flashTimer > 0 {
 		g.flashTimer -= dt
