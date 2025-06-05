@@ -2,10 +2,10 @@ package game
 
 // TowerModifiers defines adjustments applied globally to tower stats.
 type TowerModifiers struct {
-	DamageMult   float64
-	RangeMult    float64
-	FireRateMult float64
-	AmmoAdd      int
+	DamageMult   float64 `json:"damage_mult"`
+	RangeMult    float64 `json:"range_mult"`
+	FireRateMult float64 `json:"fire_rate_mult"`
+	AmmoAdd      int     `json:"ammo_add"`
 }
 
 // Merge combines two modifier sets multiplicatively for multipliers

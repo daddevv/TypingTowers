@@ -1,0 +1,6 @@
+[
+  {"id":"home_row","name":"Home Row","cost":0,"letters":["f","j"],"effects":{},"prereqs":[]},
+  {"id":"index_ext","name":"Index Extensions","cost":10,"letters":["d","k"],"effects":{"range_mult":1.05},"prereqs":["home_row"]},
+  {"id":"middle_fingers","name":"Middle Fingers","cost":15,"letters":["s","l"],"effects":{"damage_mult":1.1},"prereqs":["index_ext"]},
+  {"id":"ring_finger","name":"Ring Finger","cost":20,"letters":["a"],"effects":{"ammo_add":1},"prereqs":["middle_fingers"]}
+]
