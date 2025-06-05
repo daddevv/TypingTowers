@@ -858,7 +858,8 @@ func (g *Game) randomReloadLetter() rune {
 	return g.letterPool[rand.Intn(len(g.letterPool))]
 }
 
-// MistypeFeedback triggers visual and audio feedback for an incorrect key press.
+// MistypeFeedback triggers a red flash and "clank" sound for an incorrect key press.
+// The flash duration is controlled by jamFlashDuration.
 func (g *Game) MistypeFeedback() {
 	if g == nil {
 		return

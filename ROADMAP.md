@@ -33,9 +33,9 @@
 - [x] **INT-005** Integrate Back-Pressure Damage mechanic
   - [x] Player/base health decreases when active word queue exceeds threshold (e.g., ≥ 5 words).
   - [x] Link to player health system.
-- [ ] **INT-006** Integrate Jam State Visuals and Audio
-  - [ ] Implement red flash on mistype.
-  - [ ] Implement "clank" SFX placeholder on mistype.
+- [x] **INT-006** Integrate Jam State Visuals and Audio
+  - [x] Implement red flash on mistype.
+  - [x] Implement "clank" SFX placeholder on mistype.
 - [x] **INT-007** Implement Letter Unlock System
   - [x] Create UI for viewing and purchasing letter unlocks as per `docs/LETTER_UNLOCKS.md`.
   - [x] Connect letter unlocks to word generation logic for buildings.
