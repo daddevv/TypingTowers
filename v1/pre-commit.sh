@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-# Ensure Go tooling uses the vendor directory
-export CGO_ENABLED=0
-export EBITEN_HEADLESS=1 # Enable headless mode for Ebiten
-
 # Format check
 echo "Running gofmt..."
 if [ -n "$(gofmt -l .)" ]; then
@@ -21,7 +17,7 @@ fi
 
 # Vet check
 echo "Running go vet..."
-go vet -tags=headless ./...
+go vet ./...
 if [ $? -ne 0 ]; then
     echo "go vet found issues. Please fix them before committing."
     exit 1
@@ -29,7 +25,7 @@ fi
 
 # Run tests (headless mode for Ebiten, see next section)
 echo "Running go test..."
-go test -tags=headless ./...
+go test ./...
 if [ $? -ne 0 ]; then
     echo "Tests failed. Please fix the issues before committing."
     exit 1
