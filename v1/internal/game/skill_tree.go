@@ -25,8 +25,9 @@ type SkillNode struct {
 
 // SkillTree holds all skill nodes keyed by ID.
 type SkillTree struct {
-	Nodes map[string]*SkillNode
-	order []string
+	Nodes    map[string]*SkillNode
+	order    []string
+	unlocked map[string]bool
 }
 
 // GetPrerequisites returns the prerequisite IDs for a given node.
@@ -40,6 +41,44 @@ func (t *SkillTree) GetPrerequisites(id string) []string {
 // UnlockOrder returns a topological order of node IDs based on prerequisites.
 func (t *SkillTree) UnlockOrder() []string {
 	return append([]string(nil), t.order...)
+}
+
+// CanUnlock reports whether the node can be unlocked with the provided resources.
+// It checks that all prerequisites are already unlocked and that enough King's
+// Points are available for the cost.
+func (t *SkillTree) CanUnlock(id string, pool *ResourcePool) bool {
+	node, ok := t.Nodes[id]
+	if !ok {
+		return false
+	}
+	if t.unlocked != nil && t.unlocked[id] {
+		return false
+	}
+	for _, p := range node.Prereqs {
+		if t.unlocked == nil || !t.unlocked[p] {
+			return false
+		}
+	}
+	if pool != nil && pool.KingsAmount() < node.Cost {
+		return false
+	}
+	return true
+}
+
+// Unlock attempts to purchase the given skill node using King's Points. It
+// returns true if the node was successfully unlocked and resources deducted.
+func (t *SkillTree) Unlock(id string, pool *ResourcePool) bool {
+	if !t.CanUnlock(id, pool) {
+		return false
+	}
+	if pool != nil && !pool.SpendKingsPoints(t.Nodes[id].Cost) {
+		return false
+	}
+	if t.unlocked == nil {
+		t.unlocked = map[string]bool{}
+	}
+	t.unlocked[id] = true
+	return true
 }
 
 func (t *SkillTree) validate() error {
@@ -129,7 +168,7 @@ func SampleSkillTree() (*SkillTree, error) {
 			Effects:  map[string]float64{"hotkeys": 1},
 		},
 	}
-	tree := &SkillTree{Nodes: map[string]*SkillNode{}}
+	tree := &SkillTree{Nodes: map[string]*SkillNode{}, unlocked: map[string]bool{}}
 	for i := range nodes {
 		n := nodes[i]
 		tree.Nodes[n.ID] = &n
