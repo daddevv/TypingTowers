@@ -46,6 +46,7 @@ type savedGame struct {
 	BaseHP   int
 	Towers   []savedTower
 	Settings Settings
+	Skills   []string
 }
 
 // Game represents the game state and implements ebiten.Game interface.
@@ -79,6 +80,9 @@ type Game struct {
 	skillTree    *SkillTree
 	achievements []string
 	towerMods    TowerModifiers
+	wpmBonus     int
+	autoCollect  bool
+	hotkeys      bool
 
 	unlockedSkills map[string]bool
 	skillMenuOpen  bool
@@ -202,6 +206,9 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		unlockedSkills:  make(map[string]bool),
 		achievements:    make([]string, 0),
 		towerMods:       TowerModifiers{DamageMult: 1, RangeMult: 1, FireRateMult: 1},
+		wpmBonus:        0,
+		autoCollect:     false,
+		hotkeys:         false,
 		typing:          NewTypingStats(),
 		cursorX:         2,
 		cursorY:         16,
@@ -856,7 +863,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		summary := []string{
 			fmt.Sprintf("Score: %d", g.score),
 			fmt.Sprintf("Accuracy: %.0f%%", g.typing.Accuracy()*100),
-			fmt.Sprintf("WPM: %.1f", g.typing.WPM()),
+			fmt.Sprintf("WPM: %.1f", g.EffectiveWPM()),
 		}
 		if g.history != nil {
 			summary = append(summary,
@@ -1108,6 +1115,36 @@ func (g *Game) applyNextTech() {
 	}
 }
 
+// applySkillEffects applies the effects of a newly unlocked skill node.
+func (g *Game) applySkillEffects(n *SkillNode) {
+	for k, v := range n.Effects {
+		switch k {
+		case "damage_mult":
+			mod := TowerModifiers{DamageMult: v}
+			g.towerMods = g.towerMods.Merge(mod)
+			for _, t := range g.towers {
+				t.ApplyModifiers(mod)
+			}
+		case "fire_rate_mult":
+			mod := TowerModifiers{FireRateMult: v}
+			g.towerMods = g.towerMods.Merge(mod)
+			for _, t := range g.towers {
+				t.ApplyModifiers(mod)
+			}
+		case "hp_add":
+			if g.base != nil {
+				g.base.health += int(v)
+			}
+		case "wpm_bonus":
+			g.wpmBonus += int(v)
+		case "auto_collect":
+			g.autoCollect = true
+		case "hotkeys":
+			g.hotkeys = true
+		}
+	}
+}
+
 // filteredTechNodes returns remaining tech nodes matching the search buffer.
 func (g *Game) filteredTechNodes() []TechNode {
 	if g.techTree == nil {
@@ -1235,6 +1272,13 @@ func (g *Game) handleSkillMenuInput() {
 	}
 	if g.input.Up() {
 		g.skillCursor = (g.skillCursor - 1 + len(nodes)) % len(nodes)
+	}
+	if g.input.Enter() {
+		node := nodes[g.skillCursor]
+		if g.skillTree.Unlock(node.ID, &g.resources) {
+			g.unlockedSkills[node.ID] = true
+			g.applySkillEffects(node)
+		}
 	}
 }
 
@@ -1441,6 +1485,7 @@ func (g *Game) saveGame(path string) {
 		Wave:     g.currentWave,
 		BaseHP:   g.base.Health(),
 		Settings: g.settings,
+		Skills:   make([]string, 0, len(g.unlockedSkills)),
 	}
 	for _, t := range g.towers {
 		sg.Towers = append(sg.Towers, savedTower{
@@ -1451,6 +1496,9 @@ func (g *Game) saveGame(path string) {
 			Rate:         t.rate,
 			AmmoCapacity: t.ammoCapacity,
 		})
+	}
+	for id := range g.unlockedSkills {
+		sg.Skills = append(sg.Skills, id)
 	}
 	b, err := json.MarshalIndent(sg, "", "  ")
 	if err == nil {
@@ -1490,6 +1538,13 @@ func (g *Game) loadGame(path string) error {
 		}
 		g.towers = append(g.towers, t)
 	}
+	for _, id := range sg.Skills {
+		if node, ok := g.skillTree.Nodes[id]; ok {
+			g.skillTree.unlocked[id] = true
+			g.unlockedSkills[id] = true
+			g.applySkillEffects(node)
+		}
+	}
 	return nil
 }
 
@@ -1512,7 +1567,7 @@ func (g *Game) executeCommand(cmd string) {
 
 // evaluatePerformanceAchievements awards achievements and gold based on typing performance.
 func (g *Game) evaluatePerformanceAchievements() {
-	wpm := g.typing.WPM()
+	wpm := g.EffectiveWPM()
 	acc := g.typing.Accuracy()
 
 	add := func(name string) {
@@ -1536,4 +1591,9 @@ func (g *Game) evaluatePerformanceAchievements() {
 		add("Combo Master")
 		g.AddGold(5)
 	}
+}
+
+// EffectiveWPM returns the player's WPM including any skill bonuses.
+func (g *Game) EffectiveWPM() float64 {
+	return g.typing.WPM() + float64(g.wpmBonus)
 }
