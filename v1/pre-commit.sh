@@ -20,7 +20,7 @@ fi
 
 # Vet check
 echo "Running go vet..."
-go vet ./...
+go vet -tags=headless ./...
 if [ $? -ne 0 ]; then
     echo "go vet found issues. Please fix them before committing."
     exit 1
@@ -28,7 +28,7 @@ fi
 
 # Run tests (headless mode for Ebiten, see next section)
 echo "Running go test..."
-go test ./...
+go test -tags=headless ./...
 if [ $? -ne 0 ]; then
     echo "Tests failed. Please fix the issues before committing."
     exit 1
