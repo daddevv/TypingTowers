@@ -111,6 +111,15 @@
 - [ ] **MINIGAME-003** Word puzzle/anagram mode
 - [ ] **MINIGAME-004** Boss practice mode
 
+### Backlog #10 – Fuzz Testing & Robustness
+
+- [ ] **FUZZ-001** Implement engine fuzz tester  
+  - [ ] Generate randomized sequences of inputs/events (typing, build/deploy, mob movement, resource updates)  
+  - [ ] Integrate with Go’s fuzzing support or go-fuzz to automate stress runs  
+  - [ ] Detect and log boundary conditions, panics, invariant breaches, and unexpected states  
+  - [ ] Verify that all bad states are handled gracefully without crashing  
+  - [ ] Produce detailed trace output and reproducible minimised cases for debugging
+
 *(Add new sprints at bottom; archive completed ones to `TODO_ARCHIVE.md` when merged.)*
 
 ---
