@@ -40,13 +40,13 @@
   - [x] Create UI for viewing and purchasing letter unlocks as per `docs/LETTER_UNLOCKS.md`.
   - [x] Connect letter unlocks to word generation logic for buildings.
   - [x] Ensure resource costs for unlocks are deducted correctly.
-- [ ] **TEST-CORELOOP** End-to-end playtest of the core loop
-  - [ ] Verify resource gathering from Farmer.
-  - [ ] Verify letter unlocking and its effect on word generation.
-  - [ ] Verify unit spawning from Barracks.
-  - [ ] Verify queue mechanics: color-coding, back-pressure damage.
-  - [ ] Verify jam state feedback (visual and audio).
-  - [ ] Check overall game balance and flow for a 5-10 min session.
+- [x] **TEST-CORELOOP** End-to-end playtest of the core loop
+  - [x] Verify resource gathering from Farmer.
+  - [x] Verify letter unlocking and its effect on word generation.
+  - [x] Verify unit spawning from Barracks.
+  - [x] Verify queue mechanics: color-coding, back-pressure damage.
+  - [x] Verify jam state feedback (visual and audio).
+  - [x] Check overall game balance and flow for a 5-10 min session.
 
 ---
 

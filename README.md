@@ -45,7 +45,7 @@ go run ./cmd/game          # Ebiten entry
 ## Run tests
 
 ```bash
-go test ./...
+go test -tags test ./...
 ```
 
 -## Current prototype
