@@ -119,9 +119,25 @@ func (h *HUD) drawQueue(screen *ebiten.Image) {
 	x := h.game.wordProcessX - h.game.conveyorOffset
 	y := h.game.wordProcessY
 
-	for _, w := range words {
+	for i, w := range words {
 		opts := &text.DrawOptions{}
 		opts.GeoM.Translate(x, y)
+		if i == 0 {
+			typed := h.game.queue.Index()
+			if typed > 0 {
+				done := w.Text[:typed]
+				rem := w.Text[typed:]
+				opts.ColorScale.ScaleWithColor(color.RGBA{160, 160, 160, 255})
+				text.Draw(screen, done, BoldFont, opts)
+				tw := float64(len(done)) * 13.0
+				opts = &text.DrawOptions{}
+				opts.GeoM.Translate(x+tw, y)
+				opts.ColorScale.ScaleWithColor(FamilyColor(w.Family))
+				text.Draw(screen, rem, BoldFont, opts)
+				x += float64(len(w.Text))*13.0 + spacing
+				continue
+			}
+		}
 		opts.ColorScale.ScaleWithColor(FamilyColor(w.Family))
 		text.Draw(screen, w.Text, BoldFont, opts)
 		x += float64(len(w.Text))*13.0 + spacing

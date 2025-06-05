@@ -1,5 +1,7 @@
 package game
 
+import "unicode"
+
 // Word represents a queued typing challenge produced by a building.
 type Word struct {
 	Text   string // text the player must type
@@ -9,19 +11,60 @@ type Word struct {
 
 // QueueManager maintains a global FIFO queue of words.
 type QueueManager struct {
-	queue []Word
-	base  *Base
-	timer float64
+	queue    []Word
+	base     *Base
+	timer    float64
+	progress int // typed letters progress for first word
 }
 
 // NewQueueManager initializes an empty queue.
 func NewQueueManager() *QueueManager {
-	return &QueueManager{queue: make([]Word, 0), base: nil, timer: 0}
+	return &QueueManager{queue: make([]Word, 0), base: nil, timer: 0, progress: 0}
 }
 
 // Enqueue adds a word to the end of the queue.
 func (q *QueueManager) Enqueue(w Word) {
 	q.queue = append(q.queue, w)
+}
+
+// Progress returns the completion ratio of the first word, 0-1.
+func (q *QueueManager) Progress() float64 {
+	if len(q.queue) == 0 {
+		return 0
+	}
+	if len(q.queue[0].Text) == 0 {
+		return 0
+	}
+	return float64(q.progress) / float64(len(q.queue[0].Text))
+}
+
+// Index returns the current typed letter index for the first word.
+func (q *QueueManager) Index() int { return q.progress }
+
+// ResetProgress clears the current letter index for the first word.
+func (q *QueueManager) ResetProgress() {
+	q.progress = 0
+}
+
+// TryLetter validates a single typed letter against the first word.
+// It returns (matched, completed, word).
+func (q *QueueManager) TryLetter(r rune) (bool, bool, Word) {
+	if len(q.queue) == 0 {
+		return false, false, Word{}
+	}
+	w := q.queue[0]
+	expected := rune(w.Text[q.progress])
+	if unicode.ToLower(r) != unicode.ToLower(expected) {
+		q.progress = 0
+		return false, false, Word{}
+	}
+	q.progress++
+	if q.progress >= len(w.Text) {
+		q.queue = q.queue[1:]
+		q.progress = 0
+		return true, true, w
+	}
+	return true, false, w
 }
 
 // SetBase assigns a Base that will take damage from backlog pressure.

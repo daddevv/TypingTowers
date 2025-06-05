@@ -58,3 +58,35 @@ func TestBarracksUnitSpawn(t *testing.T) {
 		t.Errorf("unexpected spawn for wrong word")
 	}
 }
+
+func TestBarracksLetterQueueIntegration(t *testing.T) {
+	q := NewQueueManager()
+	b := NewBarracks()
+	b.SetQueue(q)
+	b.SetInterval(0.1)
+	b.SetCooldown(0.1)
+
+	word := b.Update(0.11)
+	if q.Len() != 1 {
+		t.Fatalf("expected word enqueued")
+	}
+
+	for i, r := range word {
+		match, done, _ := q.TryLetter(r)
+		if !match {
+			t.Fatalf("letter %d did not match", i)
+		}
+		if i < len(word)-1 && done {
+			t.Fatalf("word completed too early")
+		}
+	}
+
+	if q.Len() != 0 {
+		t.Fatalf("queue should be empty after completion")
+	}
+
+	unit := b.OnWordCompleted(word)
+	if unit == nil {
+		t.Fatalf("expected unit spawn on completion")
+	}
+}

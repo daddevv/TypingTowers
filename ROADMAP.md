@@ -83,12 +83,12 @@
 
 ## Military Prototype
 
-- [ ] **M-001** Barracks building pushes unit words (letter-by-letter)
-  - [ ] **M-001.1** Refactor Barracks to enqueue words to the global queue letter-by-letter
-  - [ ] **M-001.2** Update queue manager to support partial word progress and per-letter validation
-  - [ ] **M-001.3** Ensure Barracks cooldown only resets after full word is typed
-  - [ ] **M-001.4** Add unit tests for Barracks letter-by-letter queue logic
-  - [ ] **M-001.5** Integrate Barracks with HUD to show letter-by-letter progress
+- [x] **M-001** Barracks building pushes unit words (letter-by-letter)
+  - [x] **M-001.1** Refactor Barracks to enqueue words to the global queue letter-by-letter
+  - [x] **M-001.2** Update queue manager to support partial word progress and per-letter validation
+  - [x] **M-001.3** Ensure Barracks cooldown only resets after full word is typed
+  - [x] **M-001.4** Add unit tests for Barracks letter-by-letter queue logic
+  - [x] **M-001.5** Integrate Barracks with HUD to show letter-by-letter progress
 
 - [ ] **M-002** Footman entity (HP, dmg, speed)
   - [ ] **M-002.1** Define Footman struct with HP, damage, and speed fields

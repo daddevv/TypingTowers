@@ -127,9 +127,8 @@ type Game struct {
 	barracks   *Barracks
 	military   *Military
 
-	// Typing state for the queue - process individual letters
-	queueIndex int
-	queueJam   bool
+	// Typing state for the queue - jam indicator
+	queueJam bool
 
 	// Command mode for power users
 	commandMode   bool
@@ -591,22 +590,19 @@ func (g *Game) Update() error {
 	// ---- Global typing queue processing (letter by letter) ----
 	if g.queue != nil {
 		g.queue.Update(dt)
-		if w, ok := g.queue.Peek(); ok {
+		if _, ok := g.queue.Peek(); ok {
 			if g.queueJam {
 				if g.input.Backspace() {
 					g.queueJam = false
-					g.queueIndex = 0
+					g.queue.ResetProgress()
 				}
 			} else {
 				for _, r := range g.input.TypedChars() {
-					expected := rune(w.Text[g.queueIndex])
-					if unicode.ToLower(r) == unicode.ToLower(expected) {
-						g.queueIndex++
+					match, done, dq := g.queue.TryLetter(r)
+					if match {
 						g.conveyorOffset += letterWidth
 						g.typing.Record(true)
-						if g.queueIndex >= len(w.Text) {
-							g.queueIndex = 0
-							dq, _ := g.queue.TryDequeue(w.Text)
+						if done {
 							switch dq.Source {
 							case "Farmer":
 								g.farmer.OnWordCompleted(dq.Text, &g.resources)
@@ -616,14 +612,12 @@ func (g *Game) Update() error {
 								}
 							}
 						}
-						break
 					} else {
 						g.typing.Record(false)
 						g.MistypeFeedback()
 						g.queueJam = true
-						g.queueIndex = 0
-						break
 					}
+					break
 				}
 			}
 		}
