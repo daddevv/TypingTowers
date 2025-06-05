@@ -2,13 +2,40 @@
 
 package game
 
-import "unicode"
+import (
+	"strings"
+	"unicode"
+)
 
 // Step advances the game state by the provided delta time without relying on
 // Ebiten's real-time loop. It processes the global typing queue and updates
 // buildings, units, and the base. This helper is compiled only for tests.
 func (g *Game) Step(dt float64) error {
 	if g == nil {
+		return nil
+	}
+
+	if !g.commandMode && g.input.Command() {
+		g.commandMode = true
+		g.commandBuffer = ""
+		g.input.Reset()
+		return nil
+	}
+	if g.commandMode {
+		for _, r := range g.input.TypedChars() {
+			if unicode.IsPrint(r) {
+				g.commandBuffer += string(r)
+			}
+		}
+		if g.input.Backspace() && len(g.commandBuffer) > 0 {
+			g.commandBuffer = g.commandBuffer[:len(g.commandBuffer)-1]
+		}
+		if g.input.Enter() {
+			g.executeCommand(strings.TrimSpace(g.commandBuffer))
+			g.commandMode = false
+			g.commandBuffer = ""
+		}
+		g.input.Reset()
 		return nil
 	}
 

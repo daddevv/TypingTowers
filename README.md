@@ -107,6 +107,7 @@ See the [ROADMAP.md](./ROADMAP.md) for detailed tasks.
 - Word generation logic and cooldown behavior are tested in `barracks_test.go`.
 - HUD now shows cooldown progress bars for the Farmer and Barracks.
 - Press `/` to label towers with letters and open an upgrade menu for the chosen tower.
+- Press `:` to enter command mode for quick text commands like `pause` or `quit`.
 
 See docs/REQUIREMENTS.md for the full feature scaffold, ROADMAP.md for planned phases, and TODO.md for sprint tasks.
 

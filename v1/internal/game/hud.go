@@ -88,6 +88,10 @@ func (h *HUD) drawQueue(screen *ebiten.Image) {
 func (h *HUD) Draw(screen *ebiten.Image) {
 	h.drawResources(screen)
 	h.drawQueue(screen)
+	if h.game.commandMode {
+		drawMenu(screen, []string{":" + h.game.commandBuffer}, 860, 1020)
+		return
+	}
 	var lines []string
 	textX := 10
 	initialY := 30 // Start HUD lower to avoid overlap with mouse/tile debug info

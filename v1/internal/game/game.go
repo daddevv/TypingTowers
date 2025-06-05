@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"strings"
 	"unicode"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -258,6 +259,28 @@ func (g *Game) Update() error {
 	}
 	g.lastUpdate = now
 	g.input.Update()
+
+	if !g.commandMode && g.input.Command() {
+		g.commandMode = true
+		g.commandBuffer = ""
+		return nil
+	}
+	if g.commandMode {
+		for _, r := range g.input.TypedChars() {
+			if unicode.IsPrint(r) {
+				g.commandBuffer += string(r)
+			}
+		}
+		if g.input.Backspace() && len(g.commandBuffer) > 0 {
+			g.commandBuffer = g.commandBuffer[:len(g.commandBuffer)-1]
+		}
+		if g.input.Enter() {
+			g.executeCommand(strings.TrimSpace(g.commandBuffer))
+			g.commandMode = false
+			g.commandBuffer = ""
+		}
+		return nil
+	}
 
 	if g.input.Quit() {
 		return ebiten.Termination
@@ -1321,6 +1344,18 @@ func (g *Game) loadGame(path string) error {
 func (g *Game) Restart() {
 	hist := g.history
 	*g = *NewGameWithHistory(*g.cfg, hist)
+}
+
+// executeCommand runs a textual command entered via command mode.
+func (g *Game) executeCommand(cmd string) {
+	switch strings.ToLower(cmd) {
+	case "quit":
+		g.quit = true
+	case "pause":
+		g.paused = true
+	case "resume":
+		g.paused = false
+	}
 }
 
 // evaluatePerformanceAchievements awards achievements and gold based on typing performance.

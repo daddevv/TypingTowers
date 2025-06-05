@@ -8,13 +8,14 @@ import (
 )
 
 type waveInput struct {
-	typed []rune
-	enter bool
+	typed   []rune
+	enter   bool
+	command bool
 }
 
 func (w *waveInput) TypedChars() []rune { return w.typed }
 func (w *waveInput) Update()            {}
-func (w *waveInput) Reset()             { w.typed = nil; w.enter = false }
+func (w *waveInput) Reset()             { w.typed = nil; w.enter = false; w.command = false }
 func (w *waveInput) Backspace() bool    { return false }
 func (w *waveInput) Space() bool        { return false }
 func (w *waveInput) Quit() bool         { return false }
@@ -27,6 +28,7 @@ func (w *waveInput) Down() bool         { return false }
 func (w *waveInput) Build() bool        { return false }
 func (w *waveInput) Save() bool         { return false }
 func (w *waveInput) Load() bool         { return false }
+func (w *waveInput) Command() bool      { c := w.command; w.command = false; return c }
 
 // TestSurviveFiveWaves simulates five waves with perfect typing input.
 func TestSurviveFiveWaves(t *testing.T) {

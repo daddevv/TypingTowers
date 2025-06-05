@@ -25,8 +25,8 @@
   - [x] Static word processing location at (400, 900) with conveyor effect
 - [x] **UI-001** Tower selection and upgrade system
   - [x] `/` to enter tower selection mode, letter labels, upgrade menu
-- [ ] **CMD-001** Command mode for power users
-  - [ ] `:` to enter command mode, basic and advanced commands
+- [x] **CMD-001** Command mode for power users
+  - [x] `:` to enter command mode, basic and advanced commands
 - [x] **TITLE-001** Title screen and main menu
   - [x] MainMenuState, logo, background music, animated background, settings
 - [x] **PREGAME-001** Pre-game setup and tutorial
