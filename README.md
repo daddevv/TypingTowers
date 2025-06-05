@@ -58,6 +58,8 @@ go test -tags test ./...
 - Typing speed/accuracy multiplier working.
 - Vim navigation for pause/menu/shop implemented.
 - Title screen with animated background and keyboard-only menu.
+- Pre-game setup lets you choose a character and difficulty, shows a quick
+  tutorial and typing test, then prompts for mode selection.
 - Letter unlock order and costs documented (see `docs/LETTER_UNLOCKS.md`).
 - Letters can now be unlocked in-game using King's Points, expanding each building's word pool.
 - Tech trees are defined in YAML under `data/trees/` (see `letters_basic.yaml`).
