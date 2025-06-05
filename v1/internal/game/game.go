@@ -93,6 +93,7 @@ type Game struct {
 
 	unlockedSkills map[string]bool
 	skillMenuOpen  bool
+	statsPanelOpen bool
 	skillCursor    int
 	skillCategory  SkillCategory
 
@@ -259,6 +260,7 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		upgradeCursor:   0,
 		techMenuOpen:    false,
 		skillMenuOpen:   false,
+		statsPanelOpen:  false,
 		searchBuffer:    "",
 		techCursor:      0,
 		skillCursor:     0,
@@ -335,6 +337,7 @@ func (g *Game) Update() error {
 	}
 	g.lastUpdate = now
 	g.input.Update()
+	g.handleStatsPanelInput()
 	g.handleSkillMenuInput()
 	if g.skillMenuOpen {
 		return nil
@@ -1302,6 +1305,13 @@ func (g *Game) skillNodesByCategory(cat SkillCategory) []*SkillNode {
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].ID < out[j].ID })
 	return out
+}
+
+// handleStatsPanelInput toggles the stats panel visibility when Tab is pressed.
+func (g *Game) handleStatsPanelInput() {
+	if g.input.StatsPanel() {
+		g.statsPanelOpen = !g.statsPanelOpen
+	}
 }
 
 // handleSkillMenuInput processes keyboard input for the skill tree menu.

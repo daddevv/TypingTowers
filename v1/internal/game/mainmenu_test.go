@@ -31,6 +31,7 @@ func (m *menuInput) SelectTower() bool  { return false }
 func (m *menuInput) Command() bool      { return false }
 func (m *menuInput) TechMenu() bool     { return false }
 func (m *menuInput) SkillMenu() bool    { return false }
+func (m *menuInput) StatsPanel() bool   { return false }
 
 func TestMainMenuStartGame(t *testing.T) {
 	g := NewGame()

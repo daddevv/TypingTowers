@@ -307,6 +307,31 @@ func drawMenu(screen *ebiten.Image, lines []string, x, y int) {
 	}
 }
 
+// drawStatsPanel renders a panel showing recent typing stats when open.
+func (h *HUD) drawStatsPanel(screen *ebiten.Image) {
+	if !h.game.statsPanelOpen {
+		return
+	}
+	lines := []string{"-- STATS --"}
+	lines = append(lines, fmt.Sprintf("WPM: %.1f", h.game.typing.RollingWPM()))
+	lines = append(lines, fmt.Sprintf("Accuracy: %.0f%%", h.game.typing.Accuracy()*100))
+	lines = append(lines, "")
+	hist := h.game.WordHistory()
+	start := len(hist) - 5
+	if start < 0 {
+		start = 0
+	}
+	for _, ws := range hist[start:] {
+		acc := 1.0
+		total := ws.Correct + ws.Incorrect
+		if total > 0 {
+			acc = float64(ws.Correct) / float64(total)
+		}
+		lines = append(lines, fmt.Sprintf("%s %.0f%% %.1fs", ws.Text, acc*100, ws.Duration.Seconds()))
+	}
+	drawMenu(screen, lines, 720, 480)
+}
+
 // Draw renders the HUD elements on screen
 func (h *HUD) Draw(screen *ebiten.Image) {
 	h.drawResourceIcons(screen)
@@ -316,4 +341,5 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 	h.drawTechMenu(screen)
 	h.drawSkillMenu(screen)
 	h.drawSlotMenu(screen)
+	h.drawStatsPanel(screen)
 }

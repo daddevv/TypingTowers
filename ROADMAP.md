@@ -93,12 +93,12 @@
   - [x] Write tests to verify rolling WPM calculation
   - [x] Display rolling WPM in the HUD or stats panel
 
-- [ ] **UI-MET** Toggle stats panel (`Tab`)
-  - [ ] Add a boolean field to Game for stats panel visibility
-  - [ ] Capture `Tab` key in Input handler to toggle stats panel
-  - [ ] Implement HUD rendering logic for the stats panel
-  - [ ] Display per-word stats, rolling WPM, and accuracy in the panel
-  - [ ] Add tests to verify panel toggling and display
+- [x] **UI-MET** Toggle stats panel (`Tab`)
+  - [x] Add a boolean field to Game for stats panel visibility
+  - [x] Capture `Tab` key in Input handler to toggle stats panel
+  - [x] Implement HUD rendering logic for the stats panel
+  - [x] Display per-word stats, rolling WPM, and accuracy in the panel
+  - [x] Add tests to verify panel toggling and display
 
 - [ ] **MINIGAME-001** Speed trial mode
 - [ ] **MINIGAME-002** Accuracy challenge mode

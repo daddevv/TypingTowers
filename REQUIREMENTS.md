@@ -119,7 +119,7 @@ All new features are optional enhancements, preserving the educational and acces
 - **SKILL-2** Go structs `SkillCategory`, `SkillNode`, and `SkillTree` define the skill tree in memory.
 - **SKILL-3** `SampleSkillTree` provides a validated in-memory tree with example nodes for each category.
 - **SKILL-4** Skills can be unlocked by spending King's Points once prerequisites are met.
-- **SKILL-5** `Tab` opens the skill tree menu. Arrow keys switch categories and navigate nodes, highlighting the current selection and showing locked/unlocked status.
+- **SKILL-5** `F4` opens the skill tree menu. Arrow keys switch categories and navigate nodes, highlighting the current selection and showing locked/unlocked status.
 - **SKILL-6** Unlocking a skill applies its effects to the game (tower stats, base HP, etc.).
 
 ---
@@ -138,6 +138,7 @@ All new features are optional enhancements, preserving the educational and acces
 | **UI-QUEUE-1** | HUD displays the word queue with a conveyor belt animation. |
 | **UI-QUEUE-2** | The first queued word shows typed letters in gray to indicate progress. |
 | **UI-MET-1** | HUD displays rolling WPM calculated from the last 30 seconds. |
+| **UI-MET-2** | `Tab` toggles a detailed stats panel showing per-word history, rolling WPM and accuracy. |
 | **UI-TITLE-1** | Game starts at a title screen with Start, Settings and Quit options. |
 | **UI-TITLE-2** | Title screen has a simple animated background and is keyboard navigable. |
 | **UI-PREGAME-1** | Pre-game setup screen handles character and difficulty selection, tutorial, typing test and mode selection. |

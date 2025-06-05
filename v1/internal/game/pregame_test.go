@@ -32,6 +32,7 @@ func (p *pgInput) SelectTower() bool  { return false }
 func (p *pgInput) Command() bool      { return false }
 func (p *pgInput) TechMenu() bool     { return false }
 func (p *pgInput) SkillMenu() bool    { return false }
+func (p *pgInput) StatsPanel() bool   { return false }
 
 // TestPreGameFlow ensures the setup screens progress to playing state.
 func TestPreGameFlow(t *testing.T) {
