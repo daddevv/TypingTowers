@@ -178,12 +178,37 @@ func (h *HUD) drawTechMenu(screen *ebiten.Image) {
 	drawMenu(screen, lines, 760, 300)
 }
 
+// drawSkillTreeOverlay renders the global skill tree when active.
+func (h *HUD) drawSkillTreeOverlay(screen *ebiten.Image) {
+	if !h.game.skillMenuOpen {
+		return
+	}
+	nodes := h.game.skillMenuNodes()
+	if nodes == nil {
+		nodes = h.game.skillTree.NodesByCategory(h.game.skillCategory)
+	}
+	lines := []string{fmt.Sprintf("-- SKILLS: %s --", h.game.skillCategory.String())}
+	for i, n := range nodes {
+		status := "Locked"
+		if h.game.unlockedSkills[n.ID] {
+			status = "Unlocked"
+		}
+		prefix := "  "
+		if i == h.game.skillCursor {
+			prefix = "> "
+		}
+		lines = append(lines, fmt.Sprintf("%s%s - %s", prefix, n.Name, status))
+	}
+	drawMenu(screen, lines, 760, 300)
+}
+
 // Draw renders ammo count, tower stats, reload prompts, and shop interface.
 func (h *HUD) Draw(screen *ebiten.Image) {
 	h.drawResourceIcons(screen)
 	h.drawQueue(screen)
 	h.drawTowerSelectionOverlay(screen)
 	h.drawTechMenu(screen)
+	h.drawSkillTreeOverlay(screen)
 	if h.game.commandMode {
 		drawMenu(screen, []string{":" + h.game.commandBuffer}, 860, 1020)
 		return

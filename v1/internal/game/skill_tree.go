@@ -13,6 +13,24 @@ const (
 	SkillUtility
 )
 
+// String returns a human readable label for the category.
+func (c SkillCategory) String() string {
+	switch c {
+	case SkillOffense:
+		return "Offense"
+	case SkillDefense:
+		return "Defense"
+	case SkillTyping:
+		return "Typing"
+	case SkillAutomation:
+		return "Automation"
+	case SkillUtility:
+		return "Utility"
+	default:
+		return "Unknown"
+	}
+}
+
 // SkillNode represents a single unlockable skill in the global skill tree.
 type SkillNode struct {
 	ID       string
@@ -28,6 +46,18 @@ type SkillTree struct {
 	Nodes    map[string]*SkillNode
 	order    []string
 	unlocked map[string]bool
+}
+
+// NodesByCategory returns a slice of skill nodes belonging to the given category.
+func (t *SkillTree) NodesByCategory(cat SkillCategory) []*SkillNode {
+	var out []*SkillNode
+	for _, id := range t.order {
+		n := t.Nodes[id]
+		if n.Category == cat {
+			out = append(out, n)
+		}
+	}
+	return out
 }
 
 // GetPrerequisites returns the prerequisite IDs for a given node.
