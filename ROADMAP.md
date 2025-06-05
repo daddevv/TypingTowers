@@ -15,7 +15,7 @@
 
 ---
 
-### Current Sprint – Core Gameplay Loop Integration
+### Completed – Core Gameplay Loop Integration
 
 - [x] **INT-001** Integrate Gathering (Farmer) building with resource system (R-001, R-002)
   - [x] Farmer produces Gold and other relevant resources.
@@ -50,7 +50,7 @@
 
 ---
 
-### Backlog #1 – Resource Loop & HUD
+### Current Sprint – Resource Loop & HUD
 
 - [ ] **R-001** Implement Gold/Wood/Stone/Iron structs
 - [ ] **R-002** Farmer, Lumberjack, Miner cooldowns produce resources
@@ -58,33 +58,33 @@
 - [ ] **HUD-001** Top bar resource icons (`G`, `W`, `S`, `I`, `M`)
 - [ ] **TEST-RES** Integration test 3 min sim, resources > 0
 
-### Backlog #2 – Tech Tree Loader
+### Backlog #1 – Tech Tree Loader
 
 - [ ] **T-001** YAML schema for node graph
   - [ ] `type`, `cost`, `effects`, `prereqs`
 - [ ] **T-002** Parser + in-memory graph
 - [ ] **T-003** Keyboard UI for tech purchase (`/` search, `Enter` buy)
 
-### Backlog #3 – Military Prototype
+### Backlog #2 – Military Prototype
 
 - [ ] **M-001** Barracks building pushes unit words
 - [ ] **M-002** Footman entity (HP, dmg, speed)
 - [ ] **M-003** Combat resolution attacker vs orc grunt
 - [ ] **TEST-COMBAT** Unit kills grunt in <8 s with perfect typing
 
-### Backlog #4 – Art & Audio Pass 1
+### Backlog #3 – Art & Audio Pass 1
 
 - [ ] **ART-001** 16×16 farmer, lumberjack, miner idle sprites
 - [ ] **ART-002** Orc grunt walk + hit animation
 - [ ] **SFX-001** Key-hit, crit, jam placeholders (chiptune)
 
-### Backlog #5 – Continuous Typing Metrics
+### Backlog #4 – Continuous Typing Metrics
 
 - [ ] **MET-001** Capture per-word accuracy & time
 - [ ] **MET-002** Rolling WPM (last 30 s)
 - [ ] **UI-MET** Toggle stats panel (`Tab`)
 
-### Backlog #6 – Skill Tree & Progression
+### Backlog #5 – Skill Tree & Progression
 
 - [ ] **SKILL-001** Design and implement global skill tree UI
   - [ ] Node categories: offense, defense, typing, automation, utility
@@ -92,29 +92,29 @@
 - [ ] **SKILL-002** Integrate skill tree with building/tech systems
 - [ ] **SKILL-003** Save/load skill tree state
 
-### Backlog #7 – Minions & Heroes
+### Backlog #6 – Minions & Heroes
 
 - [ ] **MINION-001** Implement minion summoning via typed commands
 - [ ] **MINION-002** Minion AI and unique roles
 - [ ] **MINION-003** Minion upgrades and management UI
 
-### Backlog #8 – Idle & Incremental Mechanics
+### Backlog #7 – Idle & Incremental Mechanics
 
 - [ ] **IDLE-001** Auto-collection and offline progress
 - [ ] **IDLE-002** Upgradable idle generators
 - [ ] **IDLE-003** Prestige/reset system
 
-### Backlog #9 – Typing Minigames
+### Backlog #8 – Typing Minigames
 
 - [ ] **MINIGAME-001** Speed trial mode
 - [ ] **MINIGAME-002** Accuracy challenge mode
 - [ ] **MINIGAME-003** Word puzzle/anagram mode
 - [ ] **MINIGAME-004** Boss practice mode
 
-### Backlog #10 – Fuzz Testing & Robustness
+### Backlog #9 – Fuzz Testing & Robustness
 
-- [ ] **FUZZ-001** Implement engine fuzz tester  
-  - [ ] Generate randomized sequences of inputs/events (typing, build/deploy, mob movement, resource updates)  
+- [ ] **FUZZ-001** Implement engine fuzz tester
+  - [ ] Generate randomized sequences of inputs/events (typing, build/deploy, mob movement, resource updates)
   - [ ] Integrate with Go’s fuzzing support or go-fuzz to automate stress runs  
   - [ ] Detect and log boundary conditions, panics, invariant breaches, and unexpected states  
   - [ ] Verify that all bad states are handled gracefully without crashing  
