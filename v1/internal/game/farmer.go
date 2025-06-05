@@ -99,3 +99,9 @@ func (f *Farmer) SetCooldown(c float64) { f.timer.remaining = c }
 
 // SetQueue assigns a QueueManager for global word management.
 func (f *Farmer) SetQueue(q *QueueManager) { f.queue = q }
+
+// CooldownProgress returns 0 when the timer was just reset and 1 when ready.
+func (f *Farmer) CooldownProgress() float64 { return f.timer.Progress() }
+
+// CooldownRemaining exposes the remaining cooldown time.
+func (f *Farmer) CooldownRemaining() float64 { return f.timer.Remaining() }

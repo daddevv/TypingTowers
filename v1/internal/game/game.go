@@ -55,6 +55,9 @@ type Game struct {
 	paused      bool
 	resources   ResourcePool
 
+	farmer   *Farmer
+	barracks *Barracks
+
 	shopOpen bool
 
 	selectedTower int
@@ -154,6 +157,8 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		buildMenuOpen:   false,
 		buildCursor:     0,
 		flashTimer:      0,
+		farmer:          NewFarmer(),
+		barracks:        NewBarracks(),
 	}
 
 	tx, ty := tilePosition(1, 16)
@@ -439,6 +444,17 @@ func (g *Game) Update() error {
 		}
 	} else if len(g.mobs) == 0 {
 		g.shopOpen = true
+	}
+
+	if g.farmer != nil {
+		if w := g.farmer.Update(dt); w != "" {
+			g.farmer.OnWordCompleted(w, &g.resources)
+		}
+	}
+	if g.barracks != nil {
+		if w := g.barracks.Update(dt); w != "" {
+			g.barracks.OnWordCompleted(w)
+		}
 	}
 
 	for _, t := range g.towers {
