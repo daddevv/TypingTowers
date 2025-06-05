@@ -12,6 +12,7 @@ type Barracks struct {
 	pendingWord string        // word currently in queue (if any)
 	active      bool          // is the Barracks running?
 	queue       *QueueManager // optional global queue manager
+	military    *Military     // optional military system to track units
 }
 
 // NewBarracks creates a new Barracks with default settings.
@@ -25,6 +26,7 @@ func NewBarracks() *Barracks {
 		wordLenMax: 5,
 		active:     true,
 		queue:      nil,
+		military:   nil,
 	}
 }
 
@@ -63,7 +65,11 @@ func (b *Barracks) OnWordCompleted(word string) *Footman {
 	if word == b.pendingWord {
 		b.pendingWord = ""
 		b.timer.Reset()
-		return NewFootman(0, 0)
+		unit := NewFootman(0, 0)
+		if b.military != nil {
+			b.military.AddUnit(unit)
+		}
+		return unit
 	}
 	return nil
 }
@@ -82,3 +88,6 @@ func (b *Barracks) SetCooldown(c float64) { b.timer.remaining = c }
 
 // SetQueue assigns a QueueManager for global word management.
 func (b *Barracks) SetQueue(q *QueueManager) { b.queue = q }
+
+// SetMilitary assigns a Military system for unit tracking.
+func (b *Barracks) SetMilitary(m *Military) { b.military = m }
