@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"image/color"
+	"math"
 	"strconv"
 	"strings"
 
@@ -34,6 +35,30 @@ func progressBar(progress float64, width int) string {
 // NewHUD creates a new HUD bound to the given game.
 func NewHUD(g *Game) *HUD {
 	return &HUD{game: g}
+}
+
+// drawConveyorBelt renders a simple conveyor belt animation behind the queue.
+// totalWidth is the total width of the queued words to ensure the belt spans
+// the text. Slanted stripes move with the conveyor offset to give an illusion
+// of motion.
+func (h *HUD) drawConveyorBelt(screen *ebiten.Image, totalWidth float64) {
+	beltHeight := 24.0
+	beltY := h.game.wordProcessY - 18
+	beltX := h.game.wordProcessX - h.game.conveyorOffset - 10
+	beltW := totalWidth + 20
+
+	// Draw base belt rectangle
+	vector.DrawFilledRect(screen, float32(beltX), float32(beltY), float32(beltW), float32(beltHeight), color.RGBA{50, 50, 50, 180}, false)
+
+	// Draw slanted stripes to indicate movement
+	stripeSpacing := 12.0
+	offset := math.Mod(h.game.conveyorOffset, stripeSpacing)
+	for x := -offset; x < beltW; x += stripeSpacing {
+		vector.DrawLine(screen,
+			float32(beltX+x), float32(beltY),
+			float32(beltX+x+beltHeight/2), float32(beltY+beltHeight),
+			1, color.RGBA{80, 80, 80, 200}, false)
+	}
 }
 
 // drawResourceIcons renders resource amounts as letter icons at the top left.
@@ -90,6 +115,7 @@ func (h *HUD) drawQueue(screen *ebiten.Image) {
 		total += float64(len(w.Text))*13.0 + spacing
 	}
 	total -= spacing
+	h.drawConveyorBelt(screen, total)
 	x := h.game.wordProcessX - h.game.conveyorOffset
 	y := h.game.wordProcessY
 
