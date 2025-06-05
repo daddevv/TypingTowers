@@ -48,6 +48,9 @@ go run ./cmd/game          # Ebiten entry
 go test -tags test ./...
 ```
 
+The `resources_integration_test.go` integration test runs the game headlessly
+for three minutes and verifies that all resources accumulate from zero.
+
 -## Current prototype
 
 - Shared FIFO queue manager implemented. Buildings enqueue words that are processed **letter by letter**. Completing a Barracks word spawns a Footman.
