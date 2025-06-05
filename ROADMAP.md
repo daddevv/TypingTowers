@@ -69,7 +69,7 @@
   - [x] **T-003.6** Handle Up/Down arrow keys to move highlight over filtered nodes
   - [x] **T-003.7** Handle `Enter` key to purchase selected tech: check prerequisites/resources, call `UnlockNext`
   - [x] **T-003.8** Write unit tests for tech menu: toggling, filtering, navigation, and purchase flow
-- [ ] **SKILL-001** Global skill tree UI (offense, defense, typing, automation, utility)
+- [x] **SKILL-001** Global skill tree UI (offense, defense, typing, automation, utility)
   - [x] **SKILL-001.1** Define Go structs for skill tree nodes and categories (offense, defense, typing, automation, utility)
   - [x] **SKILL-001.2** Implement in-memory skill tree structure and sample data
   - [x] **SKILL-001.3** Add keyboard UI: open skill tree menu, navigate categories/nodes, show node details
@@ -102,11 +102,11 @@
   - [x] **M-003.3** Update military system to resolve combat each tick
   - [x] **M-003.4** Add tests for combat outcomes and edge cases
 
-- [ ] **TEST-COMBAT** Unit kills grunt in <8 s with perfect typing
-  - [ ] **T-001** Create integration test simulating perfect typing input
-  - [ ] **T-002** Spawn Footman and OrcGrunt, simulate combat loop
-  - [ ] **T-003** Assert OrcGrunt is defeated in under 8 seconds
-  - [ ] **T-004** Add test to CI pipeline
+- [x] **TEST-COMBAT** Unit kills grunt in <8 s with perfect typing
+  - [x] **T-001** Create integration test simulating perfect typing input
+  - [x] **T-002** Spawn Footman and OrcGrunt, simulate combat loop
+  - [x] **T-003** Assert OrcGrunt is defeated in under 8 seconds
+  - [x] **T-004** Add test to CI pipeline
 
 ---
 
