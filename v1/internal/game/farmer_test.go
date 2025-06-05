@@ -67,8 +67,11 @@ func TestFarmerResourceOutput(t *testing.T) {
 
 func TestFarmerAddsResourcesToPool(t *testing.T) {
 	f := NewFarmer()
+	f.SetLetterPool([]rune{'f', 'j'})
+	f.SetInterval(0.1)
+	f.SetCooldown(0.1)
 	pool := &ResourcePool{}
-	word := f.Update(2.0)
+	word := f.Update(0.11)
 	if word == "" {
 		t.Fatalf("expected word generated")
 	}

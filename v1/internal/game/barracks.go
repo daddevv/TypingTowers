@@ -19,13 +19,13 @@ type Barracks struct {
 // NewBarracks creates a new Barracks with default settings.
 func NewBarracks() *Barracks {
 	return &Barracks{
-		// Faster cadence to match farmer and reach 1–1.5 words/sec total
-		timer:       NewCooldownTimer(2.0), // 2 seconds base cooldown
+		// Slower cadence to reduce overall word rate
+		timer:       NewCooldownTimer(9.0), // 9 seconds base cooldown (was 2.0)
 		letterPool:  []rune{'f', 'j'},
 		unlockStage: 0,
-		// Barracks words are slightly longer for difficulty
-		wordLenMin: 3,
-		wordLenMax: 5,
+		// Longer words for more time per word
+		wordLenMin: 4, // was 3
+		wordLenMax: 6, // was 5
 		active:     true,
 		queue:      nil,
 		military:   nil,

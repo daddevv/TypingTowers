@@ -19,11 +19,11 @@ type Lumberjack struct {
 // NewLumberjack creates a new Lumberjack with default settings.
 func NewLumberjack() *Lumberjack {
 	return &Lumberjack{
-		timer:       NewCooldownTimer(1.5),
+		timer:       NewCooldownTimer(8.0), // 8 seconds between words (was 1.5)
 		letterPool:  []rune{'f', 'j'},
 		unlockStage: 0,
-		wordLenMin:  2,
-		wordLenMax:  4,
+		wordLenMin:  4, // Longer words (was 2)
+		wordLenMax:  6, // Longer words (was 4)
 		resourceOut: 1,
 		active:      true,
 	}

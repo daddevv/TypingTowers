@@ -20,11 +20,11 @@ type Miner struct {
 // NewMiner creates a new Miner with default settings.
 func NewMiner() *Miner {
 	return &Miner{
-		timer:       NewCooldownTimer(1.5),
+		timer:       NewCooldownTimer(10.0), // 10 seconds between words (was 1.5)
 		letterPool:  []rune{'f', 'j'},
 		unlockStage: 0,
-		wordLenMin:  2,
-		wordLenMax:  4,
+		wordLenMin:  4, // Longer words (was 2)
+		wordLenMax:  6, // Longer words (was 4)
 		stoneOut:    1,
 		ironOut:     1,
 		active:      true,

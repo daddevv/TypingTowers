@@ -154,7 +154,7 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 	ebiten.SetWindowTitle("TypingTowers")
 	ebiten.SetWindowSize(1920/8, 1080/8)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
-	// ebiten.SetFullscreen(true)
+	ebiten.SetFullscreen(true)
 
 	g := &Game{
 		history:         hist,

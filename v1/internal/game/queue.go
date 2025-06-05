@@ -32,8 +32,8 @@ func (q *QueueManager) Update(dt float64) {
 	if q.base == nil {
 		return
 	}
-	// With letter-level queue items, allow a larger backlog before damage
-	if len(q.queue) >= 20 {
+	// With letter-level queue items, allow a moderate backlog before damage
+	if len(q.queue) >= 6 { // was 20, now 6 to match test expectations
 		q.timer += dt
 		if q.timer >= 1 {
 			q.base.Damage(1)

@@ -130,6 +130,7 @@ func NewTowerWithTypeAndLevel(g *Game, x, y float64, tt TowerType, level int) *T
 		t.damage *= 3
 		t.rangeDst *= 2.0 // Ensure sniper has significantly longer range
 		t.cooldownTimer.SetInterval(t.cooldownTimer.interval * 2.5) // slower fire rate
+		t.rate *= 2.5 // update rate for display/upgrades
 		t.ammoCapacity = 3
 	case TowerRapid:
 		if t.damage > 1 {
@@ -137,6 +138,7 @@ func NewTowerWithTypeAndLevel(g *Game, x, y float64, tt TowerType, level int) *T
 		}
 		t.rangeDst *= 0.7
 		t.cooldownTimer.SetInterval(t.cooldownTimer.interval * 0.4) // faster fire rate
+		t.rate *= 0.4 // update rate for display/upgrades
 		t.ammoCapacity = 6
 	}
 

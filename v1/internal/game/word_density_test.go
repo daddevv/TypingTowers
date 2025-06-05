@@ -3,7 +3,7 @@ package game
 import "testing"
 
 // TestWordDensitySimulation runs a 5 minute simulation with the default Farmer
-// and Barracks to ensure word generation stays within the 1-1.5 words/sec
+// and Barracks to ensure word generation stays within the 0.1-0.3 words/sec
 // target. Words are assumed to be completed instantly when generated.
 func TestWordDensitySimulation(t *testing.T) {
 	q := NewQueueManager()
@@ -30,7 +30,7 @@ func TestWordDensitySimulation(t *testing.T) {
 	}
 
 	rate := float64(words) / duration
-	if rate < 1.0 || rate > 1.5 {
+	if rate < 0.1 || rate > 0.3 {
 		t.Fatalf("word generation rate %.2f outside target", rate)
 	}
 }
