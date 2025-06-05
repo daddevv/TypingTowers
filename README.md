@@ -52,6 +52,7 @@ go test ./...
 
 - Shared FIFO queue manager implemented. Farmer and Barracks enqueue words (f j pool) that must be typed in order. Completing a Barracks word spawns a Footman.
 - Basic orc grunt waves scale every 45 s.
+- Back-pressure damage: if the queue grows to 5 words, the base loses 1 HP each second.
 - Typing speed/accuracy multiplier working.
 - Vim navigation for pause/menu/shop implemented.
 - Letter unlock order and costs documented (see `docs/LETTER_UNLOCKS.md`).

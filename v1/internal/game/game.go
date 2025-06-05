@@ -49,6 +49,7 @@ type Game struct {
 	towers      []*Tower
 	mobs        []Enemy
 	projectiles []*Projectile
+	queue       *QueueManager
 	base        *Base
 	hud         *HUD
 	gameOver    bool
@@ -103,6 +104,9 @@ func (g *Game) Gold() int { return g.resources.GoldAmount() }
 // AddGold increases the player's gold.
 func (g *Game) AddGold(n int) { g.resources.AddGold(n) }
 
+// Queue returns the global word queue manager.
+func (g *Game) Queue() *QueueManager { return g.queue }
+
 // SpendGold attempts to deduct the given amount of gold and returns true on success.
 func (g *Game) SpendGold(n int) bool { return g.resources.Gold.Spend(n) }
 
@@ -141,6 +145,7 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		cfg:             &cfg,
 		mobs:            make([]Enemy, 0),
 		projectiles:     make([]*Projectile, 0),
+		queue:           NewQueueManager(),
 		letterPool:      make([]rune, 0),
 		unlockStage:     0,
 		techTree:        DefaultTechTree(),
@@ -165,6 +170,9 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		hp = BaseStartingHealth
 	}
 	g.base = NewBase(float64(tx+32), float64(ty+16), hp)
+	if g.queue != nil {
+		g.queue.SetBase(g.base)
+	}
 
 	tx, ty = tilePosition(2, 16)
 	tower := NewTower(g, float64(tx+16), float64(ty+16))
@@ -185,6 +193,9 @@ func (g *Game) Update() error {
 	}
 	g.lastUpdate = now
 	g.input.Update()
+	if g.queue != nil {
+		g.queue.Update(dt)
+	}
 
 	if g.flashTimer > 0 {
 		g.flashTimer -= dt
