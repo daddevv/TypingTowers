@@ -107,7 +107,8 @@ See the [ROADMAP.md](./ROADMAP.md) for detailed tasks.
 - Word generation logic and cooldown behavior are tested in `barracks_test.go`.
  - HUD now shows cooldown progress bars for the Farmer and Barracks.
  - HUD also displays resource icons for Gold, Wood, Stone, Iron and Mana.
- - Press `/` to enter tower selection mode. The screen dims and towers are labeled with letters; press a letter to open that tower's upgrade menu.
+
+- Press `/` to enter tower selection mode. The screen dims and towers are labeled with letters; press a letter to open that tower's upgrade menu.
 - Press `:` to enter command mode for quick text commands like `pause` or `quit`.
 
 See docs/REQUIREMENTS.md for the full feature scaffold, ROADMAP.md for planned phases, and TODO.md for sprint tasks.

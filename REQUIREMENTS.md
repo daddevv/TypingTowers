@@ -124,6 +124,7 @@ All new features are optional enhancements, preserving the educational and acces
 | **UI-TITLE-2** | Title screen has a simple animated background and is keyboard navigable. |
 | **UI-PREGAME-1** | Pre-game setup screen handles character and difficulty selection, tutorial, typing test and mode selection. |
 | **UI-TOWER-1** | `/` enters tower selection mode, labels towers with letters and opens an upgrade menu for the chosen tower. |
+| **UI-TOWER-2** | While selecting, the HUD overlays each tower with a yellow box and its letter label. |
 | **UI-TOWER-2** | Tower selection mode dims the background and displays letter labels above towers. |
 | **UI-CMD-1** | `:` enters command mode allowing text commands like `pause` or `quit`. |
 
