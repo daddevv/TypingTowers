@@ -135,10 +135,32 @@ func (h *HUD) drawQueue(screen *ebiten.Image) {
 	}
 }
 
+// drawTowerSelectionOverlay draws letter labels and highlight boxes over each
+// tower when tower selection mode is active.
+func (h *HUD) drawTowerSelectionOverlay(screen *ebiten.Image) {
+	if !h.game.towerSelectMode {
+		return
+	}
+	for label, idx := range h.game.towerLabels {
+		if idx < 0 || idx >= len(h.game.towers) {
+			continue
+		}
+		t := h.game.towers[idx]
+		bx, by, bw, bh := t.Bounds()
+		vector.StrokeRect(screen, float32(bx-4), float32(by-4), float32(bw+8), float32(bh+8), 2, color.RGBA{255, 255, 0, 200}, false)
+
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(float64(bx)+float64(bw)/2-6, float64(by)-20)
+		opts.ColorScale.ScaleWithColor(color.White)
+		text.Draw(screen, label, BoldFont, opts)
+	}
+}
+
 // Draw renders ammo count, tower stats, reload prompts, and shop interface.
 func (h *HUD) Draw(screen *ebiten.Image) {
 	h.drawResourceIcons(screen)
 	h.drawQueue(screen)
+	h.drawTowerSelectionOverlay(screen)
 	if h.game.commandMode {
 		drawMenu(screen, []string{":" + h.game.commandBuffer}, 860, 1020)
 		return
