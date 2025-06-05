@@ -114,6 +114,7 @@ All new features are optional enhancements, preserving the educational and acces
 | **UI-NAV-3** | Global queue must be readable at 720p and 4k; colour-blind palette support. |
 | **UI-NAV-4** | Hot-reload config `F5`. |
 | **UI-NAV-5** | Key-rebinder supports QWERTY, Colemak, Dvorak. |
+| **UI-BUILD-1** | HUD displays cooldown progress for Farmer and Barracks. |
 
 *Planned: Typed commands for minion management, skill tree navigation, and minigames. All new features remain keyboard-only.*
 

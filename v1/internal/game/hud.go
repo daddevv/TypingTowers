@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"image/color"
+	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
@@ -12,6 +13,21 @@ import (
 // HUD displays placeholder UI elements with basic game information.
 type HUD struct {
 	game *Game
+}
+
+// progressBar returns a simple ASCII progress bar of the given width.
+func progressBar(progress float64, width int) string {
+	if progress < 0 {
+		progress = 0
+	}
+	if progress > 1 {
+		progress = 1
+	}
+	filled := int(progress * float64(width))
+	if filled > width {
+		filled = width
+	}
+	return "[" + strings.Repeat("#", filled) + strings.Repeat("-", width-filled) + "]"
 }
 
 // NewHUD creates a new HUD bound to the given game.
@@ -133,6 +149,14 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 		acc := h.game.typing.Accuracy() * 100
 		wpm := h.game.typing.WPM()
 		lines = append(lines, fmt.Sprintf("Accuracy: %.0f%% | WPM: %.1f", acc, wpm))
+		if h.game.farmer != nil {
+			prog := h.game.farmer.CooldownProgress()
+			lines = append(lines, "Farmer "+progressBar(prog, 10))
+		}
+		if h.game.barracks != nil {
+			prog := h.game.barracks.CooldownProgress()
+			lines = append(lines, "Barracks "+progressBar(prog, 10))
+		}
 		cost := h.game.cfg.TowerConstructionCost
 		if cost == 0 {
 			cost = DefaultConfig.TowerConstructionCost

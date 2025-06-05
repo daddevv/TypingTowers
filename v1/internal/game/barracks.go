@@ -91,3 +91,9 @@ func (b *Barracks) SetQueue(q *QueueManager) { b.queue = q }
 
 // SetMilitary assigns a Military system for unit tracking.
 func (b *Barracks) SetMilitary(m *Military) { b.military = m }
+
+// CooldownProgress returns 0 when the timer was just reset and 1 when ready.
+func (b *Barracks) CooldownProgress() float64 { return b.timer.Progress() }
+
+// CooldownRemaining exposes the remaining cooldown time.
+func (b *Barracks) CooldownRemaining() float64 { return b.timer.Remaining() }
