@@ -28,6 +28,7 @@ func (s *stubInput) Build() bool        { return false }
 func (s *stubInput) Save() bool         { return false }
 func (s *stubInput) Load() bool         { return false }
 func (s *stubInput) Command() bool      { c := s.command; s.command = false; return c }
+func (s *stubInput) TechMenu() bool     { return false }
 
 func TestQueueJamMistypeFeedback(t *testing.T) {
 	g := NewGame()

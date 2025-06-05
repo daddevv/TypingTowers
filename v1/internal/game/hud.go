@@ -156,11 +156,34 @@ func (h *HUD) drawTowerSelectionOverlay(screen *ebiten.Image) {
 	}
 }
 
+// drawTechMenu renders the tech purchase overlay when active.
+func (h *HUD) drawTechMenu(screen *ebiten.Image) {
+	if !h.game.techMenuOpen {
+		return
+	}
+	nodes := h.game.filteredTechNodes()
+	lines := []string{"-- TECH --", "Search: " + h.game.searchBuffer}
+	for i, n := range nodes {
+		letters := strings.Builder{}
+		for _, r := range n.Letters {
+			letters.WriteRune(r)
+		}
+		line := fmt.Sprintf("%s [%s] - %s", n.Name, letters.String(), n.Achievement)
+		prefix := "  "
+		if i == h.game.techCursor {
+			prefix = "> "
+		}
+		lines = append(lines, prefix+line)
+	}
+	drawMenu(screen, lines, 760, 300)
+}
+
 // Draw renders ammo count, tower stats, reload prompts, and shop interface.
 func (h *HUD) Draw(screen *ebiten.Image) {
 	h.drawResourceIcons(screen)
 	h.drawQueue(screen)
 	h.drawTowerSelectionOverlay(screen)
+	h.drawTechMenu(screen)
 	if h.game.commandMode {
 		drawMenu(screen, []string{":" + h.game.commandBuffer}, 860, 1020)
 		return

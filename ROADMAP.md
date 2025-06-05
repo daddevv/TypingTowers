@@ -60,15 +60,15 @@
   - [x] **T-002.4** Build in-memory graph (nodes by ID, adjacency)
   - [x] **T-002.5** Expose graph API (GetPrerequisites, UnlockOrder)
   - [x] **T-002.6** Write unit tests for parser and validation
-- [ ] **T-003** Keyboard UI for tech purchase (`/` search, `Enter` buy)
-  - [ ] **T-003.1** Add `techMenuOpen`, `searchBuffer`, and selection index fields to `Game`
-  - [ ] **T-003.2** Capture `/` key in `Input.Update` to toggle tech menu mode
-  - [ ] **T-003.3** Render tech menu overlay: list `TechNode.Name`, unlocked letters, and achievements
-  - [ ] **T-003.4** Implement search input handling: append typed chars and backspace to `searchBuffer`
-  - [ ] **T-003.5** Filter `TechTree.nodes` by `searchBuffer` and update displayed list
-  - [ ] **T-003.6** Handle Up/Down arrow keys to move highlight over filtered nodes
-  - [ ] **T-003.7** Handle `Enter` key to purchase selected tech: check prerequisites/resources, call `UnlockNext`
-  - [ ] **T-003.8** Write unit tests for tech menu: toggling, filtering, navigation, and purchase flow
+- [x] **T-003** Keyboard UI for tech purchase (`/` search, `Enter` buy)
+  - [x] **T-003.1** Add `techMenuOpen`, `searchBuffer`, and selection index fields to `Game`
+  - [x] **T-003.2** Capture `/` key in `Input.Update` to toggle tech menu mode
+  - [x] **T-003.3** Render tech menu overlay: list `TechNode.Name`, unlocked letters, and achievements
+  - [x] **T-003.4** Implement search input handling: append typed chars and backspace to `searchBuffer`
+  - [x] **T-003.5** Filter `TechTree.nodes` by `searchBuffer` and update displayed list
+  - [x] **T-003.6** Handle Up/Down arrow keys to move highlight over filtered nodes
+  - [x] **T-003.7** Handle `Enter` key to purchase selected tech: check prerequisites/resources, call `UnlockNext`
+  - [x] **T-003.8** Write unit tests for tech menu: toggling, filtering, navigation, and purchase flow
 - [ ] **SKILL-001** Global skill tree UI (offense, defense, typing, automation, utility)
   - [ ] **SKILL-001.1** Define Go structs for skill tree nodes and categories (offense, defense, typing, automation, utility)
   - [ ] **SKILL-001.2** Implement in-memory skill tree structure and sample data

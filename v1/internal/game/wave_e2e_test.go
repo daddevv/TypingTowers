@@ -30,6 +30,7 @@ func (w *waveInput) Save() bool         { return false }
 func (w *waveInput) Load() bool         { return false }
 func (w *waveInput) SelectTower() bool  { return false }
 func (w *waveInput) Command() bool      { c := w.command; w.command = false; return c }
+func (w *waveInput) TechMenu() bool     { return false }
 
 // TestSurviveFiveWaves simulates five waves with perfect typing input.
 func TestSurviveFiveWaves(t *testing.T) {

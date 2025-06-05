@@ -27,6 +27,7 @@ func (s *stubInput) Save() bool         { return false }
 func (s *stubInput) Load() bool         { return false }
 func (s *stubInput) SelectTower() bool  { return false }
 func (s *stubInput) Command() bool      { c := s.command; s.command = false; return c }
+func (s *stubInput) TechMenu() bool     { return false }
 
 // TestCoreLoopSim runs the main game loop in headless mode and verifies core
 // systems interact as expected.

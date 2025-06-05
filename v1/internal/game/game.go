@@ -78,6 +78,10 @@ type Game struct {
 	achievements []string
 	towerMods    TowerModifiers
 
+	techMenuOpen bool
+	searchBuffer string
+	techCursor   int
+
 	score           int
 	gameOverHandled bool
 	history         *PerformanceHistory
@@ -198,6 +202,9 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		buildCursor:     0,
 		upgradeMenuOpen: false,
 		upgradeCursor:   0,
+		techMenuOpen:    false,
+		searchBuffer:    "",
+		techCursor:      0,
 		flashTimer:      0,
 		queue:           NewQueueManager(),
 		farmer:          NewFarmer(),
@@ -1065,6 +1072,87 @@ func (g *Game) buildTowerAtCursorType(tt TowerType) {
 	g.SpendGold(cost)
 }
 
+// applyNextTech unlocks the next tech node and applies its effects.
+func (g *Game) applyNextTech() {
+	if g.techTree == nil || g.techTree.Completed() {
+		return
+	}
+	letters, ach, mods := g.techTree.UnlockNext()
+	if len(letters) > 0 {
+		existing := make(map[rune]struct{})
+		for _, r := range g.letterPool {
+			existing[r] = struct{}{}
+		}
+		for _, r := range letters {
+			if _, ok := existing[r]; !ok {
+				g.letterPool = append(g.letterPool, r)
+			}
+		}
+	}
+	if mods != (TowerModifiers{}) {
+		g.towerMods = g.towerMods.Merge(mods)
+		for _, t := range g.towers {
+			t.ApplyModifiers(mods)
+		}
+	}
+	if ach != "" {
+		g.achievements = append(g.achievements, ach)
+	}
+}
+
+// filteredTechNodes returns remaining tech nodes matching the search buffer.
+func (g *Game) filteredTechNodes() []TechNode {
+	if g.techTree == nil {
+		return nil
+	}
+
+	if g.input.TechMenu() {
+		g.techMenuOpen = !g.techMenuOpen
+		if g.techMenuOpen {
+			g.searchBuffer = ""
+			g.techCursor = 0
+		}
+		return nil
+	}
+
+	if g.techMenuOpen {
+		for _, r := range g.input.TypedChars() {
+			if unicode.IsPrint(r) {
+				g.searchBuffer += string(r)
+			}
+		}
+		if g.input.Backspace() && len(g.searchBuffer) > 0 {
+			g.searchBuffer = g.searchBuffer[:len(g.searchBuffer)-1]
+		}
+		nodes := g.filteredTechNodes()
+		if len(nodes) > 0 {
+			if g.input.Down() {
+				g.techCursor = (g.techCursor + 1) % len(nodes)
+			}
+			if g.input.Up() {
+				g.techCursor = (g.techCursor - 1 + len(nodes)) % len(nodes)
+			}
+			if g.input.Enter() {
+				node := nodes[g.techCursor]
+				if g.techTree.stage < len(g.techTree.nodes) && node.Name == g.techTree.nodes[g.techTree.stage].Name {
+					g.applyNextTech()
+					g.techMenuOpen = false
+				}
+			}
+		}
+		return nil
+	}
+	var out []TechNode
+	term := strings.ToLower(g.searchBuffer)
+	for i := g.techTree.stage; i < len(g.techTree.nodes); i++ {
+		n := g.techTree.nodes[i]
+		if term == "" || strings.Contains(strings.ToLower(n.Name), term) {
+			out = append(out, n)
+		}
+	}
+	return out
+}
+
 // startWave initializes spawn counters for the next wave.
 func (g *Game) startWave() {
 	g.spawnTicker = 0
@@ -1076,30 +1164,7 @@ func (g *Game) startWave() {
 	g.mobsToSpawn = base + inc*(g.currentWave-1)
 	g.spawnInterval = g.cfg.SpawnInterval * 6.0 // Much slower spawning
 
-	// Unlock new tech node for additional letters and tower bonuses
-	if g.techTree != nil {
-		letters, ach, mods := g.techTree.UnlockNext()
-		if len(letters) > 0 {
-			existing := make(map[rune]struct{})
-			for _, r := range g.letterPool {
-				existing[r] = struct{}{}
-			}
-			for _, r := range letters {
-				if _, ok := existing[r]; !ok {
-					g.letterPool = append(g.letterPool, r)
-				}
-			}
-		}
-		if mods != (TowerModifiers{}) {
-			g.towerMods = g.towerMods.Merge(mods)
-			for _, t := range g.towers {
-				t.ApplyModifiers(mods)
-			}
-		}
-		if ach != "" {
-			g.achievements = append(g.achievements, ach)
-		}
-	}
+	g.applyNextTech()
 }
 
 // randomReloadLetter returns a random letter from the current letter pool.
