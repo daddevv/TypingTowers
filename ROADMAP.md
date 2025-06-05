@@ -90,11 +90,11 @@
   - [x] **M-001.4** Add unit tests for Barracks letter-by-letter queue logic
   - [x] **M-001.5** Integrate Barracks with HUD to show letter-by-letter progress
 
-- [ ] **M-002** Footman entity (HP, dmg, speed)
-  - [ ] **M-002.1** Define Footman struct with HP, damage, and speed fields
-  - [ ] **M-002.2** Implement Footman movement and update logic
-  - [ ] **M-002.3** Add Footman spawn logic to Barracks on word completion
-  - [ ] **M-002.4** Write unit tests for Footman creation and state updates
+- [x] **M-002** Footman entity (HP, dmg, speed)
+  - [x] **M-002.1** Define Footman struct with HP, damage, and speed fields
+  - [x] **M-002.2** Implement Footman movement and update logic
+  - [x] **M-002.3** Add Footman spawn logic to Barracks on word completion
+  - [x] **M-002.4** Write unit tests for Footman creation and state updates
 
 - [ ] **M-003** Combat resolution attacker vs orc grunt
   - [ ] **M-003.1** Define OrcGrunt struct with HP and damage
