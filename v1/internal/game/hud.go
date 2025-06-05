@@ -65,7 +65,7 @@ func (h *HUD) drawQueue(screen *ebiten.Image) {
 		total += float64(len(w.Text))*13.0 + spacing
 	}
 	total -= spacing
-	x := h.game.wordProcessX
+	x := h.game.wordProcessX - h.game.conveyorOffset
 	y := h.game.wordProcessY
 
 	for _, w := range words {

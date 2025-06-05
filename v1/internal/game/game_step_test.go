@@ -12,6 +12,14 @@ func (g *Game) Step(dt float64) error {
 		return nil
 	}
 
+	if g.conveyorOffset > 0 {
+		shift := conveyorSpeed * dt
+		if shift > g.conveyorOffset {
+			shift = g.conveyorOffset
+		}
+		g.conveyorOffset -= shift
+	}
+
 	if g.queue != nil {
 		g.queue.Update(dt)
 		if w, ok := g.queue.Peek(); ok {
@@ -25,6 +33,7 @@ func (g *Game) Step(dt float64) error {
 					expected := rune(w.Text[g.queueIndex])
 					if unicode.ToLower(r) == unicode.ToLower(expected) {
 						g.queueIndex++
+						g.conveyorOffset += letterWidth
 						g.typing.Record(true)
 						if g.queueIndex >= len(w.Text) {
 							g.queueIndex = 0

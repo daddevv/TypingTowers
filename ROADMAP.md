@@ -20,9 +20,9 @@
 
 ## Immediate Next Steps (Post-Demo Polish)
 
-- [ ] **QUEUE-001** Letter-by-letter queue processing
-  - [ ] Adjust backlog pressure for letter queues
-  - [ ] Static word processing location at (400, 900) with conveyor effect
+- [x] **QUEUE-001** Letter-by-letter queue processing
+  - [x] Adjust backlog pressure for letter queues
+  - [x] Static word processing location at (400, 900) with conveyor effect
 - [ ] **UI-001** Tower selection and upgrade system
   - [ ] `/` to enter tower selection mode, letter labels, upgrade menu
 - [ ] **CMD-001** Command mode for power users
