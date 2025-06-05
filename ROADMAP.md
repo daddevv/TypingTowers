@@ -120,13 +120,13 @@
   - [x] **T-005** Add keyboard navigation and transitions between states (e.g., Esc to pause, Enter to continue)
   - [x] **T-006** Write unit tests for state transitions and edge cases
 
-- [ ] **SAVE-001** Comprehensive save/load system (multiple slots, auto-save)
-  - [ ] **T-001** Design a save file structure supporting multiple slots and versioning
+- [x] **SAVE-001** Comprehensive save/load system (multiple slots, auto-save)
+  - [x] **T-001** Design a save file structure supporting multiple slots and versioning
   - [x] **T-002** Implement save/load logic for all core game data (resources, towers, buildings, tech, settings)
-  - [ ] **T-003** Add auto-save functionality (e.g., after each wave or major event)
-  - [ ] **T-004** Create a save/load menu UI for selecting slots
-  - [ ] **T-005** Handle save/load errors and version mismatches gracefully
-  - [ ] **T-006** Write integration tests for save/load, including slot switching and auto-save
+  - [x] **T-003** Add auto-save functionality (e.g., after each wave or major event)
+  - [x] **T-004** Create a save/load menu UI for selecting slots
+  - [x] **T-005** Handle save/load errors and version mismatches gracefully
+  - [x] **T-006** Write integration tests for save/load, including slot switching and auto-save
 
 ---
 

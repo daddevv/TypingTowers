@@ -162,7 +162,9 @@ All new features are optional enhancements, preserving the educational and acces
 - **SAVE-1** Auto-save every wave: letter unlock state, tech trees, resources.  
 - **SAVE-2** Three local save-slots; JSON format, versioned.
 - **SAVE-3** Skill tree unlocks persist in save files and are restored on load.
-- **SAVE-4** [In Progress] Save file structure must support multiple slots and versioning for future compatibility.
+- **SAVE-4** Save file structure supports multiple slots and versioning for future compatibility.
+- **SAVE-5** Save/load menu lets the player choose one of three slots.
+- **SAVE-6** Version mismatches are detected and reported gracefully.
 
 *Planned: Save skill tree, minion unlocks, idle progress, and minigame achievements.*
 
