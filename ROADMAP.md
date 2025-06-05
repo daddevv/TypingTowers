@@ -32,9 +32,9 @@
 - [x] **P-004** Per-building cooldown timers
   - [x] Timer tick/update logic
   - [x] Cooldown reset on word completion
-- [ ] **P-005** Playtest word density
-  - [ ] Simulate 5 min session, measure words/sec
-  - [ ] Adjust cooldowns/word lengths for 1–1.5 words/sec target
+- [x] **P-005** Playtest word density
+  - [x] Simulate 5 min session, measure words/sec
+  - [x] Adjust cooldowns/word lengths for 1–1.5 words/sec target
 - [ ] **P-006** Letter unlock order & cost curves
   - [ ] Draft full unlock order for all buildings
   - [ ] Define cost progression for each letter unlock

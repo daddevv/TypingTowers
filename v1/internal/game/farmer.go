@@ -20,10 +20,12 @@ type Farmer struct {
 // NewFarmer creates a new Farmer with default settings.
 func NewFarmer() *Farmer {
 	return &Farmer{
-		timer:       NewCooldownTimer(3.0), // 3 seconds base cooldown
-		letterPool:  []rune{'f', 'j'},
-		wordLenMin:  2,
-		wordLenMax:  3,
+		// Shorter cooldown to hit ~1 word/sec with Barracks combined
+		timer:      NewCooldownTimer(1.5), // 1.5 seconds base cooldown
+		letterPool: []rune{'f', 'j'},
+		wordLenMin: 2,
+		// Slightly longer words to balance the faster rate
+		wordLenMax:  4,
 		resourceOut: 1,
 		active:      true,
 		queue:       nil,
