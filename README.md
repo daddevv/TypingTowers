@@ -122,6 +122,8 @@ See the [ROADMAP.md](./ROADMAP.md) for detailed tasks.
 - Press `Tab` to open the global skill tree. Use arrow keys to change categories and highlight skills. Locked and unlocked skills are indicated.
 - Unlocking a skill immediately applies its bonuses and is saved with your game.
 - Press `:` to enter command mode for quick text commands like `pause` or `quit`.
+- Press `F2` or `F3` to open the save/load slot menu. Select a slot with the arrow keys and confirm with `Enter`.
+- The game auto-saves to the active slot whenever a wave ends.
 
 See docs/REQUIREMENTS.md for the full feature scaffold, ROADMAP.md for planned phases, and TODO.md for sprint tasks.
 

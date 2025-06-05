@@ -217,6 +217,26 @@ func (h *HUD) drawSkillMenu(screen *ebiten.Image) {
 	drawMenu(screen, lines, 760, 300)
 }
 
+// drawSlotMenu renders the save/load slot selection overlay when active.
+func (h *HUD) drawSlotMenu(screen *ebiten.Image) {
+	if !h.game.slotMenuOpen {
+		return
+	}
+	title := "-- SAVE SLOT --"
+	if !h.game.slotModeSave {
+		title = "-- LOAD SLOT --"
+	}
+	lines := []string{title}
+	for i := 0; i < 3; i++ {
+		prefix := "  "
+		if i == h.game.slotCursor {
+			prefix = "> "
+		}
+		lines = append(lines, fmt.Sprintf("%sSlot %d", prefix, i+1))
+	}
+	drawMenu(screen, lines, 860, 480)
+}
+
 // drawSkillTreeOverlay renders the global skill tree when active.
 func (h *HUD) drawSkillTreeOverlay(screen *ebiten.Image) {
 	if !h.game.skillMenuOpen {
@@ -269,4 +289,5 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 	h.drawTowerSelectionOverlay(screen)
 	h.drawTechMenu(screen)
 	h.drawSkillMenu(screen)
+	h.drawSlotMenu(screen)
 }

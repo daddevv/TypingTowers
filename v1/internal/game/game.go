@@ -2,11 +2,13 @@ package game
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"image/color"
 	"math"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"sort"
 	"time"
 
@@ -22,12 +24,16 @@ import (
 const jamFlashDuration = 0.15
 const conveyorSpeed = 200.0 // pixels per second for queue slide
 const letterWidth = 13.0    // approximate width of a character
+const SaveVersion = 1
 
 var (
 	mousePressed bool
 	clickedTileX int
 	clickedTileY int
 	houses       = make(map[string]struct{})
+
+	// ErrSaveVersion indicates the save file version is incompatible.
+	ErrSaveVersion = errors.New("save file version mismatch")
 )
 
 type savedTower struct {
@@ -40,6 +46,7 @@ type savedTower struct {
 }
 
 type savedGame struct {
+	Version  int
 	Gold     int
 	Food     int
 	Wave     int
@@ -119,6 +126,15 @@ type Game struct {
 
 	flashTimer float64
 
+	// Persistence
+	saveDir       string
+	saveSlot      int
+	lastWaveSaved int
+
+	slotMenuOpen bool
+	slotCursor   int
+	slotModeSave bool
+
 	// Building integration
 	queue      *QueueManager
 	farmer     *Farmer
@@ -163,6 +179,22 @@ func (g *Game) Queue() *QueueManager { return g.queue }
 
 // SpendGold attempts to deduct the given amount of gold and returns true on success.
 func (g *Game) SpendGold(n int) bool { return g.resources.Gold.Spend(n) }
+
+// currentSavePath returns the file path for the active save slot.
+func (g *Game) currentSavePath() string {
+	name := fmt.Sprintf("save_slot%d.json", g.saveSlot)
+	return filepath.Join(g.saveDir, name)
+}
+
+// SetSaveSlot changes the active save slot for subsequent saves/loads.
+func (g *Game) SetSaveSlot(slot int) {
+	if slot < 1 {
+		slot = 1
+	} else if slot > 3 {
+		slot = 3
+	}
+	g.saveSlot = slot
+}
 
 // NewGame creates a new instance of the Game.
 func NewGame() *Game {
@@ -225,6 +257,12 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		skillCursor:     0,
 		skillCategory:   SkillOffense,
 		flashTimer:      0,
+		saveDir:         ".",
+		saveSlot:        1,
+		lastWaveSaved:   0,
+		slotMenuOpen:    false,
+		slotCursor:      0,
+		slotModeSave:    true,
 		queue:           NewQueueManager(),
 		farmer:          NewFarmer(),
 		lumberjack:      NewLumberjack(),
@@ -526,13 +564,9 @@ func (g *Game) Update() error {
 		}
 	}
 
-	if g.input.Save() {
-		g.saveGame("savegame.json")
-	}
-	if g.input.Load() {
-		if err := g.loadGame("savegame.json"); err != nil {
-			fmt.Println("load game:", err)
-		}
+	g.handleSlotMenuInput()
+	if g.slotMenuOpen {
+		return nil
 	}
 
 	if g.input.Space() && g.phase == PhasePlaying {
@@ -703,7 +737,13 @@ func (g *Game) Update() error {
 			g.mobsToSpawn--
 		}
 	} else if len(g.mobs) == 0 {
-		g.shopOpen = true
+		if !g.shopOpen {
+			g.shopOpen = true
+			if g.lastWaveSaved != g.currentWave {
+				g.saveGame(g.currentSavePath())
+				g.lastWaveSaved = g.currentWave
+			}
+		}
 	}
 
 	// Update buildings and units
@@ -1289,6 +1329,42 @@ func (g *Game) handleSkillMenuInput() {
 	}
 }
 
+// handleSlotMenuInput manages the save/load slot selection overlay.
+func (g *Game) handleSlotMenuInput() {
+	if g.input.Save() {
+		g.slotMenuOpen = true
+		g.slotModeSave = true
+		g.slotCursor = 0
+	}
+	if g.input.Load() {
+		g.slotMenuOpen = true
+		g.slotModeSave = false
+		g.slotCursor = 0
+	}
+	if !g.slotMenuOpen {
+		return
+	}
+	if g.input.Down() {
+		g.slotCursor = (g.slotCursor + 1) % 3
+	}
+	if g.input.Up() {
+		g.slotCursor = (g.slotCursor - 1 + 3) % 3
+	}
+	if g.input.Enter() {
+		g.SetSaveSlot(g.slotCursor + 1)
+		path := g.currentSavePath()
+		if g.slotModeSave {
+			g.saveGame(path)
+			g.lastWaveSaved = g.currentWave
+		} else {
+			if err := g.loadGame(path); err != nil {
+				fmt.Println("load game:", err)
+			}
+		}
+		g.slotMenuOpen = false
+	}
+}
+
 // enterTowerSelectMode assigns letter labels to towers and activates selection mode.
 func (g *Game) enterTowerSelectMode() {
 	g.towerLabels = make(map[string]int)
@@ -1487,6 +1563,7 @@ func (g *Game) reloadConfig(path string) error {
 
 func (g *Game) saveGame(path string) {
 	sg := savedGame{
+		Version:  SaveVersion,
 		Gold:     g.resources.GoldAmount(),
 		Food:     g.resources.FoodAmount(),
 		Wave:     g.currentWave,
@@ -1521,6 +1598,9 @@ func (g *Game) loadGame(path string) error {
 	var sg savedGame
 	if err := json.Unmarshal(data, &sg); err != nil {
 		return err
+	}
+	if sg.Version != SaveVersion {
+		return ErrSaveVersion
 	}
 	*g = *NewGameWithConfig(*g.cfg)
 	g.resources.Gold.Set(sg.Gold)
