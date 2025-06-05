@@ -27,9 +27,9 @@
   - [x] Display color-coded words (per building `family`) in the typing queue.
   - [x] Ensure words from Farmer and Barracks correctly populate the global queue.
   - [x] Typing validation and word dequeue logic functions as expected.
-- [ ] **INT-004** Integrate Per-Building Cooldown Timers with UI
-  - [ ] Display visual cooldown progress for Farmer and Barracks.
-  - [ ] Cooldowns reset correctly after word completion.
+- [x] **INT-004** Integrate Per-Building Cooldown Timers with UI
+  - [x] Display visual cooldown progress for Farmer and Barracks.
+  - [x] Cooldowns reset correctly after word completion.
 - [ ] **INT-005** Integrate Back-Pressure Damage mechanic
   - [ ] Player/base health decreases when active word queue exceeds threshold (e.g., ≥ 5 words).
   - [ ] Link to player health system.

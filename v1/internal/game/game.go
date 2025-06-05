@@ -56,6 +56,9 @@ type Game struct {
 	paused      bool
 	resources   ResourcePool
 
+	farmer   *Farmer
+	barracks *Barracks
+
 	shopOpen bool
 
 	selectedTower int
@@ -501,14 +504,17 @@ func (g *Game) Update() error {
 	}
 
 	// Update buildings and units
-	if g.farmer != nil {
-		g.farmer.Update(dt)
-	}
-	if g.barracks != nil {
-		g.barracks.Update(dt)
-	}
 	if g.military != nil {
 		g.military.Update(dt)
+	if g.farmer != nil {
+		if w := g.farmer.Update(dt); w != "" {
+			g.farmer.OnWordCompleted(w, &g.resources)
+		}
+	}
+	if g.barracks != nil {
+		if w := g.barracks.Update(dt); w != "" {
+			g.barracks.OnWordCompleted(w)
+		}
 	}
 
 	for _, t := range g.towers {
