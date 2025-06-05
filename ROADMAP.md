@@ -27,8 +27,8 @@
   - [ ] `/` to enter tower selection mode, letter labels, upgrade menu
 - [ ] **CMD-001** Command mode for power users
   - [ ] `:` to enter command mode, basic and advanced commands
-- [ ] **TITLE-001** Title screen and main menu
-  - [ ] MainMenuState, logo, background music, animated background, settings
+- [x] **TITLE-001** Title screen and main menu
+  - [x] MainMenuState, logo, background music, animated background, settings
 - [ ] **PREGAME-001** Pre-game setup and tutorial
   - [ ] Character/difficulty selection, tutorial, typing test, mode selection
 

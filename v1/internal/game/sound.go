@@ -22,13 +22,35 @@ func getAudioContext() *audio.Context {
 
 // SoundManager handles basic sound effects and music.
 type SoundManager struct {
-	ctx  *audio.Context
-	mute bool
+	ctx   *audio.Context
+	mute  bool
+	music *audio.Player
 }
 
 // NewSoundManager creates a SoundManager with an audio context.
 func NewSoundManager() *SoundManager {
 	return &SoundManager{ctx: getAudioContext()}
+}
+
+// StartMusic begins a simple looping tone for the title screen.
+func (s *SoundManager) StartMusic() {
+	if s == nil || s.mute || s.music != nil {
+		return
+	}
+	buf := generateSineWave(110, 0.5)
+	loop := audio.NewInfiniteLoop(bytes.NewReader(buf), sampleRate/2)
+	p, _ := s.ctx.NewPlayer(loop)
+	p.Play()
+	s.music = p
+}
+
+// StopMusic stops any playing music.
+func (s *SoundManager) StopMusic() {
+	if s == nil || s.music == nil {
+		return
+	}
+	s.music.Close()
+	s.music = nil
 }
 
 // ToggleMute enables or disables all sound output.

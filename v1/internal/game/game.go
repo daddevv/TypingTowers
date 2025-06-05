@@ -125,6 +125,11 @@ type Game struct {
 	wordProcessY float64
 	// Visual offset for conveyor belt animation
 	conveyorOffset float64
+
+	// High level state
+	phase    GamePhase
+	mainMenu *MainMenu
+	quit     bool
 }
 
 // Gold returns the player's current gold amount.
@@ -200,6 +205,11 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		commandBuffer:   "",
 		towerSelectMode: false,
 		towerLabels:     make(map[string]int),
+		phase:           PhaseMenu,
+		mainMenu:        NewMainMenu(),
+	}
+	if g.sound != nil {
+		g.sound.StartMusic()
 	}
 
 	tx, ty := tilePosition(1, 16)
@@ -227,7 +237,6 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 	tower := NewTower(g, float64(tx+16), float64(ty+16))
 	tower.ApplyModifiers(g.towerMods)
 	g.towers = []*Tower{tower}
-	g.startWave()
 	g.lastUpdate = time.Now()
 	g.hud = NewHUD(g)
 	return g
@@ -242,6 +251,14 @@ func (g *Game) Update() error {
 	}
 	g.lastUpdate = now
 	g.input.Update()
+
+	if g.input.Quit() {
+		return ebiten.Termination
+	}
+
+	if g.phase == PhaseMenu {
+		return g.mainMenu.Update(g, dt)
+	}
 
 	// Animate conveyor belt offset
 	if g.conveyorOffset > 0 {
@@ -648,6 +665,11 @@ func (g *Game) Update() error {
 // Draw renders the game to the screen. This method is called every frame.
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.screen.Clear()
+	if g.phase == PhaseMenu {
+		g.mainMenu.Draw(g, g.screen)
+		g.renderFrame(screen)
+		return
+	}
 	drawBackgroundTilemap(g.screen)
 
 	if g.gameOver {
