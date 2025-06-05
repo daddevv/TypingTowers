@@ -181,6 +181,7 @@ All new features are optional enhancements, preserving the educational and acces
 - **TEST-1** Unit tests cover queue manager, letter generator, tech unlock gating, damage math, Vim navigation.  
 - **TEST-2** Integration tests simulate 100 waves at 40 WPM 95 % accuracy – must not crash; TTK < Tsurvive.
 - **TEST-3** A headless `Step` function (build tag `test`) allows end-to-end simulation of the core gameplay loop.
+- **FUZZ-1** Fuzz tests feed random input into the engine's Step function to ensure robustness against crashes.
 - **BENCH** Benchmark reload throughput vs 60 Hz update loop (Ebiten frame).
 
 ---
