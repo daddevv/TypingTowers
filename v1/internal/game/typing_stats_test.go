@@ -56,3 +56,22 @@ func TestScoreMultiplierAndHistory(t *testing.T) {
 		t.Errorf("history not updated")
 	}
 }
+
+func TestRollingWPM(t *testing.T) {
+	ts := NewTypingStats()
+	base := time.Now()
+	ts.now = func() time.Time { return base }
+	for i := 0; i < 25; i++ {
+		ts.events = append(ts.events, base.Add(-time.Duration(i)*time.Second))
+	}
+	wpm := ts.RollingWPM()
+	if wpm < 9.9 || wpm > 10.1 {
+		t.Errorf("expected ~10 WPM got %.2f", wpm)
+	}
+
+	ts.events = append(ts.events, base.Add(-40*time.Second))
+	wpm = ts.RollingWPM()
+	if wpm < 9.9 || wpm > 10.1 {
+		t.Errorf("old events should be ignored got %.2f", wpm)
+	}
+}

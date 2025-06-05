@@ -254,6 +254,12 @@ func (h *HUD) drawWordStats(screen *ebiten.Image) {
 	opts.GeoM.Translate(10, 80)
 	opts.ColorScale.ScaleWithColor(color.White)
 	text.Draw(screen, line, BoldFont, opts)
+
+	wpmLine := fmt.Sprintf("WPM: %.1f", h.game.typing.RollingWPM())
+	opts = &text.DrawOptions{}
+	opts.GeoM.Translate(10, 100)
+	opts.ColorScale.ScaleWithColor(color.White)
+	text.Draw(screen, wpmLine, BoldFont, opts)
 }
 
 // drawSkillTreeOverlay renders the global skill tree when active.
