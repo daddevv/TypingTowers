@@ -29,9 +29,9 @@
   - [x] Global FIFO queue structure
   - [x] Enqueue from multiple buildings
   - [x] Dequeue and typing validation
-- [ ] **P-004** Per-building cooldown timers
-  - [ ] Timer tick/update logic
-  - [ ] Cooldown reset on word completion
+- [x] **P-004** Per-building cooldown timers
+  - [x] Timer tick/update logic
+  - [x] Cooldown reset on word completion
 - [ ] **P-005** Playtest word density
   - [ ] Simulate 5 min session, measure words/sec
   - [ ] Adjust cooldowns/word lengths for 1–1.5 words/sec target

@@ -6,9 +6,8 @@ import (
 
 // Farmer represents a Gathering building that produces Food on cooldown.
 type Farmer struct {
-	cooldown    float64 // seconds until next word is pushed
-	interval    float64 // base cooldown interval (seconds)
-	letterPool  []rune  // available letters for word generation
+	timer       CooldownTimer // cooldown timer for word generation
+	letterPool  []rune        // available letters for word generation
 	wordLenMin  int
 	wordLenMax  int
 	lastWord    string        // last generated word (for testing/debug)
@@ -21,8 +20,7 @@ type Farmer struct {
 // NewFarmer creates a new Farmer with default settings.
 func NewFarmer() *Farmer {
 	return &Farmer{
-		interval:    3.0, // 3 seconds base cooldown
-		cooldown:    3.0,
+		timer:       NewCooldownTimer(3.0), // 3 seconds base cooldown
 		letterPool:  []rune{'f', 'j'},
 		wordLenMin:  2,
 		wordLenMax:  3,
@@ -35,17 +33,16 @@ func NewFarmer() *Farmer {
 // Update ticks the Farmer's cooldown and pushes a word if ready.
 // Returns the generated word if one is ready, else "".
 func (f *Farmer) Update(dt float64) string {
-	if !f.active {
+	if !f.active || f.pendingWord != "" {
 		return ""
 	}
-	f.cooldown -= dt
-	if f.cooldown <= 0 {
+	if f.timer.Tick(dt) {
 		word := f.generateWord()
 		f.pendingWord = word
 		if f.queue != nil {
 			f.queue.Enqueue(Word{Text: word, Source: "Farmer"})
 		}
-		f.cooldown = f.interval
+		// cooldown resets only after word completion
 		return word
 	}
 	return ""
@@ -70,6 +67,7 @@ func (f *Farmer) generateWord() string {
 func (f *Farmer) OnWordCompleted(word string) int {
 	if word == f.pendingWord {
 		f.pendingWord = ""
+		f.timer.Reset()
 		return f.resourceOut
 	}
 	return 0
@@ -84,6 +82,14 @@ func (f *Farmer) SetLetterPool(pool []rune) {
 func (f *Farmer) SetActive(active bool) {
 	f.active = active
 }
+
+// SetInterval changes the base cooldown interval.
+func (f *Farmer) SetInterval(interval float64) {
+	f.timer.SetInterval(interval)
+}
+
+// SetCooldown sets the remaining cooldown directly (for testing).
+func (f *Farmer) SetCooldown(c float64) { f.timer.remaining = c }
 
 // SetQueue assigns a QueueManager for global word management.
 func (f *Farmer) SetQueue(q *QueueManager) { f.queue = q }

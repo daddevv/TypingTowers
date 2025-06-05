@@ -55,6 +55,7 @@ All new features are optional enhancements, preserving the educational and acces
 - **B-GEN-2** Level ups may grant:  
   - Shorter CD, longer word (more output), additional effect (crit, AoE, heal).
 - **B-GEN-3** Buildings can be paused (`p` key) – stops pushing words.
+- **B-GEN-4** Cooldown only resets after the building's pending word is completed.
 - **B-MIL-1** Barracks generates a word every cooldown and spawns a Footman unit when that word is completed.
 
 ---

@@ -42,8 +42,10 @@ func TestQueueEnqueueFromBuildings(t *testing.T) {
 	f.SetQueue(q)
 	b.SetQueue(q)
 
-	f.interval, f.cooldown = 0.1, 0.1
-	b.interval, b.cooldown = 0.1, 0.1
+	f.SetInterval(0.1)
+	f.SetCooldown(0.1)
+	b.SetInterval(0.1)
+	b.SetCooldown(0.1)
 
 	f.Update(0.11)
 	b.Update(0.11)

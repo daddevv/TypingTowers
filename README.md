@@ -68,6 +68,7 @@ See the [ROADMAP.md](./ROADMAP.md) for detailed tasks.
 
 - The Farmer building is now implemented as a Gathering structure that generates a word from its letter pool every cooldown cycle (default 3s).
 - Typing the generated word completes the cycle and produces Food resources.
+- Each building's cooldown timer pauses once a word is queued and only resets after that word is typed.
 - The Farmer's cooldown, letter pool, and word length can be configured and extended for progression.
 - See `v1/internal/game/farmer.go` for implementation and `farmer_test.go` for tests.
 
