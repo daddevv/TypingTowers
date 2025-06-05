@@ -36,10 +36,10 @@
 
 ## Resource Loop & HUD
 
-- [ ] **R-001** Implement Gold/Wood/Stone/Iron structs
-- [ ] **R-002** Farmer, Lumberjack, Miner cooldowns produce resources
-  - [ ] Balance numbers in `config.json`
-- [ ] **HUD-001** Top bar resource icons (`G`, `W`, `S`, `I`, `M`)
+- [x] **R-001** Implement Gold/Wood/Stone/Iron structs
+- [x] **R-002** Farmer, Lumberjack, Miner cooldowns produce resources
+  - [x] Balance numbers in `config.json`
+- [x] **HUD-001** Top bar resource icons (`G`, `W`, `S`, `I`, `M`)
 - [ ] **HUD-002** Show word processing queue with conveyor belt animation
 - [ ] **HUD-003** Tower selection overlay with letter labels
 - [ ] **TEST-RES** Integration test 3 min sim, resources > 0

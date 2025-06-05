@@ -105,7 +105,8 @@ See the [ROADMAP.md](./ROADMAP.md) for detailed tasks.
 - Typing the generated word spawns a Footman unit.
 - Spawned units are tracked by the new `Military` system.
 - Word generation logic and cooldown behavior are tested in `barracks_test.go`.
-- HUD now shows cooldown progress bars for the Farmer and Barracks.
+ - HUD now shows cooldown progress bars for the Farmer and Barracks.
+ - HUD also displays resource icons for Gold, Wood, Stone, Iron and Mana.
 - Press `/` to label towers with letters and open an upgrade menu for the chosen tower.
 - Press `:` to enter command mode for quick text commands like `pause` or `quit`.
 
