@@ -95,6 +95,9 @@ type Game struct {
 	buildMenuOpen bool
 	buildCursor   int
 
+	upgradeMenuOpen bool
+	upgradeCursor   int
+
 	sound    *SoundManager
 	settings Settings
 
@@ -192,6 +195,8 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		settings:        DefaultSettings(),
 		buildMenuOpen:   false,
 		buildCursor:     0,
+		upgradeMenuOpen: false,
+		upgradeCursor:   0,
 		flashTimer:      0,
 		queue:           NewQueueManager(),
 		farmer:          NewFarmer(),
@@ -279,6 +284,110 @@ func (g *Game) Update() error {
 		if g.flashTimer < 0 {
 			g.flashTimer = 0
 		}
+	}
+
+	if g.upgradeMenuOpen {
+		const (
+			upgradeDamageCost    = 5
+			upgradeRangeCost     = 5
+			upgradeFireRateCost  = 5
+			upgradeAmmoCost      = 10
+			upgradeForesightCost = 5
+			optionsCount         = 5
+		)
+		if g.input.Down() {
+			g.upgradeCursor = (g.upgradeCursor + 1) % (optionsCount + 1)
+		}
+		if g.input.Up() {
+			g.upgradeCursor = (g.upgradeCursor - 1 + optionsCount + 1) % (optionsCount + 1)
+		}
+		if len(g.towers) > 0 {
+			tower := g.towers[g.selectedTower]
+			purchase := func(opt int) bool {
+				switch opt {
+				case 0:
+					if g.SpendGold(upgradeDamageCost) {
+						tower.damage++
+						return true
+					}
+				case 1:
+					if g.SpendGold(upgradeRangeCost) {
+						tower.rangeDst += 50
+						tower.rangeImg = generateRangeImage(tower.rangeDst)
+						return true
+					}
+				case 2:
+					if g.SpendGold(upgradeFireRateCost) {
+						if tower.rate > 10 {
+							tower.rate -= 10
+						}
+						return true
+					}
+				case 3:
+					if g.SpendGold(upgradeAmmoCost) {
+						tower.UpgradeAmmoCapacity(2)
+						return true
+					}
+				case 4:
+					if g.SpendGold(upgradeForesightCost) {
+						tower.UpgradeForesight(2)
+						return true
+					}
+				}
+				return false
+			}
+
+			if inpututil.IsKeyJustPressed(ebiten.Key1) {
+				purchase(0)
+			}
+			if inpututil.IsKeyJustPressed(ebiten.Key2) {
+				purchase(1)
+			}
+			if inpututil.IsKeyJustPressed(ebiten.Key3) {
+				purchase(2)
+			}
+			if inpututil.IsKeyJustPressed(ebiten.Key4) {
+				purchase(3)
+			}
+			if inpututil.IsKeyJustPressed(ebiten.Key5) {
+				purchase(4)
+			}
+
+			if g.input.Enter() {
+				if g.upgradeCursor < optionsCount {
+					purchase(g.upgradeCursor)
+				} else {
+					g.upgradeMenuOpen = false
+					g.upgradeCursor = 0
+				}
+			}
+		}
+		if g.input.SelectTower() {
+			g.upgradeMenuOpen = false
+		}
+		return nil
+	}
+
+	if g.towerSelectMode {
+		for _, r := range g.input.TypedChars() {
+			label := strings.ToLower(string(r))
+			if idx, ok := g.towerLabels[label]; ok {
+				g.selectedTower = idx
+				g.towerSelectMode = false
+				g.upgradeMenuOpen = true
+				g.upgradeCursor = 0
+				break
+			}
+		}
+		if g.input.SelectTower() {
+			g.towerSelectMode = false
+		}
+		return nil
+	}
+
+	if !g.upgradeMenuOpen && !g.buildMenuOpen && !g.shopOpen && g.input.SelectTower() {
+		g.enterTowerSelectMode()
+		return nil
 	}
 
 	if g.buildMenuOpen {
@@ -724,6 +833,21 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			bx, by, bw, bh := t.Bounds()
 			vector.StrokeRect(g.screen, float32(bx-2), float32(by-2), float32(bw+4), float32(bh+4), 2, color.RGBA{255, 0, 0, 200}, false)
 		}
+		if g.towerSelectMode {
+			label := ""
+			for k, idx := range g.towerLabels {
+				if idx == i {
+					label = k
+					break
+				}
+			}
+			if label != "" {
+				opts := &text.DrawOptions{}
+				opts.GeoM.Translate(float64(t.pos.X)-6, float64(t.pos.Y)-30)
+				opts.ColorScale.ScaleWithColor(color.White)
+				text.Draw(g.screen, label, BoldFont, opts)
+			}
+		}
 	}
 	for _, p := range g.projectiles {
 		p.Draw(g.screen)
@@ -937,6 +1061,20 @@ func (g *Game) randomReloadLetter() rune {
 		return 'f'
 	}
 	return g.letterPool[rand.Intn(len(g.letterPool))]
+}
+
+// enterTowerSelectMode assigns letter labels to towers and activates selection mode.
+func (g *Game) enterTowerSelectMode() {
+	g.towerLabels = make(map[string]int)
+	letters := "abcdefghijklmnopqrstuvwxyz"
+	for i := range g.towers {
+		if i >= len(letters) {
+			break
+		}
+		label := string(letters[i])
+		g.towerLabels[label] = i
+	}
+	g.towerSelectMode = true
 }
 
 // MistypeFeedback triggers a red flash and "clank" sound for an incorrect key press.

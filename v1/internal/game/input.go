@@ -24,37 +24,39 @@ type InputHandler interface {
 }
 
 type Input struct {
-	quit      bool   // Whether the game should quit
-	typed     []rune // Characters typed this frame
-	backspace bool   // Whether backspace was pressed this frame
-	space     bool   // Whether space was pressed this frame
-	reload    bool   // Whether F5 was pressed this frame
-	enter     bool   // Whether enter was pressed this frame
-	left      bool
-	right     bool
-	up        bool
-	down      bool
-	build     bool
-	save      bool
-	load      bool
+	quit        bool   // Whether the game should quit
+	typed       []rune // Characters typed this frame
+	backspace   bool   // Whether backspace was pressed this frame
+	space       bool   // Whether space was pressed this frame
+	reload      bool   // Whether F5 was pressed this frame
+	enter       bool   // Whether enter was pressed this frame
+	left        bool
+	right       bool
+	up          bool
+	down        bool
+	build       bool
+	save        bool
+	load        bool
+	selectTower bool
 }
 
 // NewInput creates a new Input instance with default values.
 func NewInput() *Input {
 	return &Input{
-		quit:      false, // Default to not quitting
-		typed:     nil,
-		backspace: false,
-		space:     false,
-		reload:    false,
-		enter:     false,
-		left:      false,
-		right:     false,
-		up:        false,
-		down:      false,
-		build:     false,
-		save:      false,
-		load:      false,
+		quit:        false, // Default to not quitting
+		typed:       nil,
+		backspace:   false,
+		space:       false,
+		reload:      false,
+		enter:       false,
+		left:        false,
+		right:       false,
+		up:          false,
+		down:        false,
+		build:       false,
+		save:        false,
+		load:        false,
+		selectTower: false,
 	}
 }
 
@@ -76,6 +78,7 @@ func (i *Input) Update() {
 	i.up = inpututil.IsKeyJustPressed(ebiten.KeyK) || inpututil.IsKeyJustPressed(ebiten.KeyArrowUp)
 	i.down = inpututil.IsKeyJustPressed(ebiten.KeyJ) || inpututil.IsKeyJustPressed(ebiten.KeyArrowDown)
 	i.build = inpututil.IsKeyJustPressed(ebiten.KeyB)
+	i.selectTower = inpututil.IsKeyJustPressed(ebiten.KeySlash)
 }
 
 // Reset resets the Input state to its default values.
@@ -93,6 +96,7 @@ func (i *Input) Reset() {
 	i.build = false
 	i.save = false
 	i.load = false
+	i.selectTower = false
 }
 
 // Quit returns whether the game should quit.
@@ -125,10 +129,11 @@ func (i *Input) Enter() bool {
 	return i.enter
 }
 
-func (i *Input) Left() bool  { return i.left }
-func (i *Input) Right() bool { return i.right }
-func (i *Input) Up() bool    { return i.up }
-func (i *Input) Down() bool  { return i.down }
-func (i *Input) Build() bool { return i.build }
-func (i *Input) Save() bool  { return i.save }
-func (i *Input) Load() bool  { return i.load }
+func (i *Input) Left() bool        { return i.left }
+func (i *Input) Right() bool       { return i.right }
+func (i *Input) Up() bool          { return i.up }
+func (i *Input) Down() bool        { return i.down }
+func (i *Input) Build() bool       { return i.build }
+func (i *Input) Save() bool        { return i.save }
+func (i *Input) Load() bool        { return i.load }
+func (i *Input) SelectTower() bool { return i.selectTower }

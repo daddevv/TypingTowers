@@ -124,6 +124,24 @@ func (h *HUD) Draw(screen *ebiten.Image) {
 			}
 			lines = append(lines, prefix+opt)
 		}
+	} else if h.game.upgradeMenuOpen {
+		lines = append(lines, "-- UPGRADE TOWER --")
+		lines = append(lines, fmt.Sprintf("Gold: %d", h.game.Gold()))
+		options := []string{
+			"[1] Upgrade Damage (+1): 5 gold",
+			"[2] Upgrade Range (+50): 5 gold",
+			"[3] Upgrade Fire Rate (faster): 5 gold",
+			"[4] Upgrade Ammo Capacity (+2): 10 gold",
+			"[5] Foresight (+2 letters)",
+			"Cancel",
+		}
+		for i, opt := range options {
+			prefix := "  "
+			if i == h.game.upgradeCursor {
+				prefix = "> "
+			}
+			lines = append(lines, prefix+opt)
+		}
 	} else if h.game.buildMenuOpen {
 		cost := h.game.cfg.TowerConstructionCost
 		if cost == 0 {
