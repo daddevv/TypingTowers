@@ -1,6 +1,9 @@
 package game
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 func TestNewGame(t *testing.T) {
 	g := NewGame()
@@ -28,5 +31,18 @@ func TestLetterUnlocking(t *testing.T) {
 	expected := len(firstLetters) + len(secondLetters)
 	if len(g.letterPool) != expected {
 		t.Errorf("expected letter pool size %d after second wave got %d", expected, len(g.letterPool))
+	}
+}
+
+func TestGameBackPressureDamage(t *testing.T) {
+	g := NewGame()
+	for i := 0; i < 6; i++ {
+		g.Queue().Enqueue(Word{Text: "w"})
+	}
+	g.lastUpdate = time.Now().Add(-1 * time.Second)
+	g.Update()
+	expected := BaseStartingHealth - 1
+	if g.base.Health() != expected {
+		t.Fatalf("expected base health %d got %d", expected, g.base.Health())
 	}
 }

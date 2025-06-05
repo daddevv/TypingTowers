@@ -30,9 +30,9 @@
 - [x] **INT-004** Integrate Per-Building Cooldown Timers with UI
   - [x] Display visual cooldown progress for Farmer and Barracks.
   - [x] Cooldowns reset correctly after word completion.
-- [ ] **INT-005** Integrate Back-Pressure Damage mechanic
-  - [ ] Player/base health decreases when active word queue exceeds threshold (e.g., ≥ 5 words).
-  - [ ] Link to player health system.
+- [x] **INT-005** Integrate Back-Pressure Damage mechanic
+  - [x] Player/base health decreases when active word queue exceeds threshold (e.g., ≥ 5 words).
+  - [x] Link to player health system.
 - [ ] **INT-006** Integrate Jam State Visuals and Audio
   - [ ] Implement red flash on mistype.
   - [ ] Implement "clank" SFX placeholder on mistype.
