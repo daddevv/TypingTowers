@@ -3,6 +3,8 @@ package game
 import (
 	"testing"
 	"time"
+
+	"github.com/daddevv/type-defense/internal/core"
 )
 
 type pauseInput struct {
@@ -33,14 +35,14 @@ func (p *pauseInput) StatsPanel() bool   { return false }
 
 func TestPauseResumeTransition(t *testing.T) {
 	g := NewGame()
-	g.phase = PhasePlaying
+	g.phase = core.PhasePlaying
 	inp := &pauseInput{space: true}
 	g.input = inp
 	g.lastUpdate = time.Now()
 	if err := g.Update(); err != nil {
 		t.Fatal(err)
 	}
-	if g.phase != PhasePaused {
+	if g.phase != core.PhasePaused {
 		t.Fatalf("expected PhasePaused got %v", g.phase)
 	}
 	g.pauseCursor = 0
@@ -48,7 +50,7 @@ func TestPauseResumeTransition(t *testing.T) {
 	if err := g.Update(); err != nil {
 		t.Fatal(err)
 	}
-	if g.phase != PhasePlaying {
+	if g.phase != core.PhasePlaying {
 		t.Fatalf("expected PhasePlaying got %v", g.phase)
 	}
 }

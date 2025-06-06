@@ -3,14 +3,17 @@ package game
 import (
 	"testing"
 	"time"
+
+	"github.com/daddevv/type-defense/internal/assets"
+	"github.com/daddevv/type-defense/internal/core"
 )
 
 func TestQueueJamMistypeFeedback(t *testing.T) {
 	g := NewGame()
-	g.phase = PhasePlaying // Ensure main update logic runs
+	g.phase = core.PhasePlaying // Ensure main update logic runs
 	inp := &stubInput{}
 	g.input = inp
-	g.Queue().Enqueue(Word{Text: "f"})
+	g.Queue().Enqueue(assets.Word{Text: "f"})
 
 	// Simulate a mistype: input 'g' when 'f' is expected
 	inp.typed = []rune{'g'}

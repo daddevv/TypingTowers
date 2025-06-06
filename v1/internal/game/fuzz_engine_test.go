@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"runtime/debug"
 	"testing"
+
+	"github.com/daddevv/type-defense/internal/core"
 )
 
 // FuzzGameRandomInput runs the game step with random input bytes to ensure
@@ -62,7 +64,7 @@ func FuzzGameCoreLoopRandomInput(f *testing.F) {
 		g := NewGame()
 		inp := &stubInput{}
 		g.input = inp
-		g.phase = PhasePlaying // force into main gameplay loop
+		g.phase = core.PhasePlaying // force into main gameplay loop
 
 		captureState := func() string {
 			s := struct {

@@ -3,6 +3,8 @@ package game
 import (
 	"image/color"
 
+	"github.com/daddevv/type-defense/internal/assets"
+	"github.com/daddevv/type-defense/internal/core"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
@@ -54,7 +56,7 @@ func (m *MainMenu) Update(g *Game, dt float64) error {
 	if g.input.Enter() {
 		switch m.cursor {
 		case 0:
-			g.phase = PhasePreGame
+			g.phase = core.PhasePreGame
 			g.preGame = NewPreGame()
 			if g.sound != nil {
 				g.sound.StopMusic()
@@ -80,7 +82,7 @@ func (m *MainMenu) Draw(g *Game, screen *ebiten.Image) {
 	titleOpts := &text.DrawOptions{}
 	titleOpts.GeoM.Translate(760, 200)
 	titleOpts.ColorScale.ScaleWithColor(color.White)
-	text.Draw(screen, "TypingTowers", BoldFont, titleOpts)
+	text.Draw(screen, "TypingTowers", assets.BoldFont, titleOpts)
 
 	var lines []string
 	if m.inSettings {
@@ -96,7 +98,7 @@ func (m *MainMenu) Draw(g *Game, screen *ebiten.Image) {
 			}
 			lines = append(lines, prefix+opt)
 		}
-		drawMenu(screen, append([]string{"-- SETTINGS --"}, lines...), 860, 480)
+		core.DrawMenu(screen, append([]string{"-- SETTINGS --"}, lines...), 860, 480)
 		return
 	}
 	for i, opt := range m.options {
@@ -106,20 +108,20 @@ func (m *MainMenu) Draw(g *Game, screen *ebiten.Image) {
 		}
 		lines = append(lines, prefix+opt)
 	}
-	drawMenu(screen, append([]string{"-- MAIN MENU --"}, lines...), 860, 480)
+	core.DrawMenu(screen, append([]string{"-- MAIN MENU --"}, lines...), 860, 480)
 }
 
 // drawScrollingBackground renders a vertically scrolling background.
 func drawScrollingBackground(screen *ebiten.Image, offset float64) {
-	if ImgBackgroundBasicTiles == nil {
+	if assets.ImgBackgroundBasicTiles == nil {
 		return
 	}
-	h := ImgBackgroundBasicTiles.Bounds().Dy()
+	h := assets.ImgBackgroundBasicTiles.Bounds().Dy()
 	oy := int(offset) % h
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(0, float64(oy))
-	screen.DrawImage(ImgBackgroundBasicTiles, op)
+	screen.DrawImage(assets.ImgBackgroundBasicTiles, op)
 	op2 := &ebiten.DrawImageOptions{}
 	op2.GeoM.Translate(0, float64(oy-h))
-	screen.DrawImage(ImgBackgroundBasicTiles, op2)
+	screen.DrawImage(assets.ImgBackgroundBasicTiles, op2)
 }

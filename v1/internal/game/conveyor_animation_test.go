@@ -1,6 +1,11 @@
 package game
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/daddevv/type-defense/internal/assets"
+	"github.com/daddevv/type-defense/internal/core"
+)
 
 // stubInput for deterministic input
 type stubInputConveyor struct{ typed []rune }
@@ -28,10 +33,10 @@ func (s *stubInputConveyor) StatsPanel() bool   { return false }
 
 func TestConveyorOffsetMoves(t *testing.T) {
 	g := NewGame()
-	g.phase = PhasePlaying // Ensure main update logic runs
+	g.phase = core.PhasePlaying // Ensure main update logic runs
 	inp := &stubInputConveyor{}
 	g.input = inp
-	g.Queue().Enqueue(Word{Text: "ab"})
+	g.Queue().Enqueue(assets.Word{Text: "ab"})
 
 	// Ensure queue is not jammed and index is at 0
 	g.queueJam = false

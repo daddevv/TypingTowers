@@ -1,14 +1,19 @@
 package game
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/daddevv/type-defense/internal/assets"
+	"github.com/daddevv/type-defense/internal/core"
+)
 
 func TestWordStatsRecording(t *testing.T) {
 	g := NewGame()
-	g.phase = PhasePlaying
+	g.phase = core.PhasePlaying
 	s := &stubInput{}
 	g.input = s
 
-	g.queue.Enqueue(Word{Text: "ab", Source: "Farmer"})
+	g.queue.Enqueue(assets.Word{Text: "ab", Source: "Farmer"})
 
 	s.typed = []rune{'a'}
 	g.Update()

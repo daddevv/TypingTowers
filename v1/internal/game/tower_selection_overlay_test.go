@@ -1,12 +1,5 @@
 package game
 
-import (
-	"image/color"
-	"testing"
-
-	"github.com/hajimehoshi/ebiten/v2"
-)
-
 // stubInputOverlay implements InputHandler with no-op behavior for overlay tests.
 type stubInputOverlay struct{}
 
@@ -31,19 +24,19 @@ func (s *stubInputOverlay) TechMenu() bool     { return false }
 func (s *stubInputOverlay) SkillMenu() bool    { return false }
 func (s *stubInputOverlay) StatsPanel() bool   { return false }
 
-// TestDrawTowerSelectionOverlay verifies the HUD draws overlay highlights without panic.
-func TestDrawTowerSelectionOverlay(t *testing.T) {
-	t.Skip("ebiten.Image.At() cannot be called before the game starts; skipping pixel inspection test")
-	g := NewGame()
-	g.input = &stubInputOverlay{}
-	g.enterTowerSelectMode()
-	hud := NewHUD(g)
-	img := ebiten.NewImage(1920, 1080)
-	hud.drawTowerSelectionOverlay(img)
+// // TestDrawTowerSelectionOverlay verifies the HUD draws overlay highlights without panic.
+// func TestDrawTowerSelectionOverlay(t *testing.T) {
+// 	t.Skip("ebiten.Image.At() cannot be called before the game starts; skipping pixel inspection test")
+// 	g := NewGame()
+// 	g.input = &stubInputOverlay{}
+// 	g.enterTowerSelectMode()
+// 	hud := NewHUD(g)
+// 	img := ebiten.NewImage(1920, 1080)
+// 	hud.drawTowerSelectionOverlay(img)
 
-	bx, by, _, _ := g.towers[0].Bounds()
-	clr := color.RGBAModel.Convert(img.At(bx-4, by-4)).(color.RGBA)
-	if clr.A == 0 {
-		t.Fatalf("expected overlay pixel at tower bounds")
-	}
-}
+// 	bx, by, _, _ := g.towers[0].Bounds()
+// 	clr := color.RGBAModel.Convert(img.At(bx-4, by-4)).(color.RGBA)
+// 	if clr.A == 0 {
+// 		t.Fatalf("expected overlay pixel at tower bounds")
+// 	}
+// }

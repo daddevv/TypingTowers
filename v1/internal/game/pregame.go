@@ -3,6 +3,7 @@ package game
 import (
 	"unicode"
 
+	"github.com/daddevv/type-defense/internal/core"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -81,7 +82,7 @@ func (p *PreGame) Update(g *Game, dt float64) error {
 			p.modeCursor = (p.modeCursor - 1 + len(p.modeOptions)) % len(p.modeOptions)
 		}
 		if g.input.Enter() {
-			g.phase = PhasePlaying
+			g.phase = core.PhasePlaying
 			g.startWave()
 			if g.sound != nil {
 				g.sound.PlayBeep()
@@ -103,7 +104,7 @@ func (p *PreGame) Draw(g *Game, screen *ebiten.Image) {
 			}
 			lines = append(lines, prefix+opt)
 		}
-		drawMenu(screen, append([]string{"-- SELECT CHARACTER --"}, lines...), 860, 480)
+		core.DrawMenu(screen, append([]string{"-- SELECT CHARACTER --"}, lines...), 860, 480)
 	case 1:
 		for i, opt := range p.diffOptions {
 			prefix := "  "
@@ -112,13 +113,13 @@ func (p *PreGame) Draw(g *Game, screen *ebiten.Image) {
 			}
 			lines = append(lines, prefix+opt)
 		}
-		drawMenu(screen, append([]string{"-- SELECT DIFFICULTY --"}, lines...), 860, 480)
+		core.DrawMenu(screen, append([]string{"-- SELECT DIFFICULTY --"}, lines...), 860, 480)
 	case 2:
 		lines = []string{"-- TUTORIAL --", "Type words to attack and build.", "Press Enter to continue"}
-		drawMenu(screen, lines, 860, 480)
+		core.DrawMenu(screen, lines, 860, 480)
 	case 3:
 		lines = []string{"-- TYPING TEST --", "Type: ready", p.typed}
-		drawMenu(screen, lines, 860, 480)
+		core.DrawMenu(screen, lines, 860, 480)
 	case 4:
 		for i, opt := range p.modeOptions {
 			prefix := "  "
@@ -127,6 +128,6 @@ func (p *PreGame) Draw(g *Game, screen *ebiten.Image) {
 			}
 			lines = append(lines, prefix+opt)
 		}
-		drawMenu(screen, append([]string{"-- SELECT MODE --"}, lines...), 860, 480)
+		core.DrawMenu(screen, append([]string{"-- SELECT MODE --"}, lines...), 860, 480)
 	}
 }

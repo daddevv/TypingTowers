@@ -3,6 +3,7 @@ package game
 import (
 	"testing"
 
+	"github.com/daddevv/type-defense/internal/core"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -12,7 +13,7 @@ func TestDrawSkillTreeOverlay(t *testing.T) {
 	g := NewGame()
 	g.input = &stubInputSkill{}
 	g.skillMenuOpen = true
-	hud := NewHUD(g)
+	hud := core.NewHUD()
 	img := ebiten.NewImage(1920, 1080)
-	hud.drawSkillTreeOverlay(img)
+	hud.DrawSkillTreeOverlay(img)
 }

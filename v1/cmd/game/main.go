@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 
+	"github.com/daddevv/type-defense/internal/assets"
+	"github.com/daddevv/type-defense/internal/config"
 	"github.com/daddevv/type-defense/internal/game"
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -12,8 +14,8 @@ func init() {
 }
 
 func main() {
-	game.InitImages()
-	cfg, err := game.LoadConfig(game.ConfigFile)
+	assets.InitImages()
+	cfg, err := config.LoadConfig(config.ConfigFile)
 	if err != nil {
 		log.Println("using default config:", err)
 	}

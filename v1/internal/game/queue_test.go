@@ -1,11 +1,18 @@
 package game
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/daddevv/type-defense/internal/assets"
+	"github.com/daddevv/type-defense/internal/structure"
+	"github.com/daddevv/type-defense/internal/word"
+	"github.com/daddevv/type-defense/internal/worker"
+)
 
 func TestQueueFIFO(t *testing.T) {
-	q := NewQueueManager()
-	q.Enqueue(Word{Text: "one", Source: "farmer", Family: "Gathering"})
-	q.Enqueue(Word{Text: "two", Source: "barracks", Family: "Military"})
+	q := word.NewQueueManager()
+	q.Enqueue(assets.Word{Text: "one", Source: "farmer", Family: "Gathering"})
+	q.Enqueue(assets.Word{Text: "two", Source: "barracks", Family: "Military"})
 
 	if q.Len() != 2 {
 		t.Fatalf("expected queue length 2 got %d", q.Len())
@@ -17,8 +24,8 @@ func TestQueueFIFO(t *testing.T) {
 }
 
 func TestQueueDequeueValidation(t *testing.T) {
-	q := NewQueueManager()
-	q.Enqueue(Word{Text: "alpha", Source: "farmer", Family: "Gathering"})
+	q := word.NewQueueManager()
+	q.Enqueue(assets.Word{Text: "alpha", Source: "farmer", Family: "Gathering"})
 
 	if _, ok := q.TryDequeue("beta"); ok {
 		t.Fatalf("dequeue should fail for wrong input")
@@ -36,9 +43,9 @@ func TestQueueDequeueValidation(t *testing.T) {
 }
 
 func TestQueueEnqueueFromBuildings(t *testing.T) {
-	q := NewQueueManager()
-	f := NewFarmer()
-	b := NewBarracks()
+	q := word.NewQueueManager()
+	f := worker.NewFarmer()
+	b := structure.NewBarracks()
 	f.SetQueue(q)
 	b.SetQueue(q)
 
@@ -56,14 +63,23 @@ func TestQueueEnqueueFromBuildings(t *testing.T) {
 }
 
 func TestQueueBackPressureDamage(t *testing.T) {
-	q := NewQueueManager()
-	base := NewBase(0, 0, 5)
-	q.SetBase(base)
+	q := word.NewQueueManager()
+	base := structure.NewBase(0, 0, 5)
 	for i := 0; i < 6; i++ {
-		q.Enqueue(Word{Text: "w"})
+		q.Enqueue(assets.Word{Text: "w"})
 	}
 	q.Update(1.0)
 	if base.Health() != 4 {
 		t.Fatalf("expected base health 4 got %d", base.Health())
+	}
+}
+
+
+func TestColorize(t *testing.T) {
+	w := assets.Word{Text: "foo", Family: "Gathering"}
+	got := w.Colorize()
+	expected := "\033[32mfoo\033[0m"
+	if got != expected {
+		t.Fatalf("Colorize mismatch: got %q want %q", got, expected)
 	}
 }

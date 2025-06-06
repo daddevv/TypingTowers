@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"image/color"
 	"math"
-	"math/rand"
 	"os"
 	"path/filepath"
 	"sort"
@@ -15,14 +14,19 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/daddevv/type-defense/internal/assets"
+	"github.com/daddevv/type-defense/internal/config"
+	"github.com/daddevv/type-defense/internal/core"
 	"github.com/daddevv/type-defense/internal/econ"
 	"github.com/daddevv/type-defense/internal/entity"
 	"github.com/daddevv/type-defense/internal/event"
 	"github.com/daddevv/type-defense/internal/phase"
+	"github.com/daddevv/type-defense/internal/skill"
 	"github.com/daddevv/type-defense/internal/sprite"
+	"github.com/daddevv/type-defense/internal/structure"
 	"github.com/daddevv/type-defense/internal/tech"
-	"github.com/daddevv/type-defense/internal/tower"
-	"github.com/daddevv/type-defense/internal/ui"
+	"github.com/daddevv/type-defense/internal/word"
+	"github.com/daddevv/type-defense/internal/worker"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
@@ -68,11 +72,11 @@ type savedGame struct {
 type Game struct {
 	screen      *ebiten.Image
 	input       InputHandler
-	towers      []*Tower
-	mobs        []Enemy
-	projectiles []*Projectile
-	base        *Base
-	hud         *HUD
+	towers      []*structure.Tower
+	mobs        []entity.Enemy
+	projectiles []*entity.Projectile
+	base        *structure.Base
+	hud         *core.HUD
 	gameOver    bool
 	paused      bool
 	resources   econ.ResourcePool
@@ -82,7 +86,7 @@ type Game struct {
 	selectedTower int
 	shopCursor    int
 
-	cfg *Config
+	cfg *config.Config
 
 	currentWave   int
 	spawnInterval float64
@@ -91,10 +95,10 @@ type Game struct {
 
 	letterPool   []rune
 	unlockStage  int
-	techTree     *TechTree
-	skillTree    *SkillTree
+	techTree     *structure.TechTree
+	skillTree    *skill.SkillTree
 	achievements []string
-	towerMods    TowerModifiers
+	towerMods    structure.TowerModifiers
 	wpmBonus     int
 	autoCollect  bool
 	hotkeys      bool
@@ -103,7 +107,7 @@ type Game struct {
 	skillMenuOpen  bool
 	statsPanelOpen bool
 	skillCursor    int
-	skillCategory  SkillCategory
+	skillCategory  skill.SkillCategory
 
 	techMenuOpen bool
 	searchBuffer string
@@ -111,21 +115,21 @@ type Game struct {
 
 	score           int
 	gameOverHandled bool
-	history         *PerformanceHistory
+	history         *core.PerformanceHistory
 
 	cursorX int
 	cursorY int
 
 	lastUpdate time.Time
 
-	typing TypingStats
+	typing core.TypingStats
 
 	// Per-word metrics
-	currentWord WordStat
-	wordHistory []WordStat
+	currentWord word.WordStat
+	wordHistory  []word.WordStat
 
 	pauseCursor    int
-	settingsOpen   bool
+	// settingsOpen   bool
 	settingsCursor int
 
 	buildMenuOpen bool
@@ -149,12 +153,11 @@ type Game struct {
 	slotModeSave bool
 
 	// Building integration
-	queue      *QueueManager
-	farmer     *Farmer
-	lumberjack *Lumberjack
-	miner      *Miner
-	barracks   *Barracks
-	military   *Military
+	queue      *word.QueueManager
+	farmer     *worker.Farmer
+	lumberjack *worker.Lumberjack
+	miner      *worker.Miner
+	barracks   *structure.Barracks
 
 	// Typing state for the queue - jam indicator
 	queueJam bool
@@ -174,17 +177,17 @@ type Game struct {
 	conveyorOffset float64
 
 	// High level state
-	phase     GamePhase
-	prevPhase GamePhase
+	phase     core.GamePhase
+	prevPhase core.GamePhase
 	mainMenu  *MainMenu
 	preGame   *PreGame
 	quit      bool
 
 	// Modular handler pointers (for handler/event system)
 	EntityHandler  entity.EntityHandler
-	UIHandler      ui.UiHandler
+	UIHandler      core.UiHandler
 	TechHandler    tech.TechHandler
-	TowerHandler   tower.TowerHandler
+	TowerHandler   structure.TowerHandler
 	PhaseHandler   phase.PhaseHandler
 	EconomyHandler econ.EconomyHandler
 	SpriteHandler  sprite.SpriteHandler
@@ -209,10 +212,10 @@ func (g *Game) Gold() int { return g.resources.GoldAmount() }
 func (g *Game) AddGold(n int) { g.resources.AddGold(n) }
 
 // Queue returns the global word queue manager.
-func (g *Game) Queue() *QueueManager { return g.queue }
+func (g *Game) Queue() *word.QueueManager { return g.queue }
 
 // WordHistory returns the slice of completed word statistics.
-func (g *Game) WordHistory() []WordStat { return g.wordHistory }
+func (g *Game) WordHistory() []word.WordStat { return g.wordHistory }
 
 // SpendGold attempts to deduct the given amount of gold and returns true on success.
 func (g *Game) SpendGold(n int) bool { return g.resources.Gold.Spend(n) }
@@ -235,16 +238,16 @@ func (g *Game) SetSaveSlot(slot int) {
 
 // NewGame creates a new instance of the Game.
 func NewGame() *Game {
-	return NewGameWithConfig(DefaultConfig)
+	return NewGameWithConfig(config.DefaultConfig)
 }
 
 // NewGameWithConfig creates a new instance of the Game using the provided configuration.
-func NewGameWithConfig(cfg Config) *Game {
-	return NewGameWithHistory(cfg, &PerformanceHistory{})
+func NewGameWithConfig(cfg config.Config) *Game {
+	return NewGameWithHistory(cfg, &core.PerformanceHistory{})
 }
 
 // NewGameWithHistory allows supplying an existing performance history when creating a game.
-func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
+func NewGameWithHistory(cfg config.Config, hist *core.PerformanceHistory) *Game {
 	ebiten.SetWindowTitle("TypingTowers")
 	ebiten.SetWindowSize(1920/8, 1080/8)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
@@ -266,19 +269,19 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		spawnTicker:     0,
 		mobsToSpawn:     cfg.MobsPerWave,
 		cfg:             &cfg,
-		mobs:            make([]Enemy, 0),
-		projectiles:     make([]*Projectile, 0),
+		mobs:            make([]entity.Enemy, 0),
+		projectiles:     make([]*entity.Projectile, 0),
 		letterPool:      make([]rune, 0),
 		unlockStage:     0,
-		techTree:        DefaultTechTree(),
-		skillTree:       func() *SkillTree { t, _ := SampleSkillTree(); return t }(),
+		techTree:        structure.DefaultTechTree(),
+		skillTree:       func() *skill.SkillTree { t, _ := skill.SampleSkillTree(); return t }(),
 		unlockedSkills:  make(map[string]bool),
 		achievements:    make([]string, 0),
-		towerMods:       TowerModifiers{DamageMult: 1, RangeMult: 1, FireRateMult: 1},
+		towerMods:       structure.TowerModifiers{DamageMult: 1, RangeMult: 1, FireRateMult: 1},
 		wpmBonus:        0,
 		autoCollect:     false,
 		hotkeys:         false,
-		typing:          NewTypingStats(),
+		typing:          core.NewTypingStats(),
 		cursorX:         2,
 		cursorY:         16,
 		sound:           NewSoundManager(),
@@ -293,7 +296,7 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		searchBuffer:    "",
 		techCursor:      0,
 		skillCursor:     0,
-		skillCategory:   SkillOffense,
+		skillCategory:   skill.SkillOffense,
 		flashTimer:      0,
 		saveDir:         ".",
 		saveSlot:        1,
@@ -301,12 +304,11 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		slotMenuOpen:    false,
 		slotCursor:      0,
 		slotModeSave:    true,
-		queue:           NewQueueManager(),
-		farmer:          NewFarmer(),
-		lumberjack:      NewLumberjack(),
-		miner:           NewMiner(),
-		barracks:        NewBarracks(),
-		military:        NewMilitary(),
+		queue:           word.NewQueueManager(),
+		farmer:          worker.NewFarmer(),
+		lumberjack:      worker.NewLumberjack(),
+		miner:           worker.NewMiner(),
+		barracks:        structure.NewBarracks(),
 		wordProcessX:    400,
 		wordProcessY:    900,
 		conveyorOffset:  0,
@@ -314,52 +316,47 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		commandBuffer:   "",
 		towerSelectMode: false,
 		towerLabels:     make(map[string]int),
-		phase:           PhaseMainMenu,
+		phase:           core.PhaseMainMenu,
 		mainMenu:        NewMainMenu(),
 		preGame:         NewPreGame(),
-		currentWord:     WordStat{},
-		wordHistory:     make([]WordStat, 0),
+		currentWord:     word.WordStat{},
+		wordHistory:     make([]word.WordStat, 0),
 	}
 	if g.sound != nil {
 		g.sound.StartMusic()
 	}
 
-	tx, ty := tilePosition(1, 16)
+	tx, ty := core.TilePosition(1, 16)
 	hp := cfg.BaseHealth
 	if hp == 0 {
 		hp = int(cfg.J)
 	}
 	if hp <= 0 {
-		hp = BaseStartingHealth
+		hp = structure.BaseStartingHealth
 	}
-	g.base = NewBase(float64(tx+32), float64(ty+16), hp)
-	if g.queue != nil {
-		g.queue.SetBase(g.base)
-	}
+	g.base = structure.NewBase(float64(tx+32), float64(ty+16), hp)
 
 	// Wire up shared systems
-	g.queue.SetBase(g.base)
 	g.farmer.SetQueue(g.queue)
 	g.lumberjack.SetQueue(g.queue)
 	g.miner.SetQueue(g.queue)
 	g.barracks.SetQueue(g.queue)
-	g.barracks.SetMilitary(g.military)
-
-	tx, ty = tilePosition(2, 16)
-	tower := NewTower(g, float64(tx+16), float64(ty+16))
+	
+	tx, ty = core.TileAtPosition(2, 16)
+	tower := structure.NewTower(float64(tx+16), float64(ty+16))
 	tower.ApplyModifiers(g.towerMods)
-	g.towers = []*Tower{tower}
-	if tree, err := SampleSkillTree(); err == nil {
+	g.towers = []*structure.Tower{tower}
+	if tree, err := skill.SampleSkillTree(); err == nil {
 		g.skillTree = tree
 	}
 	g.lastUpdate = time.Now()
-	g.hud = NewHUD(g)
+	g.hud = core.NewHUD()
 
 	// Initialize modular handlers
 	g.EntityHandler = entity.NewHandler()
-	g.UIHandler = ui.NewHandler()
+	g.UIHandler = core.NewHandler()
 	g.TechHandler = tech.NewHandler()
-	g.TowerHandler = tower.NewHandler()
+	g.TowerHandler = structure.NewHandler()
 	g.PhaseHandler = phase.NewHandler()
 	g.EconomyHandler = econ.NewHandler()
 	g.SpriteHandler = sprite.NewHandler()
@@ -455,16 +452,16 @@ func (g *Game) Update() error {
 		return ebiten.Termination
 	}
 
-	if g.phase == PhaseMainMenu {
+	if g.phase == core.PhaseMainMenu {
 		return g.mainMenu.Update(g, dt)
 	}
-	if g.phase == PhasePreGame {
+	if g.phase == core.PhasePreGame {
 		return g.preGame.Update(g, dt)
 	}
-	if g.phase == PhasePaused {
+	if g.phase == core.PhasePaused {
 		return g.updatePaused(dt)
 	}
-	if g.phase == PhaseSettings {
+	if g.phase == core.PhaseSettings {
 		return g.updateSettings(dt)
 	}
 
@@ -505,19 +502,19 @@ func (g *Game) Update() error {
 				switch opt {
 				case 0:
 					if g.SpendGold(upgradeDamageCost) {
-						tower.damage++
+						tower.Damage++
 						return true
 					}
 				case 1:
 					if g.SpendGold(upgradeRangeCost) {
-						tower.rangeDst += 50
-						tower.rangeImg = generateRangeImage(tower.rangeDst)
+						tower.RangeDst += 50
+						// tower.RangeImg = assets.GenerateRangeImage(tower.RangeDst)
 						return true
 					}
 				case 2:
 					if g.SpendGold(upgradeFireRateCost) {
-						if tower.rate > 10 {
-							tower.rate -= 10
+						if tower.Rate > 10 {
+							tower.Rate -= 10
 						}
 						return true
 					}
@@ -597,25 +594,25 @@ func (g *Game) Update() error {
 			g.buildCursor = (g.buildCursor - 1 + optionsCount) % optionsCount
 		}
 		if inpututil.IsKeyJustPressed(ebiten.Key1) {
-			g.buildTowerAtCursorType(TowerBasic)
+			g.buildTowerAtCursorType(structure.TowerBasic)
 			g.buildMenuOpen = false
 		}
 		if inpututil.IsKeyJustPressed(ebiten.Key2) {
-			g.buildTowerAtCursorType(TowerSniper)
+			g.buildTowerAtCursorType(structure.TowerSniper)
 			g.buildMenuOpen = false
 		}
 		if inpututil.IsKeyJustPressed(ebiten.Key3) {
-			g.buildTowerAtCursorType(TowerRapid)
+			g.buildTowerAtCursorType(structure.TowerRapid)
 			g.buildMenuOpen = false
 		}
 		if g.input.Enter() {
 			switch g.buildCursor {
 			case 0:
-				g.buildTowerAtCursorType(TowerBasic)
+				g.buildTowerAtCursorType(structure.TowerBasic)
 			case 1:
-				g.buildTowerAtCursorType(TowerSniper)
+				g.buildTowerAtCursorType(structure.TowerSniper)
 			case 2:
-				g.buildTowerAtCursorType(TowerRapid)
+				g.buildTowerAtCursorType(structure.TowerRapid)
 			}
 			g.buildMenuOpen = false
 		}
@@ -657,7 +654,7 @@ func (g *Game) Update() error {
 	}
 
 	if g.input.Reload() {
-		if err := g.reloadConfig(ConfigFile); err != nil {
+		if err := g.reloadConfig(config.ConfigFile); err != nil {
 			fmt.Println("reload config:", err)
 		}
 	}
@@ -667,8 +664,8 @@ func (g *Game) Update() error {
 		return nil
 	}
 
-	if g.input.Space() && g.phase == PhasePlaying {
-		g.phase = PhasePaused
+	if g.input.Space() && g.phase == core.PhasePlaying {
+		g.phase = core.PhasePaused
 		g.paused = true
 		g.pauseCursor = 0
 	}
@@ -677,7 +674,7 @@ func (g *Game) Update() error {
 		return ebiten.Termination
 	}
 
-	if g.phase == PhaseGameOver {
+	if g.phase == core.PhaseGameOver {
 		return nil
 	}
 
@@ -706,15 +703,13 @@ func (g *Game) Update() error {
 						if done {
 							g.currentWord.Finish()
 							g.wordHistory = append(g.wordHistory, g.currentWord)
-							g.currentWord = WordStat{}
+							g.currentWord = word.WordStat{}
 
 							switch dq.Source {
 							case "Farmer":
 								g.farmer.OnWordCompleted(dq.Text, &g.resources)
 							case "Barracks":
-								if unit := g.barracks.OnWordCompleted(dq.Text); unit != nil {
-									g.military.AddUnit(unit)
-								}
+								break
 							}
 						}
 					} else {
@@ -723,7 +718,7 @@ func (g *Game) Update() error {
 						g.MistypeFeedback()
 						g.queueJam = true
 					}
-					break
+					// break
 				}
 			}
 		}
@@ -763,19 +758,19 @@ func (g *Game) Update() error {
 				switch opt {
 				case 0:
 					if g.SpendGold(upgradeDamageCost) {
-						tower.damage++
+						tower.Damage++
 						return true
 					}
 				case 1:
 					if g.SpendGold(upgradeRangeCost) {
-						tower.rangeDst += 50
-						tower.rangeImg = generateRangeImage(tower.rangeDst)
+						tower.RangeDst += 50
+						// tower.RangeImg = GenerateRangeImage(tower.RangeDst)
 						return true
 					}
 				case 2:
 					if g.SpendGold(upgradeFireRateCost) {
-						if tower.rate > 10 {
-							tower.rate -= 10
+						if tower.Rate > 10 {
+							tower.Rate -= 10
 						}
 						return true
 					}
@@ -857,11 +852,6 @@ func (g *Game) Update() error {
 	}
 
 	// Update buildings and units
-	if g.military != nil {
-		// Combat resolution currently only handles OrcGrunts; none are
-		// spawned yet so pass nil.
-		g.military.Update(dt, nil)
-	}
 	if g.farmer != nil {
 		if w := g.farmer.Update(dt); w != "" {
 			g.farmer.OnWordCompleted(w, &g.resources)
@@ -879,7 +869,7 @@ func (g *Game) Update() error {
 	}
 	if g.barracks != nil {
 		if w := g.barracks.Update(dt); w != "" {
-			g.barracks.OnWordCompleted(w)
+			// TODO: Handle barracks word completion
 		}
 	}
 
@@ -892,7 +882,7 @@ func (g *Game) Update() error {
 	for i := 0; i < len(g.projectiles); {
 		p := g.projectiles[i]
 		p.Update(dt)
-		if !p.alive {
+		if !p.Alive {
 			g.projectiles = append(g.projectiles[:i], g.projectiles[i+1:]...)
 			continue
 		}
@@ -908,7 +898,7 @@ func (g *Game) Update() error {
 		dx := mx - float64(bx+bw/2)
 		dy := my - float64(by+bh/2)
 		if math.Hypot(dx, dy) < float64(mw/2+bw/2) {
-			g.base.Damage(1)
+			g.base.ApplyDamage(1)
 			m.Damage(mw) // force kill
 		}
 		if !m.Alive() {
@@ -927,7 +917,7 @@ func (g *Game) Update() error {
 
 	if !g.base.Alive() {
 		g.gameOver = true
-		g.phase = PhaseGameOver
+		g.phase = core.PhaseGameOver
 	}
 
 	if g.gameOver && !g.gameOverHandled {
@@ -960,15 +950,15 @@ func (g *Game) updatePaused(dt float64) error {
 	if g.input.Enter() {
 		switch g.pauseCursor {
 		case 0:
-			g.phase = PhasePlaying
+			g.phase = core.PhasePlaying
 			g.paused = false
 		case 1:
 			g.Restart()
 		case 2:
 			return ebiten.Termination
 		case 3:
-			g.phase = PhaseSettings
-			g.prevPhase = PhasePaused
+			g.phase = core.PhaseSettings
+			g.prevPhase = core.PhasePaused
 			g.settingsCursor = 0
 		}
 	}
@@ -991,7 +981,7 @@ func (g *Game) updateSettings(dt float64) error {
 			}
 		case 1:
 			g.phase = g.prevPhase
-			if g.prevPhase == PhasePaused {
+			if g.prevPhase == core.PhasePaused {
 				g.paused = true
 			}
 		}
@@ -1002,23 +992,23 @@ func (g *Game) updateSettings(dt float64) error {
 // Draw renders the game to the screen. This method is called every frame.
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.screen.Clear()
-	if g.phase == PhaseMainMenu {
+	if g.phase == core.PhaseMainMenu {
 		g.mainMenu.Draw(g, g.screen)
 		g.renderFrame(screen)
 		return
 	}
-	if g.phase == PhasePreGame {
+	if g.phase == core.PhasePreGame {
 		g.preGame.Draw(g, g.screen)
 		g.renderFrame(screen)
 		return
 	}
 	drawBackgroundTilemap(g.screen)
 
-	if g.phase == PhaseGameOver {
+	if g.phase == core.PhaseGameOver {
 		opts := &text.DrawOptions{}
 		opts.GeoM.Translate(900, 540)
 		opts.ColorScale.ScaleWithColor(color.White)
-		text.Draw(g.screen, "Game Over", BoldFont, opts)
+		text.Draw(g.screen, "Game Over", assets.BoldFont, opts)
 		summary := []string{
 			fmt.Sprintf("Score: %d", g.score),
 			fmt.Sprintf("Accuracy: %.0f%%", g.typing.Accuracy()*100),
@@ -1035,7 +1025,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 				summary = append(summary, " - "+a)
 			}
 		}
-		drawMenu(g.screen, summary, 820, 580)
+		core.DrawMenu(g.screen, summary, 820, 580)
 		g.renderFrame(screen)
 		return
 	}
@@ -1070,11 +1060,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 				}
 			}
 			if label != "" {
-				x, y := t.Position()
+				x, y := t.Position.X, t.Position.Y
 				opts := &text.DrawOptions{}
 				opts.GeoM.Translate(x-6, y-30)
 				opts.ColorScale.ScaleWithColor(color.White)
-				text.Draw(g.screen, label, BoldFont, opts)
+				text.Draw(g.screen, label, assets.BoldFont, opts)
 			}
 		}
 	}
@@ -1084,24 +1074,19 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	for _, m := range g.mobs {
 		m.Draw(g.screen)
 	}
-	if g.military != nil {
-		for _, u := range g.military.Units() {
-			u.Draw(g.screen)
-		}
-	}
 
 	if !g.shopOpen {
 		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(float64(g.cursorX*TileSize), float64(TopMargin+g.cursorY*TileSize))
+		op.GeoM.Translate(float64(g.cursorX*core.TileSize), float64(core.TopMargin+g.cursorY*core.TileSize))
 		if g.validTowerPosition(g.cursorX, g.cursorY) {
-			g.screen.DrawImage(ImgHighlightTile, op)
+			g.screen.DrawImage(assets.ImgHighlightTile, op)
 		} else {
 			// draw red rectangle for invalid position
-			vector.DrawFilledRect(g.screen, float32(g.cursorX*TileSize), float32(TopMargin+g.cursorY*TileSize), float32(TileSize), float32(TileSize), color.RGBA{255, 0, 0, 100}, false)
+			vector.DrawFilledRect(g.screen, float32(g.cursorX*core.TileSize), float32(core.TopMargin+g.cursorY*core.TileSize), float32(core.TileSize), float32(core.TileSize), color.RGBA{255, 0, 0, 100}, false)
 		}
 	}
 
-	if g.phase == PhasePaused {
+	if g.phase == core.PhasePaused {
 		lines := []string{"-- PAUSED --"}
 		opts := []string{"Resume", "Restart", "Quit", "Settings"}
 		for i, opt := range opts {
@@ -1111,11 +1096,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			}
 			lines = append(lines, prefix+opt)
 		}
-		drawMenu(g.screen, lines, 860, 480)
+		core.DrawMenu(g.screen, lines, 860, 480)
 		g.renderFrame(screen)
 		return
 	}
-	if g.phase == PhaseSettings {
+	if g.phase == core.PhaseSettings {
 		lines := []string{"-- SETTINGS --"}
 		mute := "Off"
 		if g.settings.Mute {
@@ -1129,7 +1114,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			}
 			lines = append(lines, prefix+opt)
 		}
-		drawMenu(g.screen, lines, 860, 480)
+		core.DrawMenu(g.screen, lines, 860, 480)
 		g.renderFrame(screen)
 		return
 	}
@@ -1166,50 +1151,50 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 
 // drawBackgroundTilemap draws the background tilemap on the screen.
 func drawBackgroundTilemap(screen *ebiten.Image) {
-	screen.DrawImage(ImgBackgroundBasicTiles, nil)
+	screen.DrawImage(assets.ImgBackgroundBasicTiles, nil)
 }
 
 // spawnMob adds a new mob at the right side.
 func (g *Game) spawnMob() {
-	row := rand.Intn(32)
-	x, y := tilePosition(59, row)
-	hp := g.cfg.MobBaseHealth
-	if hp == 0 {
-		hp = 1
-	}
-	if g.cfg != nil {
-		hp = int(float64(hp) + float64(g.currentWave-1)*g.cfg.N)
-		if hp < 1 {
-			hp = 1
-		}
-	}
-	speed := g.cfg.MobSpeed * 0.3 // Much slower mobs
-	if speed == 0 {
-		speed = DefaultConfig.MobSpeed * 0.3
-	}
-	var m Enemy
-	if g.currentWave%5 == 0 && g.mobsToSpawn == 1 {
-		m = NewBossMob(float64(x+16), float64(y+16), g.base, hp*5, speed*0.5)
-	} else {
-		switch rand.Intn(3) {
-		case 0:
-			m = NewMob(float64(x+16), float64(y+16), g.base, hp, speed)
-		case 1:
-			m = NewArmoredMob(float64(x+16), float64(y+16), g.base, hp, 2, speed)
-		default:
-			m = NewFastMob(float64(x+16), float64(y+16), g.base, hp, speed, 2)
-		}
-	}
-	g.mobs = append(g.mobs, m)
+	// row := rand.Intn(32)
+	// x, y := core.TilePosition(59, row)
+	// hp := g.cfg.MobBaseHealth
+	// if hp == 0 {
+	// 	hp = 1
+	// }
+	// if g.cfg != nil {
+	// 	hp = int(float64(hp) + float64(g.currentWave-1)*g.cfg.N)
+	// 	if hp < 1 {
+	// 		hp = 1
+	// 	}
+	// }
+	// speed := g.cfg.MobSpeed * 0.3 // Much slower mobs
+	// if speed == 0 {
+	// 	speed = config.DefaultConfig.MobSpeed * 0.3
+	// }
+	// var m mob.Mob
+	// if g.currentWave%5 == 0 && g.mobsToSpawn == 1 {
+	// 	m = mob.NewBossMob(float64(x+16), float64(y+16), g.base, hp*5, speed*0.5)
+	// } else {
+	// 	switch rand.Intn(3) {
+	// 	case 0:
+	// 		m = mob.NewMob(float64(x+16), float64(y+16), g.base, hp, speed)
+	// 	case 1:
+	// 		m = mob.NewArmoredMob(float64(x+16), float64(y+16), g.base, hp, 2, speed)
+	// 	default:
+	// 		m = mob.NewFastMob(float64(x+16), float64(y+16), g.base, hp, speed, 2)
+	// 	}
+	// }
+	// g.mobs = append(g.mobs, m)
 }
 
 func (g *Game) validTowerPosition(tileX, tileY int) bool {
 	if tileX < 0 || tileX > 59 || tileY < 0 || tileY > 33 {
 		return false
 	}
-	tx, ty := tilePosition(tileX, tileY)
-	px := float64(tx + TileSize/2)
-	py := float64(ty + TileSize/2)
+	tx, ty := core.TilePosition(tileX, tileY)
+	px := float64(tx + core.TileSize/2)
+	py := float64(ty + core.TileSize/2)
 	bx, by, bw, bh := g.base.Bounds()
 	if int(px) >= bx && int(px) <= bx+bw && int(py) >= by && int(py) <= by+bh {
 		return false
@@ -1223,13 +1208,13 @@ func (g *Game) validTowerPosition(tileX, tileY int) bool {
 	return true
 }
 
-func (g *Game) buildTowerAtCursorType(tt TowerType) {
+func (g *Game) buildTowerAtCursorType(tt structure.TowerType) {
 	if g.cfg == nil {
 		return
 	}
 	cost := g.cfg.TowerConstructionCost
 	if cost == 0 {
-		cost = DefaultConfig.TowerConstructionCost
+		cost = config.DefaultConfig.TowerConstructionCost
 	}
 	if g.Gold() < cost {
 		return
@@ -1237,8 +1222,8 @@ func (g *Game) buildTowerAtCursorType(tt TowerType) {
 	if !g.validTowerPosition(g.cursorX, g.cursorY) {
 		return
 	}
-	tx, ty := tilePosition(g.cursorX, g.cursorY)
-	t := NewTowerWithType(g, float64(tx+TileSize/2), float64(ty+TileSize/2), tt)
+	tx, ty := core.TilePosition(g.cursorX, g.cursorY)
+	t := structure.NewTowerWithType(float64(tx+core.TileSize/2), float64(ty+core.TileSize/2), tt)
 	t.ApplyModifiers(g.towerMods)
 	g.towers = append(g.towers, t)
 	g.SpendGold(cost)
@@ -1261,7 +1246,7 @@ func (g *Game) applyNextTech() {
 			}
 		}
 	}
-	if mods != (TowerModifiers{}) {
+	if mods != (structure.TowerModifiers{}) {
 		g.towerMods = g.towerMods.Merge(mods)
 		for _, t := range g.towers {
 			t.ApplyModifiers(mods)
@@ -1280,24 +1265,24 @@ func (g *Game) applyNextTech() {
 }
 
 // applySkillEffects applies the effects of a newly unlocked skill node.
-func (g *Game) applySkillEffects(n *SkillNode) {
+func (g *Game) applySkillEffects(n *skill.SkillNode) {
 	for k, v := range n.Effects {
 		switch k {
 		case "damage_mult":
-			mod := TowerModifiers{DamageMult: v}
+			mod := structure.TowerModifiers{DamageMult: v}
 			g.towerMods = g.towerMods.Merge(mod)
 			for _, t := range g.towers {
 				t.ApplyModifiers(mod)
 			}
 		case "fire_rate_mult":
-			mod := TowerModifiers{FireRateMult: v}
+			mod := structure.TowerModifiers{FireRateMult: v}
 			g.towerMods = g.towerMods.Merge(mod)
 			for _, t := range g.towers {
 				t.ApplyModifiers(mod)
 			}
 		case "hp_add":
 			if g.base != nil {
-				g.base.health += int(v)
+				g.base.Hp += int(v)
 			}
 		case "wpm_bonus":
 			g.wpmBonus += int(v)
@@ -1310,64 +1295,64 @@ func (g *Game) applySkillEffects(n *SkillNode) {
 }
 
 // filteredTechNodes returns remaining tech nodes matching the search buffer.
-func (g *Game) filteredTechNodes() []TechNode {
-	if g.techTree == nil {
-		return nil
-	}
+// func (g *Game) filteredTechNodes() []structure.TechNode {
+// 	if g.techTree == nil {
+// 		return nil
+// 	}
 
-	if g.input.TechMenu() {
-		g.techMenuOpen = !g.techMenuOpen
-		if g.techMenuOpen {
-			g.searchBuffer = ""
-			g.techCursor = 0
-		}
-		return nil
-	}
+// 	if g.input.TechMenu() {
+// 		g.techMenuOpen = !g.techMenuOpen
+// 		if g.techMenuOpen {
+// 			g.searchBuffer = ""
+// 			g.techCursor = 0
+// 		}
+// 		return nil
+// 	}
 
-	if g.techMenuOpen {
-		for _, r := range g.input.TypedChars() {
-			if unicode.IsPrint(r) {
-				g.searchBuffer += string(r)
-			}
-		}
-		if g.input.Backspace() && len(g.searchBuffer) > 0 {
-			g.searchBuffer = g.searchBuffer[:len(g.searchBuffer)-1]
-		}
-		nodes := g.filteredTechNodes()
-		if len(nodes) > 0 {
-			if g.input.Down() {
-				g.techCursor = (g.techCursor + 1) % len(nodes)
-			}
-			if g.input.Up() {
-				g.techCursor = (g.techCursor - 1 + len(nodes)) % len(nodes)
-			}
-			if g.input.Enter() {
-				node := nodes[g.techCursor]
-				if g.techTree.stage < len(g.techTree.nodes) && node.Name == g.techTree.nodes[g.techTree.stage].Name {
-					g.applyNextTech()
-					g.techMenuOpen = false
-				}
-			}
-		}
-		return nil
-	}
-	var out []TechNode
-	term := strings.ToLower(g.searchBuffer)
-	for i := g.techTree.stage; i < len(g.techTree.nodes); i++ {
-		n := g.techTree.nodes[i]
-		if term == "" || strings.Contains(strings.ToLower(n.Name), term) {
-			out = append(out, n)
-		}
-	}
-	return out
-}
+// 	if g.techMenuOpen {
+// 		for _, r := range g.input.TypedChars() {
+// 			if unicode.IsPrint(r) {
+// 				g.searchBuffer += string(r)
+// 			}
+// 		}
+// 		if g.input.Backspace() && len(g.searchBuffer) > 0 {
+// 			g.searchBuffer = g.searchBuffer[:len(g.searchBuffer)-1]
+// 		}
+// 		nodes := g.filteredTechNodes()
+// 		if len(nodes) > 0 {
+// 			if g.input.Down() {
+// 				g.techCursor = (g.techCursor + 1) % len(nodes)
+// 			}
+// 			if g.input.Up() {
+// 				g.techCursor = (g.techCursor - 1 + len(nodes)) % len(nodes)
+// 			}
+// 			if g.input.Enter() {
+// 				node := nodes[g.techCursor]
+// 				if g.techTree.Stage < len(g.techTree.Nodes) && node.Name == g.techTree.Nodes[g.techTree.Stage].Name {
+// 					g.applyNextTech()
+// 					g.techMenuOpen = false
+// 				}
+// 			}
+// 		}
+// 		return nil
+// 	}
+// 	var out []structure.TechNode
+// 	term := strings.ToLower(g.searchBuffer)
+// 	for i := g.techTree.Stage; i < len(g.techTree.Nodes); i++ {
+// 		n := g.techTree.Nodes[i]
+// 		if term == "" || strings.Contains(strings.ToLower(n.Name), term) {
+// 			out = append(out, n)
+// 		}
+// 	}
+// 	return out
+// }
 
 // startWave initializes spawn counters for the next wave.
 func (g *Game) startWave() {
 	g.spawnTicker = 0
 	base := g.cfg.MobsPerWave
 	if base == 0 {
-		base = DefaultConfig.MobsPerWave
+		base = config.DefaultConfig.MobsPerWave
 	}
 	inc := g.cfg.MobsPerWaveInc
 	g.mobsToSpawn = base + inc*(g.currentWave-1)
@@ -1378,19 +1363,19 @@ func (g *Game) startWave() {
 
 // randomReloadLetter returns a random letter from the current letter pool.
 // If no letters have been unlocked, 'f' is returned as a safe default.
-func (g *Game) randomReloadLetter() rune {
-	if len(g.letterPool) == 0 {
-		return 'f'
-	}
-	return g.letterPool[rand.Intn(len(g.letterPool))]
-}
+// func (g *Game) randomReloadLetter() rune {
+// 	if len(g.letterPool) == 0 {
+// 		return 'f'
+// 	}
+// 	return g.letterPool[rand.Intn(len(g.letterPool))]
+// }
 
 // skillNodesByCategory returns all skill nodes for the given category.
-func (g *Game) skillNodesByCategory(cat SkillCategory) []*SkillNode {
+func (g *Game) skillNodesByCategory(cat skill.SkillCategory) []*skill.SkillNode {
 	if g.skillTree == nil {
 		return nil
 	}
-	var out []*SkillNode
+	var out []*skill.SkillNode
 	for _, n := range g.skillTree.Nodes {
 		if n.Category == cat {
 			out = append(out, n)
@@ -1423,14 +1408,14 @@ func (g *Game) handleSkillMenuInput() {
 	if !g.skillMenuOpen {
 		return
 	}
-	categories := []SkillCategory{SkillOffense, SkillDefense, SkillTyping, SkillAutomation, SkillUtility}
+	categories := []skill.SkillCategory{skill.SkillOffense, skill.SkillDefense, skill.SkillTyping, skill.SkillAutomation, skill.SkillUtility}
 	if g.input.Right() {
-		g.skillCategory = (g.skillCategory + 1) % SkillCategory(len(categories))
+		g.skillCategory = (g.skillCategory + 1) % skill.SkillCategory(len(categories))
 		g.skillCursor = 0
 		return
 	}
 	if g.input.Left() {
-		g.skillCategory = (g.skillCategory - 1 + SkillCategory(len(categories))) % SkillCategory(len(categories))
+		g.skillCategory = (g.skillCategory - 1 + skill.SkillCategory(len(categories))) % skill.SkillCategory(len(categories))
 		g.skillCursor = 0
 		return
 	}
@@ -1518,10 +1503,10 @@ func (g *Game) MistypeFeedback() {
 // highlightHoverAndClickAndDrag highlights the tile under the mouse cursor.
 func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 	mouseX, mouseY := ebiten.CursorPosition()
-	if mouseX < 0 || mouseY < TopMargin || mouseX >= 1920 || mouseY >= 1080-TopMargin {
+	if mouseX < 0 || mouseY < core.TopMargin || mouseX >= 1920 || mouseY >= 1080-core.TopMargin {
 		return
 	}
-	tileX, tileY := tileAtPosition(mouseX, mouseY)
+	tileX, tileY := core.TileAtPosition(mouseX, mouseY)
 
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
 		if tileX >= 0 && tileX <= 59 && tileY >= 0 && tileY <= 33 {
@@ -1566,8 +1551,8 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 			for x := minX; x <= maxX; x++ {
 				for y := minY; y <= maxY; y++ {
 					op := &ebiten.DrawImageOptions{}
-					op.GeoM.Translate(float64(x*32), float64(TopMargin+y*32))
-					screen.DrawImage(ImgHighlightTile, op)
+					op.GeoM.Translate(float64(x*32), float64(core.TopMargin+y*32))
+					screen.DrawImage(assets.ImgHighlightTile, op)
 				}
 			}
 		case "circle":
@@ -1583,8 +1568,8 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 					dy := y - centerTileY
 					if dx*dx+dy*dy <= radius*radius {
 						op := &ebiten.DrawImageOptions{}
-						op.GeoM.Translate(float64(x*32), float64(TopMargin+y*32))
-						screen.DrawImage(ImgHighlightTile, op)
+						op.GeoM.Translate(float64(x*32), float64(core.TopMargin+y*32))
+						screen.DrawImage(assets.ImgHighlightTile, op)
 					}
 				}
 			}
@@ -1605,8 +1590,8 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 			for {
 				if x0 >= 0 && x0 <= 59 && y0 >= 0 && y0 <= 33 {
 					op := &ebiten.DrawImageOptions{}
-					op.GeoM.Translate(float64(x0*32), float64(TopMargin+y0*32))
-					screen.DrawImage(ImgHighlightTile, op)
+					op.GeoM.Translate(float64(x0*32), float64(core.TopMargin+y0*32))
+					screen.DrawImage(assets.ImgHighlightTile, op)
 				}
 				if x0 == x1 && y0 == y1 {
 					break
@@ -1628,16 +1613,16 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 			for x := minX; x <= maxX; x++ {
 				for y := minY; y <= maxY; y++ {
 					op := &ebiten.DrawImageOptions{}
-					op.GeoM.Translate(float64(x*32), float64(TopMargin+y*32))
-					screen.DrawImage(ImgHighlightTile, op)
+					op.GeoM.Translate(float64(x*32), float64(core.TopMargin+y*32))
+					screen.DrawImage(assets.ImgHighlightTile, op)
 				}
 			}
 		}
 	} else {
 		if tileX >= 0 && tileX <= 59 && tileY >= 0 && tileY <= 33 {
 			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(float64(tileX*32), float64(TopMargin+tileY*32))
-			screen.DrawImage(ImgHighlightTile, op)
+			op.GeoM.Translate(float64(tileX*32), float64(core.TopMargin+tileY*32))
+			screen.DrawImage(assets.ImgHighlightTile, op)
 		}
 	}
 
@@ -1645,8 +1630,8 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 		var houseTileX, houseTileY int
 		fmt.Sscanf(id, "%d,%d", &houseTileX, &houseTileY)
 		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(float64(houseTileX*32), float64(TopMargin+houseTileY*32))
-		screen.DrawImage(ImgHouseTile, op)
+		op.GeoM.Translate(float64(houseTileX*32), float64(core.TopMargin+houseTileY*32))
+		screen.DrawImage(assets.ImgHouseTile, op)
 	}
 
 	// Placeholder for additional debug UI if needed in the future.
@@ -1654,7 +1639,7 @@ func highlightHoverAndClickAndDrag(screen *ebiten.Image, shape string) {
 
 // reloadConfig loads a Config from the given file and applies it to the game.
 func (g *Game) reloadConfig(path string) error {
-	cfg, err := LoadConfig(path)
+	cfg, err := config.LoadConfig(path)
 	if err != nil {
 		// still apply defaults when loading fails
 		g.cfg = &cfg
@@ -1668,9 +1653,9 @@ func (g *Game) reloadConfig(path string) error {
 		hp = int(cfg.J)
 	}
 	if hp <= 0 {
-		hp = BaseStartingHealth
+		hp = structure.BaseStartingHealth
 	}
-	g.base.health = hp
+	g.base.Hp = hp
 	for _, t := range g.towers {
 		t.ApplyConfig(cfg)
 	}
@@ -1679,7 +1664,7 @@ func (g *Game) reloadConfig(path string) error {
 	}
 	base := cfg.MobsPerWave
 	if base == 0 {
-		base = DefaultConfig.MobsPerWave
+		base = config.DefaultConfig.MobsPerWave
 	}
 	g.mobsToSpawn = base + cfg.MobsPerWaveInc*(g.currentWave-1)
 	return nil
@@ -1697,12 +1682,12 @@ func (g *Game) saveGame(path string) {
 	}
 	for _, t := range g.towers {
 		sg.Towers = append(sg.Towers, savedTower{
-			X:            t.pos.X,
-			Y:            t.pos.Y,
-			Damage:       t.damage,
-			Range:        t.rangeDst,
-			Rate:         t.rate,
-			AmmoCapacity: t.ammoCapacity,
+			X:            t.Position.X,
+			Y:            t.Position.Y,
+			Damage:       t.Damage,
+			Range:        t.RangeDst,
+			Rate:         t.Rate,
+			AmmoCapacity: t.AmmoCapacity,
 		})
 	}
 	for id := range g.unlockedSkills {
@@ -1730,28 +1715,28 @@ func (g *Game) loadGame(path string) error {
 	g.resources.Gold.Set(sg.Gold)
 	g.resources.Food.Set(sg.Food)
 	g.currentWave = sg.Wave
-	g.base.health = sg.BaseHP
+	g.base.Hp = sg.BaseHP
 	g.settings = sg.Settings
 	if g.sound != nil && g.settings.Mute {
 		g.sound.mute = true
 	}
 	g.towers = nil
 	for _, st := range sg.Towers {
-		t := NewTower(g, st.X, st.Y)
-		t.damage = st.Damage
-		t.rangeDst = st.Range
-		t.rangeImg = generateRangeImage(t.rangeDst)
-		t.rate = st.Rate
-		t.ammoCapacity = st.AmmoCapacity
-		t.ammoQueue = make([]bool, t.ammoCapacity)
-		for i := range t.ammoQueue {
-			t.ammoQueue[i] = true
+		t := structure.NewTower(st.X, st.Y)
+		t.Damage = st.Damage
+		t.RangeDst = st.Range
+		// t.RangeImg = generateRangeImage(t.RangeDst)
+		t.Rate = st.Rate
+		t.AmmoCapacity = st.AmmoCapacity
+		t.AmmoQueue = make([]bool, t.AmmoCapacity)
+		for i := range t.AmmoQueue {
+			t.AmmoQueue[i] = true
 		}
 		g.towers = append(g.towers, t)
 	}
 	for _, id := range sg.Skills {
 		if node, ok := g.skillTree.Nodes[id]; ok {
-			g.skillTree.unlocked[id] = true
+			g.skillTree.Unlock(id, &g.resources)
 			g.unlockedSkills[id] = true
 			g.applySkillEffects(node)
 		}
@@ -1771,10 +1756,10 @@ func (g *Game) executeCommand(cmd string) {
 		g.quit = true
 	case "pause":
 		g.paused = true
-		g.phase = PhasePaused
+		g.phase = core.PhasePaused
 	case "resume":
 		g.paused = false
-		g.phase = PhasePlaying
+		g.phase = core.PhasePlaying
 	}
 }
 
