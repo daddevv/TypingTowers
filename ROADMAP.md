@@ -34,7 +34,7 @@
     - [x] **MIG-002** Rename `mob` package to `enemy`
     - [x] **MIG-003** Rename `structure` package to `building`
     - [x] **MIG-004** Move worker types under `building/gatherer`
-    - [ ] **MIG-005** Update all imports and tests after renames
+    - [x] **MIG-005** Update all imports and tests after renames
     - [ ] **MIG-006** Remove deprecated package references
 - [ ] Ensure all core gameplay loop features are fully playable and testable
   - [ ] Integrate combat and skill tree systems into the main loop

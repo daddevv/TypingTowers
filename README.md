@@ -73,6 +73,9 @@ rendering using their state. See
 [docs/INTERNAL_RESTRUCTURE.md](docs/INTERNAL_RESTRUCTURE.md) for the import
 map and package descriptions.
 
+The previous `mob` and `structure` packages have been fully renamed to
+`enemy` and `building`, with worker units now under `building/gatherer`.
+
 -## Current prototype
 
 - Shared FIFO queue manager implemented. Buildings enqueue words that are processed **letter by letter**. Completing a Barracks word spawns a Footman.
