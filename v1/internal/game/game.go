@@ -19,6 +19,7 @@ import (
 	"github.com/daddevv/type-defense/internal/core"
 	"github.com/daddevv/type-defense/internal/econ"
 	"github.com/daddevv/type-defense/internal/entity"
+	"github.com/daddevv/type-defense/internal/entity/projectile"
 	"github.com/daddevv/type-defense/internal/event"
 	"github.com/daddevv/type-defense/internal/phase"
 	"github.com/daddevv/type-defense/internal/skill"
@@ -73,8 +74,8 @@ type Game struct {
 	screen      *ebiten.Image
 	input       InputHandler
 	towers      []*structure.Tower
-	mobs        []entity.Enemy
-	projectiles []*entity.Projectile
+	mobs        []entity.Entity
+	projectiles []*projectile.Projectile
 	base        *structure.Base
 	hud         *core.HUD
 	gameOver    bool
@@ -269,8 +270,8 @@ func NewGameWithHistory(cfg config.Config, hist *core.PerformanceHistory) *Game 
 		spawnTicker:     0,
 		mobsToSpawn:     cfg.MobsPerWave,
 		cfg:             &cfg,
-		mobs:            make([]entity.Enemy, 0),
-		projectiles:     make([]*entity.Projectile, 0),
+		mobs:            make([]entity.Entity, 0),
+		projectiles:     make([]*projectile.Projectile, 0),
 		letterPool:      make([]rune, 0),
 		unlockStage:     0,
 		techTree:        structure.DefaultTechTree(),
@@ -899,7 +900,7 @@ func (g *Game) Update() error {
 		dy := my - float64(by+bh/2)
 		if math.Hypot(dx, dy) < float64(mw/2+bw/2) {
 			g.base.ApplyDamage(1)
-			m.Damage(mw) // force kill
+			m.ApplyDamage(mw) // force kill
 		}
 		if !m.Alive() {
 			g.mobs = append(g.mobs[:i], g.mobs[i+1:]...)

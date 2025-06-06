@@ -1,4 +1,4 @@
-package enemy
+package ally
 
 import (
 	"github.com/daddevv/type-defense/internal/assets"

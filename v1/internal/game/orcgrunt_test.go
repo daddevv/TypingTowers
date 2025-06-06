@@ -1,10 +1,15 @@
-package enemy
+package game
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/daddevv/type-defense/internal/entity/ally"
+	"github.com/daddevv/type-defense/internal/entity/enemy"
+)
 
 // TestOrcGruntDefaults verifies default stats.
 func TestOrcGruntDefaults(t *testing.T) {
-	o := NewOrcGrunt(0, 0)
+	o := enemy.NewOrcGrunt(0, 0)
 	if o.Health() != 5 {
 		t.Errorf("expected default HP 5 got %d", o.Health())
 	}
@@ -15,9 +20,9 @@ func TestOrcGruntDefaults(t *testing.T) {
 
 // TestCombatFootmanKillsGrunt ensures a footman defeats a grunt in melee.
 func TestCombatFootmanKillsGrunt(t *testing.T) {
-	f := NewFootman(0, 0)
+	f := ally.NewFootman(0, 0)
 	f.Speed = 0
-	o := NewOrcGrunt(0, 0)
+	o := enemy.NewOrcGrunt(0, 0)
 	o.Speed = 0
 
 	for i := 0; i < 6; i++ {
@@ -34,10 +39,10 @@ func TestCombatFootmanKillsGrunt(t *testing.T) {
 
 // TestCombatFootmanDies verifies footman removal when killed.
 func TestCombatFootmanDies(t *testing.T) {
-	f := NewFootman(0, 0)
+	f := ally.NewFootman(0, 0)
 	f.Speed = 0
 	f.Hp = 2
-	o := NewOrcGrunt(0, 0)
+	o := enemy.NewOrcGrunt(0, 0)
 	o.Speed = 0
 	o.Damage = 5
 

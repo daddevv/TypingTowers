@@ -1,4 +1,4 @@
-package entity
+package projectile
 
 // func TestProjectileIntercept(t *testing.T) {
 // 	base := NewBase(400, 100, 10)

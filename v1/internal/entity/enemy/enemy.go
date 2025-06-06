@@ -1,4 +1,6 @@
-package entity
+package enemy
+
+import "github.com/daddevv/type-defense/internal/entity"
 
 // MobType defines enemy categories.
 type MobType int
@@ -14,7 +16,7 @@ const (
 
 // Enemy describes common enemy behavior.
 type Enemy interface {
-	Entity
+	entity.Entity
 	Velocity() (float64, float64)
 	Alive() bool
 	Damage(amount int)

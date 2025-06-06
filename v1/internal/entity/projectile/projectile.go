@@ -1,15 +1,17 @@
-package entity
+package projectile
 
 import (
 	"math"
 
 	"github.com/daddevv/type-defense/internal/assets"
 	"github.com/daddevv/type-defense/internal/core"
+	"github.com/daddevv/type-defense/internal/entity"
+	"github.com/daddevv/type-defense/internal/entity/enemy"
 )
 
 // calcIntercept returns a normalized direction vector from the shooter position
 // to where the projectile should aim in order to intercept the moving target.
-func calcIntercept(px, py float64, target Enemy, speed float64) (float64, float64) {
+func calcIntercept(px, py float64, target enemy.Enemy, speed float64) (float64, float64) {
 	tx, ty := target.Position()
 	tvx, tvy := target.Velocity()
 	rx := tx - px
@@ -49,10 +51,10 @@ func calcIntercept(px, py float64, target Enemy, speed float64) (float64, float6
 
 // Projectile represents a moving projectile toward a target.
 type Projectile struct {
-	BaseEntity
+	entity.BaseEntity
 	Vx, Vy float64
 	Speed  float64
-	Target Enemy
+	Target enemy.Enemy
 	Alive  bool
 
 	Damage int
@@ -60,11 +62,11 @@ type Projectile struct {
 }
 
 // NewProjectile creates a new projectile aimed at the target.
-func NewProjectile(x, y float64, target Enemy, dmg int, speed float64, bounce int) *Projectile {
+func NewProjectile(x, y float64, target enemy.Enemy, dmg int, speed float64, bounce int) *Projectile {
 	vx, vy := calcIntercept(x, y, target, speed)
 	w, h := assets.ImgProjectile.Bounds().Dx(), assets.ImgProjectile.Bounds().Dy()
 	return &Projectile{
-		BaseEntity: BaseEntity{
+		BaseEntity: entity.BaseEntity{
 			Position:     core.Point{X: x, Y: y},
 			Width:        w,
 			Height:       h,

@@ -1,9 +1,13 @@
-package enemy
+package game
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/daddevv/type-defense/internal/entity/ally"
+)
 
 func TestFootmanMovement(t *testing.T) {
-	f := NewFootman(0, 0)
+	f := ally.NewFootman(0, 0)
 	f.Speed = 10
 	f.Update(1.0)
 	x := f.Position.X
@@ -13,7 +17,7 @@ func TestFootmanMovement(t *testing.T) {
 }
 
 func TestFootmanDefaults(t *testing.T) {
-	f := NewFootman(0, 0)
+	f := ally.NewFootman(0, 0)
 	if f.Health() != 10 {
 		t.Errorf("expected default HP 10 got %d", f.Health())
 	}
@@ -26,7 +30,7 @@ func TestFootmanDefaults(t *testing.T) {
 }
 
 func TestFootmanDamageKills(t *testing.T) {
-	f := NewFootman(0, 0)
+	f := ally.NewFootman(0, 0)
 	f.ApplyDamage(5)
 	if !f.Alive {
 		t.Errorf("footman should still be alive")
