@@ -32,6 +32,7 @@ Each module exposes a `Handler` with an `Update(dt float64)` method. The `Handle
 ## Event Bus
 
 `internal/event` provides a lightweight pub/sub system. Each handler exposes channels for its specific event type (for example `EntityEvents` or `UIEvents`). Handlers subscribe to the events they care about using the shared `EventBus` and communicate by publishing events.
+Handlers can stop receiving updates with `Unsubscribe` when they are done.
 
 Example:
 
