@@ -1,6 +1,8 @@
-package game
+package entity
 
-import "github.com/hajimehoshi/ebiten/v2"
+import (
+	"github.com/hajimehoshi/ebiten/v2"
+)
 
 // Footman represents a simple melee unit spawned from the Barracks with basic
 // combat stats.

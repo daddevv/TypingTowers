@@ -5,6 +5,7 @@ import (
 	"log"
 	"path/filepath"
 
+	"github.com/daddevv/type-defense/internal/entity"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
@@ -19,9 +20,9 @@ var (
 	ImgHouseTile            *ebiten.Image
 	ImgBase                 *ebiten.Image
 	ImgTower                *ebiten.Image
-	ImgMobA                 *ebiten.Image
+	ImgMobA                 *ebiten.Image // deprecated, use entity.ImgMobA
 	ImgMobB                 *ebiten.Image
-	ImgFootman              *ebiten.Image
+	ImgFootman              *ebiten.Image // deprecated, use entity.ImgFootman
 	ImgProjectile           *ebiten.Image
 )
 
@@ -33,8 +34,10 @@ func InitImages() {
 	ImgBase = generateBaseImage()
 	ImgTower = generateTowerImage()
 	ImgMobA = generateMobImage(color.RGBA{255, 0, 0, 255})
+	entity.ImgMobA = ImgMobA
 	ImgMobB = generateMobImage(color.RGBA{255, 128, 0, 255})
 	ImgFootman = generateMobImage(color.RGBA{0, 0, 255, 255})
+	entity.ImgFootman = ImgFootman
 	ImgProjectile = generateProjectileImage()
 	ImgBackgroundBasicTiles = generateBackground()
 }

@@ -4,6 +4,7 @@ import (
 	"math/rand"
 
 	"github.com/daddevv/type-defense/internal/econ"
+	"github.com/daddevv/type-defense/internal/entity"
 )
 
 // Barracks represents a Military building that trains Footman units.
@@ -67,11 +68,11 @@ func (b *Barracks) generateWord() string {
 }
 
 // OnWordCompleted spawns a Footman if the provided word matches the pending one.
-func (b *Barracks) OnWordCompleted(word string) *Footman {
+func (b *Barracks) OnWordCompleted(word string) *entity.Footman {
 	if word == b.pendingWord {
 		b.pendingWord = ""
 		b.timer.Reset()
-		unit := NewFootman(0, 0)
+		unit := entity.NewFootman(0, 0)
 		if b.military != nil {
 			b.military.AddUnit(unit)
 		}

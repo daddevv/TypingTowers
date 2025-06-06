@@ -1,9 +1,12 @@
 package game
 
-import "testing"
+import (
+	"github.com/daddevv/type-defense/internal/entity"
+	"testing"
+)
 
 func TestFootmanMovement(t *testing.T) {
-	f := NewFootman(0, 0)
+	f := entity.NewFootman(0, 0)
 	f.speed = 10
 	f.Update(1.0)
 	x, _ := f.Position()
@@ -13,7 +16,7 @@ func TestFootmanMovement(t *testing.T) {
 }
 
 func TestFootmanDefaults(t *testing.T) {
-	f := NewFootman(0, 0)
+	f := entity.NewFootman(0, 0)
 	if f.Health() != 10 {
 		t.Errorf("expected default HP 10 got %d", f.Health())
 	}
@@ -26,7 +29,7 @@ func TestFootmanDefaults(t *testing.T) {
 }
 
 func TestFootmanDamageKills(t *testing.T) {
-	f := NewFootman(0, 0)
+	f := entity.NewFootman(0, 0)
 	f.Damage(5)
 	if !f.Alive() {
 		t.Errorf("footman should still be alive")

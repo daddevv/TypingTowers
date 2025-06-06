@@ -1,10 +1,13 @@
 package game
 
-import "testing"
+import (
+	"github.com/daddevv/type-defense/internal/entity"
+	"testing"
+)
 
 // TestOrcGruntDefaults verifies default stats.
 func TestOrcGruntDefaults(t *testing.T) {
-	o := NewOrcGrunt(0, 0)
+	o := entity.NewOrcGrunt(0, 0)
 	if o.Health() != 5 {
 		t.Errorf("expected default HP 5 got %d", o.Health())
 	}
@@ -15,9 +18,9 @@ func TestOrcGruntDefaults(t *testing.T) {
 
 // TestCombatFootmanKillsGrunt ensures a footman defeats a grunt in melee.
 func TestCombatFootmanKillsGrunt(t *testing.T) {
-	f := NewFootman(0, 0)
+	f := entity.NewFootman(0, 0)
 	f.speed = 0
-	o := NewOrcGrunt(0, 0)
+	o := entity.NewOrcGrunt(0, 0)
 	o.speed = 0
 
 	m := NewMilitary()
@@ -25,7 +28,7 @@ func TestCombatFootmanKillsGrunt(t *testing.T) {
 
 	for i := 0; i < 6; i++ {
 		o.Update(0.1)
-		m.Update(0.1, []*OrcGrunt{o})
+		m.Update(0.1, []*entity.OrcGrunt{o})
 	}
 
 	if o.Alive() {
@@ -38,17 +41,17 @@ func TestCombatFootmanKillsGrunt(t *testing.T) {
 
 // TestCombatFootmanDies verifies footman removal when killed.
 func TestCombatFootmanDies(t *testing.T) {
-	f := NewFootman(0, 0)
+	f := entity.NewFootman(0, 0)
 	f.speed = 0
 	f.hp = 2
-	o := NewOrcGrunt(0, 0)
+	o := entity.NewOrcGrunt(0, 0)
 	o.speed = 0
 	o.damage = 5
 
 	m := NewMilitary()
 	m.AddUnit(f)
 
-	m.Update(0.1, []*OrcGrunt{o})
+	m.Update(0.1, []*entity.OrcGrunt{o})
 
 	if m.Count() != 0 {
 		t.Errorf("expected footman removed after death")

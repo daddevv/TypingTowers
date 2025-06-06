@@ -2,15 +2,18 @@
 
 package game
 
-import "testing"
+import (
+	"github.com/daddevv/type-defense/internal/entity"
+	"testing"
+)
 
 // TestCombatKillTimeUnderEight simulates perfect typing resulting in a Footman
 // defeating an OrcGrunt. The battle should resolve in under eight seconds of
 // simulated time.
 func TestCombatKillTimeUnderEight(t *testing.T) {
-	f := NewFootman(0, 0)
+	f := entity.NewFootman(0, 0)
 	f.speed = 0
-	o := NewOrcGrunt(0, 0)
+	o := entity.NewOrcGrunt(0, 0)
 	o.speed = 0
 
 	m := NewMilitary()
@@ -20,7 +23,7 @@ func TestCombatKillTimeUnderEight(t *testing.T) {
 	elapsed := 0.0
 	for o.Alive() && elapsed < 10 {
 		o.Update(dt)
-		m.Update(dt, []*OrcGrunt{o})
+		m.Update(dt, []*entity.OrcGrunt{o})
 		elapsed += dt
 	}
 

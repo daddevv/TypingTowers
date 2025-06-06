@@ -1,9 +1,12 @@
 package game
 
-import "testing"
+import (
+	"github.com/daddevv/type-defense/internal/entity"
+	"testing"
+)
 
 // helper to update orc slice and remove dead ones
-func updateOrcs(orcs []*OrcGrunt, dt float64) []*OrcGrunt {
+func updateOrcs(orcs []*entity.OrcGrunt, dt float64) []*entity.OrcGrunt {
 	for i := 0; i < len(orcs); {
 		o := orcs[i]
 		o.Update(dt)
@@ -17,14 +20,14 @@ func updateOrcs(orcs []*OrcGrunt, dt float64) []*OrcGrunt {
 }
 
 func TestFootmanSurvivesAfterKill(t *testing.T) {
-	f := NewFootman(0, 0)
+	f := entity.NewFootman(0, 0)
 	f.speed = 0
-	o := NewOrcGrunt(0, 0)
+	o := entity.NewOrcGrunt(0, 0)
 	o.speed = 0
 
 	m := NewMilitary()
 	m.AddUnit(f)
-	orcs := []*OrcGrunt{o}
+	orcs := []*entity.OrcGrunt{o}
 
 	for steps := 0; o.Alive() && steps < 10; steps++ {
 		orcs = updateOrcs(orcs, 0.1)
@@ -40,16 +43,16 @@ func TestFootmanSurvivesAfterKill(t *testing.T) {
 }
 
 func TestFootmanDiesLethalDamage(t *testing.T) {
-	f := NewFootman(0, 0)
+	f := entity.NewFootman(0, 0)
 	f.speed = 0
 	f.hp = 2
-	o := NewOrcGrunt(0, 0)
+	o := entity.NewOrcGrunt(0, 0)
 	o.speed = 0
 	o.damage = 5
 
 	m := NewMilitary()
 	m.AddUnit(f)
-	orcs := []*OrcGrunt{o}
+	orcs := []*entity.OrcGrunt{o}
 
 	orcs = updateOrcs(orcs, 0.1)
 	orcs = m.Update(0.1, orcs)
@@ -63,14 +66,14 @@ func TestCombatMultipleCombinations(t *testing.T) {
 	combos := []struct{ f, g int }{{1, 2}, {2, 1}, {2, 2}}
 	for _, c := range combos {
 		m := NewMilitary()
-		var orcs []*OrcGrunt
+		var orcs []*entity.OrcGrunt
 		for i := 0; i < c.f; i++ {
-			f := NewFootman(0, 0)
+			f := entity.NewFootman(0, 0)
 			f.speed = 0
 			m.AddUnit(f)
 		}
 		for i := 0; i < c.g; i++ {
-			o := NewOrcGrunt(0, 0)
+			o := entity.NewOrcGrunt(0, 0)
 			o.speed = 0
 			orcs = append(orcs, o)
 		}
@@ -97,18 +100,18 @@ func TestCombatMultipleCombinations(t *testing.T) {
 }
 
 func TestSimultaneousDamage(t *testing.T) {
-	f := NewFootman(0, 0)
+	f := entity.NewFootman(0, 0)
 	f.speed = 0
 	f.hp = 1
 	f.damage = 5
-	o := NewOrcGrunt(0, 0)
+	o := entity.NewOrcGrunt(0, 0)
 	o.speed = 0
 	o.hp = 5
 	o.damage = 1
 
 	m := NewMilitary()
 	m.AddUnit(f)
-	orcs := []*OrcGrunt{o}
+	orcs := []*entity.OrcGrunt{o}
 
 	orcs = updateOrcs(orcs, 0.1)
 	orcs = m.Update(0.1, orcs)
@@ -119,14 +122,14 @@ func TestSimultaneousDamage(t *testing.T) {
 }
 
 func TestNoCombatWithoutOverlap(t *testing.T) {
-	f := NewFootman(0, 0)
+	f := entity.NewFootman(0, 0)
 	f.speed = 0
-	o := NewOrcGrunt(1000, 0)
+	o := entity.NewOrcGrunt(1000, 0)
 	o.speed = 0
 
 	m := NewMilitary()
 	m.AddUnit(f)
-	orcs := []*OrcGrunt{o}
+	orcs := []*entity.OrcGrunt{o}
 
 	orcs = updateOrcs(orcs, 0.1)
 	hpF := f.Health()
@@ -139,14 +142,14 @@ func TestNoCombatWithoutOverlap(t *testing.T) {
 }
 
 func TestImmediateRemovalOfDeadUnits(t *testing.T) {
-	f := NewFootman(0, 0)
+	f := entity.NewFootman(0, 0)
 	f.speed = 0
-	o := NewOrcGrunt(0, 0)
+	o := entity.NewOrcGrunt(0, 0)
 	o.speed = 0
 
 	m := NewMilitary()
 	m.AddUnit(f)
-	orcs := []*OrcGrunt{o}
+	orcs := []*entity.OrcGrunt{o}
 
 	for steps := 0; steps < 10 && len(orcs) > 0; steps++ {
 		orcs = updateOrcs(orcs, 0.1)
@@ -163,15 +166,15 @@ func TestImmediateRemovalOfDeadUnits(t *testing.T) {
 }
 
 func TestDeadUnitsCannotAttack(t *testing.T) {
-	f := NewFootman(0, 0)
+	f := entity.NewFootman(0, 0)
 	f.speed = 0
-	o := NewOrcGrunt(0, 0)
+	o := entity.NewOrcGrunt(0, 0)
 	o.speed = 0
 	o.hp = 1
 
 	m := NewMilitary()
 	m.AddUnit(f)
-	orcs := []*OrcGrunt{o}
+	orcs := []*entity.OrcGrunt{o}
 
 	orcs = updateOrcs(orcs, 0.1)
 	orcs = m.Update(0.1, orcs)
@@ -187,15 +190,15 @@ func TestDeadUnitsCannotAttack(t *testing.T) {
 }
 
 func TestNoCombatWithDeadUnit(t *testing.T) {
-	f := NewFootman(0, 0)
+	f := entity.NewFootman(0, 0)
 	f.speed = 0
 	f.alive = false
-	o := NewOrcGrunt(0, 0)
+	o := entity.NewOrcGrunt(0, 0)
 	o.speed = 0
 
 	m := NewMilitary()
 	m.AddUnit(f)
-	orcs := []*OrcGrunt{o}
+	orcs := []*entity.OrcGrunt{o}
 
 	orcs = updateOrcs(orcs, 0.1)
 	hp := o.Health()
@@ -207,18 +210,18 @@ func TestNoCombatWithDeadUnit(t *testing.T) {
 }
 
 func TestBothUnitsDieSameTick(t *testing.T) {
-	f := NewFootman(0, 0)
+	f := entity.NewFootman(0, 0)
 	f.speed = 0
 	f.hp = 1
 	f.damage = 5
-	o := NewOrcGrunt(0, 0)
+	o := entity.NewOrcGrunt(0, 0)
 	o.speed = 0
 	o.hp = 5
 	o.damage = 5
 
 	m := NewMilitary()
 	m.AddUnit(f)
-	orcs := []*OrcGrunt{o}
+	orcs := []*entity.OrcGrunt{o}
 
 	orcs = updateOrcs(orcs, 0.1)
 	orcs = m.Update(0.1, orcs)
@@ -235,15 +238,15 @@ func TestRemovalDuringIterationNoPanic(t *testing.T) {
 		}
 	}()
 	m := NewMilitary()
-	var orcs []*OrcGrunt
+	var orcs []*entity.OrcGrunt
 	for i := 0; i < 3; i++ {
-		f := NewFootman(0, 0)
+		f := entity.NewFootman(0, 0)
 		f.speed = 0
 		f.hp = 1
 		m.AddUnit(f)
 	}
 	for i := 0; i < 3; i++ {
-		o := NewOrcGrunt(0, 0)
+		o := entity.NewOrcGrunt(0, 0)
 		o.speed = 0
 		o.damage = 5
 		orcs = append(orcs, o)

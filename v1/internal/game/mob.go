@@ -1,10 +1,13 @@
 package game
 
-import "math"
+import (
+	"github.com/daddevv/type-defense/internal/entity"
+	"math"
+)
 
 // Mob represents a basic enemy moving left.
 type Mob struct {
-	BaseEntity
+	entity.BaseEntity
 	speed      float64
 	animTicker float64
 	alive      bool
@@ -24,8 +27,8 @@ type Mob struct {
 func NewMob(x, y float64, target *Base, hp int, speed float64) *Mob {
 	w, h := ImgMobA.Bounds().Dx(), ImgMobA.Bounds().Dy()
 	return &Mob{
-		BaseEntity: BaseEntity{
-			pos:          Point{x, y},
+		BaseEntity: entity.BaseEntity{
+			pos:          entity.Point{x, y},
 			width:        w,
 			height:       h,
 			frame:        ImgMobA,

@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"unicode"
 
+	"github.com/daddevv/type-defense/internal/entity"
 	"github.com/daddevv/type-defense/internal/tower"
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -21,7 +22,7 @@ const (
 
 // Tower represents a stationary auto-firing tower.
 type Tower struct {
-	BaseEntity
+	entity.BaseEntity
 	cooldownTimer CooldownTimer // Use proper timer instead of float64
 	rate          float64       // seconds between shots
 	rangeDst      float64
@@ -89,8 +90,8 @@ func NewTowerWithTypeAndLevel(g *Game, x, y float64, tt TowerType, level int) *T
 	}
 
 	t := &Tower{
-		BaseEntity: BaseEntity{
-			pos:          Point{x, y},
+		BaseEntity: entity.BaseEntity{
+			pos:          entity.Point{x, y},
 			width:        w,
 			height:       h,
 			frame:        ImgTower,

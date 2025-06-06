@@ -1,6 +1,8 @@
-package game
+package entity
 
-import "github.com/hajimehoshi/ebiten/v2"
+import (
+	"github.com/hajimehoshi/ebiten/v2"
+)
 
 // OrcGrunt represents a basic enemy foot soldier.
 type OrcGrunt struct {

@@ -3,11 +3,12 @@ package game
 import (
 	"testing"
 
+	"github.com/daddevv/type-defense/internal/entity"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 func TestBaseEntityBounds(t *testing.T) {
-	e := &BaseEntity{pos: Point{X: 1, Y: 2}, width: 3, height: 4, frame: ebiten.NewImage(1, 1)}
+	e := &entity.BaseEntity{pos: entity.Point{X: 1, Y: 2}, width: 3, height: 4, frame: ebiten.NewImage(1, 1)}
 	x, y := e.Position()
 	if x != 1 || y != 2 {
 		t.Errorf("position expected (1,2) got (%v,%v)", x, y)

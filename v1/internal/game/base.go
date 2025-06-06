@@ -1,11 +1,13 @@
 package game
 
+import "github.com/daddevv/type-defense/internal/entity"
+
 // Base represents the player's base that mobs try to destroy.
 const BaseStartingHealth = 10
 
 // Base represents the player's base that mobs try to destroy.
 type Base struct {
-	BaseEntity
+	entity.BaseEntity
 	health int
 }
 
@@ -13,8 +15,8 @@ type Base struct {
 func NewBase(x, y float64, hp int) *Base {
 	w, h := ImgBase.Bounds().Dx(), ImgBase.Bounds().Dy()
 	return &Base{
-		BaseEntity: BaseEntity{
-			pos:          Point{x, y},
+		BaseEntity: entity.BaseEntity{
+			pos:          entity.Point{x, y},
 			width:        w,
 			height:       h,
 			frame:        ImgBase,

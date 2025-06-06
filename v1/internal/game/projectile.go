@@ -1,6 +1,9 @@
 package game
 
-import "math"
+import (
+	"github.com/daddevv/type-defense/internal/entity"
+	"math"
+)
 
 // calcIntercept returns a normalized direction vector from the shooter position
 // to where the projectile should aim in order to intercept the moving target.
@@ -44,7 +47,7 @@ func calcIntercept(px, py float64, target Enemy, speed float64) (float64, float6
 
 // Projectile represents a moving projectile toward a target.
 type Projectile struct {
-	BaseEntity
+	entity.BaseEntity
 	vx, vy float64
 	speed  float64
 	target Enemy
@@ -60,8 +63,8 @@ func NewProjectile(g *Game, x, y float64, target Enemy, dmg int, speed float64, 
 	vx, vy := calcIntercept(x, y, target, speed)
 	w, h := ImgProjectile.Bounds().Dx(), ImgProjectile.Bounds().Dy()
 	return &Projectile{
-		BaseEntity: BaseEntity{
-			pos:          Point{x, y},
+		BaseEntity: entity.BaseEntity{
+			pos:          entity.Point{x, y},
 			width:        w,
 			height:       h,
 			frame:        ImgProjectile,
