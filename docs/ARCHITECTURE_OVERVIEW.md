@@ -4,16 +4,28 @@ This document summarizes the modular handler pattern introduced in the `v1` dire
 
 ## Module Layout
 
-All gameplay code lives under `v1/internal/`. Modules include:
+All gameplay code lives under `v1/internal/`. The packages were split out of a
+single `game` module and are organized as follows:
 
-- `entity` – ally and enemy units
-- `ui` – HUD, menus and overlays
-- `tech` – tech tree and skill tree logic
-- `tower` – towers, projectiles and related logic
-- `phase` – game state transitions
-- `content` – asset loading helpers
+- `assets` – fonts, palettes and other asset helpers
+- `config` – runtime configuration and defaults
+- `core` – timers, points, HUD helpers and other utilities
+- `event` – event bus and event type definitions
+- `econ` – resource structs and tech tree parsing
+- `word` – the global queue and typing statistics
+- `entity` – shared interfaces for drawable objects
+- `mob` – enemy implementations
+- `structure` – buildings, towers and the player base
+- `worker` – resource gathering buildings
 - `sprite` – image helpers and sprite utilities
-- `event` – event bus and event types
+- `input` – keyboard input processing
+- `phase` – game state enumeration helpers
+- `skill` – skill tree logic and persistence
+- `tech` – tech tree handler
+- `game` – the orchestrator that owns all handlers
+
+See [INTERNAL_RESTRUCTURE.md](INTERNAL_RESTRUCTURE.md) for the current import
+rules and planned renames.
 
 Each module exposes a `Handler` with an `Update(dt float64)` method. The `Handler` interface allows the main game engine to update modules in a uniform manner.
 
