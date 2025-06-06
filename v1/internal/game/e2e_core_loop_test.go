@@ -5,7 +5,7 @@ package game
 import (
 	"testing"
 
-	structure "github.com/daddevv/type-defense/internal/building"
+	"github.com/daddevv/type-defense/internal/building"
 )
 
 // TestCoreLoopSim runs the main game loop in headless mode and verifies core
@@ -42,7 +42,7 @@ func TestCoreLoopSim(t *testing.T) {
 	if g.Queue().Len() != 0 {
 		t.Errorf("queue should be empty, got %d", g.Queue().Len())
 	}
-	if g.base.Health() != structure.BaseStartingHealth {
+	if g.base.Health() != building.BaseStartingHealth {
 		t.Errorf("base should not take damage, hp=%d", g.base.Health())
 	}
 	if g.queueJam {

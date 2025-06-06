@@ -65,4 +65,15 @@
   - [x] **T-003.2** Capture `/` key in `Input.Update` to toggle tech menu mode
   - [x] **T-003.3** Render tech menu overlay: list `TechNode.Name`, unlocked letters, and achievements
   - [x] **T-003.4** Implement search input handling: append typed chars and backspace to `searchBuffer`
-  - [x] **T-003.5** Filter `TechTree.nodes` to
+  - [x] **T-003.5** Filter `TechTree.nodes` to match `searchBuffer`
+
+---
+
+## Unit Testing Coverage
+
+- [ ] `internal/input` needs unit tests
+- [ ] `internal/phase` needs unit tests
+- [ ] `internal/skill` needs unit tests
+- [ ] `internal/tech` needs unit tests
+- [ ] `internal/word` needs unit tests
+- [ ] Ensure all integration and e2e tests reside under `internal/game`
