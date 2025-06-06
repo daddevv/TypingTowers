@@ -161,3 +161,66 @@
 - **INT-007** Implement Letter Unlock System
 - **TEST-CORELOOP** End-to-end playtest of the core loop
 
+# TODO Archive
+
+## Core Gameplay Loop Demo
+
+- **ARCH-001** Modularize internal codebase with handler/event system
+  - Defined new module structure and created directories for entity, ui, tech, tower, phase, econ, sprite, game
+  - Defined Handler structs for each module
+  - Refactored game.Engine to hold pointers to all handlers
+  - Implemented Update(dt) method for each handler and coordinated updates
+  - Designed Go channel-based pub/sub event system and defined event types
+  - Exposed channels for publishing/subscribing to events in each handler
+  - Implemented event communication between handlers
+  - Migrated all logic/files into new module structure
+  - Updated all imports and references
+  - Wrote/adjusted tests for new handler/event system
+  - Documented new architecture and handler/event pattern
+  - Ensured game.Game acts as main renderer using handler state
+  - Finalized modular split and package renames
+    - Documented package layout and import map
+    - Renamed mob to enemy, structure to building
+    - Moved worker types under building/gatherer
+    - Updated all imports and tests after renames
+    - Removed deprecated package references
+
+## Combat & Military
+
+- **TEST-COMBAT-EDGE** Simulation unit tests for all common and edge cases
+  - Footman survives after killing a single grunt (verify HP > 0)
+  - Footman dies if grunt damage is lethal (verify removal from military)
+  - Multiple Footmen vs multiple Grunts: all combinations (1v2, 2v1, 2v2)
+  - Simultaneous combat: overlapping units resolve damage correctly
+  - No combat occurs if units do not overlap (verify no HP loss)
+  - Dead units are removed from the military/orc lists immediately
+  - Units with 0 HP cannot attack or be attacked further
+  - Combat does not occur if either unit is already dead
+  - Correct handling of edge cases (e.g., both units die in same tick)
+  - No panics or index errors when removing units during iteration
+  - Added all tests to CI pipeline
+
+## Typing Metrics & Minigames
+
+- **MET-001** Capture per-word accuracy & time
+  - Defined data structures for per-word accuracy and completion time
+  - Updated queue processing logic to record stats
+  - Stored per-word stats in a history buffer/log
+  - Added unit tests for per-word stats
+  - Exposed stats to HUD/stats panel
+
+- **MET-002** Rolling WPM (last 30 s)
+  - Implemented time-based buffer for recent typing events
+  - Calculated rolling WPM using last 30 seconds
+  - Added method for rolling WPM
+  - Wrote tests for rolling WPM
+  - Displayed rolling WPM in HUD/stats panel
+
+- **UI-MET** Toggle stats panel (`Tab`)
+  - Added boolean field for stats panel visibility
+  - Captured `Tab` key in Input handler
+  - Implemented HUD rendering logic for stats panel
+  - Displayed per-word stats, rolling WPM, and accuracy
+  - Added tests for panel toggling and display
+
+- **FUZZ-001** Engine fuzz tester and robustness checks
