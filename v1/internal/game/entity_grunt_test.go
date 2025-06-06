@@ -46,4 +46,12 @@ func TestCombatFootmanDies(t *testing.T) {
 	o.Speed = 0
 	o.Damage = 5
 
+	// Footman takes lethal damage from the grunt.
+	f.ApplyDamage(o.Damage)
+	if f.Alive {
+		t.Fatalf("footman should be dead after taking %d damage", o.Damage)
+	}
+	if !o.Alive {
+		t.Fatalf("orc grunt should survive the exchange")
+	}
 }

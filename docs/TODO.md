@@ -3,19 +3,19 @@
 - [x] **MIG-002** Rename `mob` package to `enemy`
   - [x] Move all code from `internal/mob` to `internal/enemy`
   - [x] Update all import paths and references from `mob` to `enemy`
-  - [ ] Update tests and documentation to use new package name
+  - [x] Update tests and documentation to use new package name
 - [x] **MIG-003** Rename `structure` package to `building`
   - [x] Move all code from `internal/structure` to `internal/building`
   - [x] Update all import paths and references from `structure` to `building`
-  - [ ] Update tests and documentation to use new package name
+  - [x] Update tests and documentation to use new package name
  - [x] **MIG-004** Move worker types under `building/gatherer`
   - [x] Create `internal/building/gatherer` subpackage
   - [x] Move Farmer, Miner, Lumberjack, etc. from `worker` to `building/gatherer`
   - [x] Update all references and imports accordingly
   - [x] Remove `worker` package after migration
-- [ ] **MIG-005** Update all imports and tests after renames
-  - [ ] Search for any lingering references to old package names
-  - [ ] Refactor integration and unit tests to use new structure
+- [x] **MIG-005** Update all imports and tests after renames
+  - [x] Search for any lingering references to old package names
+  - [x] Refactor integration and unit tests to use new structure
 - [ ] **MIG-006** Remove deprecated package references
   - [ ] Delete any obsolete files or directories left from the monolithic `game` package
   - [ ] Clean up documentation and comments referencing old structure
