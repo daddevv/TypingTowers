@@ -5,7 +5,6 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/daddevv/type-defense/internal/core"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
@@ -37,7 +36,7 @@ func InitImages() {
 	ImgMobB = generateMobImage(color.RGBA{255, 128, 0, 255})
 	ImgFootman = generateMobImage(color.RGBA{0, 0, 255, 255})
 	ImgProjectile = generateProjectileImage()
-	ImgBackgroundBasicTiles = generateBackground()
+	ImgBackgroundBasicTiles = ebiten.NewImage(1920, 1080)
 }
 
 // loadImage is the utility function to load an image from a file path.
@@ -50,20 +49,6 @@ func loadImage(path string) *ebiten.Image {
 	imgWidth, imgHeight := img.Bounds().Dx(), img.Bounds().Dy()
 	log.Println("Loaded image:", path, "(", imgWidth, "x", imgHeight, ")")
 	return img
-}
-
-// generateBackground creates a background image
-func generateBackground() *ebiten.Image {
-	bg := ebiten.NewImage(1920, 1080)
-	for x := range 60 {
-		for y := range 32 {
-			tileX, tileY := core.TilePosition(x, y)
-			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(float64(tileX), float64(tileY))
-			bg.DrawImage(ImgBackgroundTile, op)
-		}
-	}
-	return bg
 }
 
 func generateBaseImage() *ebiten.Image {

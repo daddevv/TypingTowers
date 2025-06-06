@@ -1,14 +1,19 @@
-package core
+package game
 
 import (
+	"fmt"
+	"image/color"
 	"strings"
 
+	"github.com/daddevv/type-defense/internal/assets"
+	"github.com/daddevv/type-defense/internal/skill"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
 // HUD displays placeholder UI elements with basic game information.
 type HUD struct {
-	// game *Game
+	game *Game
 }
 
 // ProgressBar returns a simple ASCII progress bar of the given width.
@@ -27,8 +32,8 @@ func ProgressBar(progress float64, width int) string {
 }
 
 // NewHUD creates a new HUD bound to the given game.
-func NewHUD() *HUD {
-	return &HUD{}
+func NewHUD(game *Game) *HUD {
+	return &HUD{game: game}
 }
 
 // NewHUDFromGame creates a new HUD from an existing game instance.
@@ -263,47 +268,47 @@ func (h *HUD) DrawWordStats(screen *ebiten.Image) {
 
 // DrawSkillTreeOverlay renders the global skill tree when active.
 func (h *HUD) DrawSkillTreeOverlay(screen *ebiten.Image) {
-	// if !h.game.skillMenuOpen {
-	// 	return
-	// }
-	// nodes := h.game.skillNodesByCategory(SkillCategory(h.game.skillCategory))
-	// if nodes == nil {
-	// 	return
-	// }
-	// lines := []string{fmt.Sprintf("-- SKILLS: %s --", SkillCategory(h.game.skillCategory).String())}
-	// for _, n := range nodes {
-	// 	status := "Locked"
-	// 	if h.game.unlockedSkills[n.ID] {
-	// 		status = "Unlocked"
-	// 	}
-	// 	lines = append(lines, fmt.Sprintf("  %s - %s", n.Name, status))
-	// }
-	// if len(nodes) > 0 {
-	// 	sel := nodes[h.game.skillCursor]
-	// 	effs := []string{}
-	// 	for k, v := range sel.Effects {
-	// 		effs = append(effs, fmt.Sprintf("%s=%.1f", k, v))
-	// 	}
-	// 	lines = append(lines, "")
-	// 	lines = append(lines, strings.Join(effs, ", "))
-	// }
-	// drawMenu(screen, lines, 720, 260)
+	if !h.game.skillMenuOpen {
+		return
+	}
+	nodes := h.game.skillNodesByCategory(skill.SkillCategory(h.game.skillCategory))
+	if nodes == nil {
+		return
+	}
+	lines := []string{fmt.Sprintf("-- SKILLS: %s --", skill.SkillCategory(h.game.skillCategory).String())}
+	for _, n := range nodes {
+		status := "Locked"
+		if h.game.unlockedSkills[n.ID] {
+			status = "Unlocked"
+		}
+		lines = append(lines, fmt.Sprintf("  %s - %s", n.Name, status))
+	}
+	if len(nodes) > 0 {
+		sel := nodes[h.game.skillCursor]
+		effs := []string{}
+		for k, v := range sel.Effects {
+			effs = append(effs, fmt.Sprintf("%s=%.1f", k, v))
+		}
+		lines = append(lines, "")
+		lines = append(lines, strings.Join(effs, ", "))
+	}
+	DrawMenu(screen, lines, 720, 260)
 }
 
 // DrawMenu renders a vertical list of strings at (x, y) with spacing and shadow.
 func DrawMenu(screen *ebiten.Image, lines []string, x, y int) {
-	// const lineSpacing = 32
-	// for i, line := range lines {
-	// 	opts := &text.DrawOptions{}
-	// 	opts.GeoM.Translate(float64(x), float64(y+i*lineSpacing))
-	// 	opts.ColorScale.ScaleWithColor(color.Black)
-	// 	opts.GeoM.Translate(2, 2)
-	// 	text.Draw(screen, line, BoldFont, opts)
-	// 	opts = &text.DrawOptions{}
-	// 	opts.GeoM.Translate(float64(x), float64(y+i*lineSpacing))
-	// 	opts.ColorScale.ScaleWithColor(color.White)
-	// 	text.Draw(screen, line, BoldFont, opts)
-	// }
+	const lineSpacing = 32
+	for i, line := range lines {
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(float64(x), float64(y+i*lineSpacing))
+		opts.ColorScale.ScaleWithColor(color.Black)
+		opts.GeoM.Translate(2, 2)
+		text.Draw(screen, line, assets.BoldFont, opts)
+		opts = &text.DrawOptions{}
+		opts.GeoM.Translate(float64(x), float64(y+i*lineSpacing))
+		opts.ColorScale.ScaleWithColor(color.White)
+		text.Draw(screen, line, assets.BoldFont, opts)
+	}
 }
 
 // DrawStatsPanel renders a panel showing recent typing stats when open.

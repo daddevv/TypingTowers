@@ -82,10 +82,10 @@ func NewTowerWithTypeAndLevel(x, y float64, tt TowerType, level int) *Tower {
 	cfg := config.DefaultConfig
 	t := &Tower{
 		BaseEntity: entity.BaseEntity{
-			Position:     core.Point{X: x, Y: y},
+			Pos:          core.Point{X: x, Y: y},
 			Width:        w,
 			Height:       h,
-			Frame:        assets.ImgTower,
+			Sprite:       assets.ImgTower,
 			FrameAnchorX: float64(w) / 2,
 			FrameAnchorY: float64(h) / 2,
 			Static:       true,
@@ -551,7 +551,7 @@ func (t *Tower) Draw(screen *ebiten.Image) {
 	if t.RangeImg != nil {
 		op := &ebiten.DrawImageOptions{}
 		w, h := t.RangeImg.Bounds().Dx(), t.RangeImg.Bounds().Dy()
-		op.GeoM.Translate(t.Position.X-float64(w)/2, t.Position.Y-float64(h)/2)
+		op.GeoM.Translate(t.Pos.X-float64(w)/2, t.Pos.Y-float64(h)/2)
 		screen.DrawImage(t.RangeImg, op)
 	}
 	t.BaseEntity.Draw(screen)

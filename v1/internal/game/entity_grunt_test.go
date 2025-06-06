@@ -29,7 +29,7 @@ func TestCombatFootmanKillsGrunt(t *testing.T) {
 		o.Update(0.1)
 	}
 
-	if o.Alive {
+	if o.Alive() {
 		t.Errorf("expected orc grunt to be defeated")
 	}
 	if !f.Alive {
@@ -51,7 +51,7 @@ func TestCombatFootmanDies(t *testing.T) {
 	if f.Alive {
 		t.Fatalf("footman should be dead after taking %d damage", o.Damage)
 	}
-	if !o.Alive {
+	if !o.Alive() {
 		t.Fatalf("orc grunt should survive the exchange")
 	}
 }

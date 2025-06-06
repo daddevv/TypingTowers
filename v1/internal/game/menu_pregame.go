@@ -104,7 +104,7 @@ func (p *PreGame) Draw(g *Game, screen *ebiten.Image) {
 			}
 			lines = append(lines, prefix+opt)
 		}
-		core.DrawMenu(screen, append([]string{"-- SELECT CHARACTER --"}, lines...), 860, 480)
+		DrawMenu(screen, append([]string{"-- SELECT CHARACTER --"}, lines...), 860, 480)
 	case 1:
 		for i, opt := range p.diffOptions {
 			prefix := "  "
@@ -113,13 +113,13 @@ func (p *PreGame) Draw(g *Game, screen *ebiten.Image) {
 			}
 			lines = append(lines, prefix+opt)
 		}
-		core.DrawMenu(screen, append([]string{"-- SELECT DIFFICULTY --"}, lines...), 860, 480)
+		DrawMenu(screen, append([]string{"-- SELECT DIFFICULTY --"}, lines...), 860, 480)
 	case 2:
 		lines = []string{"-- TUTORIAL --", "Type words to attack and build.", "Press Enter to continue"}
-		core.DrawMenu(screen, lines, 860, 480)
+		DrawMenu(screen, lines, 860, 480)
 	case 3:
 		lines = []string{"-- TYPING TEST --", "Type: ready", p.typed}
-		core.DrawMenu(screen, lines, 860, 480)
+		DrawMenu(screen, lines, 860, 480)
 	case 4:
 		for i, opt := range p.modeOptions {
 			prefix := "  "
@@ -128,6 +128,6 @@ func (p *PreGame) Draw(g *Game, screen *ebiten.Image) {
 			}
 			lines = append(lines, prefix+opt)
 		}
-		core.DrawMenu(screen, append([]string{"-- SELECT MODE --"}, lines...), 860, 480)
+		DrawMenu(screen, append([]string{"-- SELECT MODE --"}, lines...), 860, 480)
 	}
 }

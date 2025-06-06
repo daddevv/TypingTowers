@@ -98,7 +98,7 @@ func (m *MainMenu) Draw(g *Game, screen *ebiten.Image) {
 			}
 			lines = append(lines, prefix+opt)
 		}
-		core.DrawMenu(screen, append([]string{"-- SETTINGS --"}, lines...), 860, 480)
+		DrawMenu(screen, append([]string{"-- SETTINGS --"}, lines...), 860, 480)
 		return
 	}
 	for i, opt := range m.options {
@@ -108,7 +108,7 @@ func (m *MainMenu) Draw(g *Game, screen *ebiten.Image) {
 		}
 		lines = append(lines, prefix+opt)
 	}
-	core.DrawMenu(screen, append([]string{"-- MAIN MENU --"}, lines...), 860, 480)
+	DrawMenu(screen, append([]string{"-- MAIN MENU --"}, lines...), 860, 480)
 }
 
 // drawScrollingBackground renders a vertically scrolling background.

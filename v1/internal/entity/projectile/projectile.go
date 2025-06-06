@@ -67,10 +67,10 @@ func NewProjectile(x, y float64, target enemy.Enemy, dmg int, speed float64, bou
 	w, h := assets.ImgProjectile.Bounds().Dx(), assets.ImgProjectile.Bounds().Dy()
 	return &Projectile{
 		BaseEntity: entity.BaseEntity{
-			Position:     core.Point{X: x, Y: y},
+			Pos:          core.Point{X: x, Y: y},
 			Width:        w,
 			Height:       h,
-			Frame:        assets.ImgProjectile,
+			Sprite:       assets.ImgProjectile,
 			FrameAnchorX: float64(w) / 2,
 			FrameAnchorY: float64(h) / 2,
 		},
@@ -86,12 +86,12 @@ func NewProjectile(x, y float64, target enemy.Enemy, dmg int, speed float64, bou
 
 // Update moves the projectile
 func (p *Projectile) Update(dt float64) {
-	p.Position.X += p.Vx * p.Speed * dt
-	p.Position.Y += p.Vy * p.Speed * dt
+	p.Pos.X += p.Vx * p.Speed * dt
+	p.Pos.Y += p.Vy * p.Speed * dt
 	if p.Target != nil && p.Target.Alive() {
 		tx, ty := p.Target.Position()
-		dx := tx - p.Position.X
-		dy := ty - p.Position.Y
+		dx := tx - p.Pos.X
+		dy := ty - p.Pos.Y
 		if math.Hypot(dx, dy) < 16 {
 			if p.Target.Alive() {
 				p.Target.ApplyDamage(p.Damage)
@@ -125,7 +125,7 @@ func (p *Projectile) Update(dt float64) {
 			}
 		}
 	}
-	if p.Position.X < -10 || p.Position.X > 1930 || p.Position.Y < -10 || p.Position.Y > 1090 {
+	if p.Pos.X < -10 || p.Pos.X > 1930 || p.Pos.Y < -10 || p.Pos.Y > 1090 {
 		p.Destroy()
 	}
 }

@@ -20,10 +20,10 @@ func NewBase(x, y float64, hp int) *Base {
 	w, h := assets.ImgBase.Bounds().Dx(), assets.ImgBase.Bounds().Dy()
 	return &Base{
 		BaseEntity: entity.BaseEntity{
-			Position:     core.Point{X: x, Y: y},
+			Pos:          core.Point{X: x, Y: y},
 			Width:        w,
 			Height:       h,
-			Frame:        assets.ImgBase,
+			Sprite:       assets.ImgBase,
 			FrameAnchorX: float64(w) / 2,
 			FrameAnchorY: float64(h) / 2,
 			Static:       true,

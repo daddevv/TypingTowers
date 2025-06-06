@@ -22,9 +22,9 @@ type Entity interface {
 
 // BaseEntity provides common fields and methods for all entities.
 type BaseEntity struct {
-	Position      core.Point    // Position of the entity
+	Pos           core.Point    // Position of the entity
 	Width, Height int           // Size of the entity
-	Frame         *ebiten.Image // Current image frame of the entity
+	Sprite        *ebiten.Image // Current image frame of the entity
 	FrameAnchorX  float64       // Anchor point for the frame (for positioning)
 	FrameAnchorY  float64       // Anchor point for the frame (for positioning)
 	Static        bool          // Whether the entity is static or not
@@ -37,22 +37,22 @@ func (e *BaseEntity) Update(dt float64) error {
 
 // Destroy releases resources.
 func (e *BaseEntity) Destroy() {
-	e.Frame = nil
+	e.Sprite = nil
 }
 
 // Draw draws the entity to the screen at its current position.
 // The frame is drawn at the position (X, Y) with the anchor point adjusted by FrameAnchorX and FrameAnchorY.
 func (e *BaseEntity) Draw(screen *ebiten.Image) {
-	if e.Frame != nil {
+	if e.Sprite != nil {
 		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(float64(e.Position.X)-e.FrameAnchorX, float64(e.Position.Y)-e.FrameAnchorY)
-		screen.DrawImage(e.Frame, op)
+		op.GeoM.Translate(float64(e.Pos.X)-e.FrameAnchorX, float64(e.Pos.Y)-e.FrameAnchorY)
+		screen.DrawImage(e.Sprite, op)
 	}
 }
 
 // Bounds returns the bounding box of the entity.
 func (e *BaseEntity) Bounds() (x, y, width, height int) {
-	return int(e.Position.X), int(e.Position.Y), e.Width, e.Height
+	return int(e.Pos.X), int(e.Pos.Y), e.Width, e.Height
 }
 
 // Hitbox returns the hitbox of the entity (by default, same as bounds).

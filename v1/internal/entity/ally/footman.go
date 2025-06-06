@@ -21,10 +21,10 @@ func NewFootman(x, y float64) *Footman {
 	w, h := assets.ImgFootman.Bounds().Dx(), assets.ImgFootman.Bounds().Dy()
 	return &Footman{
 		BaseEntity: entity.BaseEntity{
-			Position:     core.Point{X: x, Y: y},
+			Pos:          core.Point{X: x, Y: y},
 			Width:        w,
 			Height:       h,
-			Frame:        assets.ImgFootman,
+			Sprite:       assets.ImgFootman,
 			FrameAnchorX: float64(w) / 2,
 			FrameAnchorY: float64(h) / 2,
 		},
@@ -41,7 +41,7 @@ func (f *Footman) Update(dt float64) error {
 	if !f.Alive {
 		return nil
 	}
-	f.Position.X += f.Speed * dt
+	f.Pos.X += f.Speed * dt
 	if f.Hp <= 0 {
 		f.Alive = false
 	}

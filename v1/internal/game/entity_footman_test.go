@@ -10,7 +10,7 @@ func TestFootmanMovement(t *testing.T) {
 	f := ally.NewFootman(0, 0)
 	f.Speed = 10
 	f.Update(1.0)
-	x := f.Position.X
+	x := f.Pos.X
 	if x <= 0 {
 		t.Errorf("expected footman to move right, got %f", x)
 	}

@@ -17,11 +17,12 @@ import (
 
 	"github.com/daddevv/type-defense/internal/assets"
 	"github.com/daddevv/type-defense/internal/building"
-	gatherer "github.com/daddevv/type-defense/internal/building/gatherer"
+	"github.com/daddevv/type-defense/internal/building/gatherer"
 	"github.com/daddevv/type-defense/internal/config"
 	"github.com/daddevv/type-defense/internal/core"
 	"github.com/daddevv/type-defense/internal/econ"
 	"github.com/daddevv/type-defense/internal/entity"
+	"github.com/daddevv/type-defense/internal/entity/enemy"
 	"github.com/daddevv/type-defense/internal/entity/projectile"
 	"github.com/daddevv/type-defense/internal/event"
 	"github.com/daddevv/type-defense/internal/phase"
@@ -77,7 +78,7 @@ type Game struct {
 	mobs        []entity.Entity
 	projectiles []*projectile.Projectile
 	base        *building.Base
-	hud         *core.HUD
+	hud         *HUD
 	gameOver    bool
 	paused      bool
 	resources   econ.ResourcePool
@@ -350,7 +351,7 @@ func NewGameWithHistory(cfg config.Config, hist *core.PerformanceHistory) *Game 
 		g.skillTree = tree
 	}
 	g.lastUpdate = time.Now()
-	g.hud = core.NewHUD()
+	g.hud = NewHUD(g)
 
 	// Initialize modular handlers
 	g.EntityHandler = entity.NewHandler()
@@ -1021,7 +1022,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 				summary = append(summary, " - "+a)
 			}
 		}
-		core.DrawMenu(g.screen, summary, 820, 580)
+		DrawMenu(g.screen, summary, 820, 580)
 		g.renderFrame(screen)
 		return
 	}
@@ -1056,7 +1057,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 				}
 			}
 			if label != "" {
-				x, y := t.Position.X, t.Position.Y
+				x, y := t.Pos.X, t.Pos.Y
 				opts := &text.DrawOptions{}
 				opts.GeoM.Translate(x-6, y-30)
 				opts.ColorScale.ScaleWithColor(color.White)
@@ -1092,7 +1093,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			}
 			lines = append(lines, prefix+opt)
 		}
-		core.DrawMenu(g.screen, lines, 860, 480)
+		DrawMenu(g.screen, lines, 860, 480)
 		g.renderFrame(screen)
 		return
 	}
@@ -1110,7 +1111,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			}
 			lines = append(lines, prefix+opt)
 		}
-		core.DrawMenu(g.screen, lines, 860, 480)
+		DrawMenu(g.screen, lines, 860, 480)
 		g.renderFrame(screen)
 		return
 	}
@@ -1665,8 +1666,8 @@ func (g *Game) saveGame(path string) {
 	}
 	for _, t := range g.towers {
 		sg.Towers = append(sg.Towers, savedTower{
-			X:            t.Position.X,
-			Y:            t.Position.Y,
+			X:            t.Pos.X,
+			Y:            t.Pos.Y,
 			Damage:       t.Damage,
 			Range:        t.RangeDst,
 			Rate:         t.Rate,
