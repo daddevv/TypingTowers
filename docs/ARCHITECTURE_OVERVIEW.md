@@ -46,6 +46,11 @@ bus.Subscribe("ui", uiCh)
 
 The `game.Game` struct owns a pointer to every handler and the shared `EventBus`. During `Game.Update` each handler's `Update` method is called. Rendering is also coordinated by `game.Game` using state from these handlers.
 
+Event names are defined as string constants in `internal/event/event.go`. They
+are grouped by subsystem—`Building`, `Typing`, `Combat`, `Tech`, `Economy`,
+`Special`, `Testing`, and `Persistence`. Handlers publish and subscribe using
+these constants so updates remain decoupled but well documented.
+
 ## Adding New Features
 
 1. Create a new module under `internal/` if needed and define a `Handler`.
