@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"image/color"
 	"math"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"sort"
@@ -16,7 +17,7 @@ import (
 
 	"github.com/daddevv/type-defense/internal/assets"
 	"github.com/daddevv/type-defense/internal/building"
-	"github.com/daddevv/type-defense/internal/building/worker"
+	gatherer "github.com/daddevv/type-defense/internal/building/gatherer"
 	"github.com/daddevv/type-defense/internal/config"
 	"github.com/daddevv/type-defense/internal/core"
 	"github.com/daddevv/type-defense/internal/econ"
@@ -154,9 +155,9 @@ type Game struct {
 
 	// Building integration
 	queue      *word.QueueManager
-	farmer     *worker.Farmer
-	lumberjack *worker.Lumberjack
-	miner      *worker.Miner
+	farmer     *gatherer.Farmer
+	lumberjack *gatherer.Lumberjack
+	miner      *gatherer.Miner
 	barracks   *building.Barracks
 
 	// Typing state for the queue - jam indicator
@@ -266,7 +267,7 @@ func NewGameWithHistory(cfg config.Config, hist *core.PerformanceHistory) *Game 
 		currentWave:     1,
 		spawnInterval:   cfg.SpawnInterval * 4.0, // Much slower spawning
 		spawnTicker:     0,
-		mobsToSpawn:     cfg.MobsPerWave,
+		mobsToSpawn:     cfg.EnemiesPerWave,
 		cfg:             &cfg,
 		mobs:            make([]entity.Entity, 0),
 		projectiles:     make([]*projectile.Projectile, 0),
@@ -304,9 +305,9 @@ func NewGameWithHistory(cfg config.Config, hist *core.PerformanceHistory) *Game 
 		slotCursor:      0,
 		slotModeSave:    true,
 		queue:           word.NewQueueManager(),
-		farmer:          worker.NewFarmer(),
-		lumberjack:      worker.NewLumberjack(),
-		miner:           worker.NewMiner(),
+		farmer:          gatherer.NewFarmer(),
+		lumberjack:      gatherer.NewLumberjack(),
+		miner:           gatherer.NewMiner(),
 		barracks:        building.NewBarracks(),
 		wordProcessX:    400,
 		wordProcessY:    900,
@@ -1151,36 +1152,23 @@ func drawBackgroundTilemap(screen *ebiten.Image) {
 
 // spawnMob adds a new mob at the right side.
 func (g *Game) spawnMob() {
-	// row := rand.Intn(32)
-	// x, y := core.TilePosition(59, row)
-	// hp := g.cfg.MobBaseHealth
-	// if hp == 0 {
-	// 	hp = 1
-	// }
-	// if g.cfg != nil {
-	// 	hp = int(float64(hp) + float64(g.currentWave-1)*g.cfg.N)
-	// 	if hp < 1 {
-	// 		hp = 1
-	// 	}
-	// }
-	// speed := g.cfg.MobSpeed * 0.3 // Much slower mobs
-	// if speed == 0 {
-	// 	speed = config.DefaultConfig.MobSpeed * 0.3
-	// }
-	// var m mob.Mob
-	// if g.currentWave%5 == 0 && g.mobsToSpawn == 1 {
-	// 	m = mob.NewBossMob(float64(x+16), float64(y+16), g.base, hp*5, speed*0.5)
-	// } else {
-	// 	switch rand.Intn(3) {
-	// 	case 0:
-	// 		m = mob.NewMob(float64(x+16), float64(y+16), g.base, hp, speed)
-	// 	case 1:
-	// 		m = mob.NewArmoredMob(float64(x+16), float64(y+16), g.base, hp, 2, speed)
-	// 	default:
-	// 		m = mob.NewFastMob(float64(x+16), float64(y+16), g.base, hp, speed, 2)
-	// 	}
-	// }
-	// g.mobs = append(g.mobs, m)
+	row := rand.Intn(32)
+	x, y := core.TilePosition(59, row)
+
+	hp := g.cfg.EnemyBaseHealth
+	if hp == 0 {
+		hp = config.DefaultConfig.EnemyBaseHealth
+	}
+
+	speed := g.cfg.EnemySpeed * 0.3
+	if speed == 0 {
+		speed = config.DefaultConfig.EnemySpeed * 0.3
+	}
+
+	m := enemy.NewOrcGrunt(float64(x+16), float64(y+16))
+	m.Hp = hp
+	m.Speed = speed
+	g.mobs = append(g.mobs, m)
 }
 
 func (g *Game) validTowerPosition(tileX, tileY int) bool {
@@ -1345,11 +1333,11 @@ func (g *Game) applySkillEffects(n *skill.SkillNode) {
 // startWave initializes spawn counters for the next wave.
 func (g *Game) startWave() {
 	g.spawnTicker = 0
-	base := g.cfg.MobsPerWave
+	base := g.cfg.EnemiesPerWave
 	if base == 0 {
-		base = config.DefaultConfig.MobsPerWave
+		base = config.DefaultConfig.EnemiesPerWave
 	}
-	inc := g.cfg.MobsPerWaveInc
+	inc := g.cfg.EnemiesPerWaveInc
 	g.mobsToSpawn = base + inc*(g.currentWave-1)
 	g.spawnInterval = g.cfg.SpawnInterval * 6.0 // Much slower spawning
 
@@ -1657,11 +1645,11 @@ func (g *Game) reloadConfig(path string) error {
 	if cfg.SpawnInterval > 0 {
 		g.spawnInterval = cfg.SpawnInterval
 	}
-	base := cfg.MobsPerWave
+	base := cfg.EnemiesPerWave
 	if base == 0 {
-		base = config.DefaultConfig.MobsPerWave
+		base = config.DefaultConfig.EnemiesPerWave
 	}
-	g.mobsToSpawn = base + cfg.MobsPerWaveInc*(g.currentWave-1)
+	g.mobsToSpawn = base + cfg.EnemiesPerWaveInc*(g.currentWave-1)
 	return nil
 }
 

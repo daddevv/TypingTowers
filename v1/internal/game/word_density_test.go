@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/daddevv/type-defense/internal/building"
-	"github.com/daddevv/type-defense/internal/building/worker"
+	gatherer "github.com/daddevv/type-defense/internal/building/gatherer"
 	"github.com/daddevv/type-defense/internal/word"
 )
 
@@ -13,7 +13,7 @@ import (
 // target. Words are assumed to be completed instantly when generated.
 func TestWordDensitySimulation(t *testing.T) {
 	q := word.NewQueueManager()
-	f := worker.NewFarmer()
+	f := gatherer.NewFarmer()
 	b := building.NewBarracks()
 	f.SetQueue(q)
 	b.SetQueue(q)

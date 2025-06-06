@@ -65,7 +65,7 @@ any panic so unexpected crashes are easy to diagnose.
 
 Game logic lives in the `v1/internal` directory. The original monolithic
 `game` package has been decomposed into several packages such as `assets`,
-`config`, `core`, `entity`, `mob`, `structure`, `worker`, `econ`, `word` and
+`config`, `core`, `entity`, `enemy`, `building` (with `gatherer` subpackage), `econ`, `word` and
 more. Each package exposes a `Handler` with an `Update(dt)` method. Handlers
 communicate through a lightweight event bus, and `game.Game` coordinates
 rendering using their state. See

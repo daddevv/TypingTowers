@@ -31,9 +31,9 @@
   - [x] **T-013** Ensure `game.Game` acts as main renderer, coordinating rendering using handler state
   - [ ] **T-014** Finalize modular split and package renames
     - [x] **MIG-001** Document package layout and import map (`INTERNAL_RESTRUCTURE.md`)
-    - [ ] **MIG-002** Rename `mob` package to `enemy`
-    - [ ] **MIG-003** Rename `structure` package to `building`
-    - [ ] **MIG-004** Move worker types under `building/gatherer`
+    - [x] **MIG-002** Rename `mob` package to `enemy`
+    - [x] **MIG-003** Rename `structure` package to `building`
+    - [x] **MIG-004** Move worker types under `building/gatherer`
     - [ ] **MIG-005** Update all imports and tests after renames
     - [ ] **MIG-006** Remove deprecated package references
 

@@ -8,11 +8,11 @@
   - [x] Move all code from `internal/structure` to `internal/building`
   - [x] Update all import paths and references from `structure` to `building`
   - [ ] Update tests and documentation to use new package name
-- [x] **MIG-004** Move worker types under `building/worker`
-  - [x] Create `internal/building/worker` subpackage
-  - [x] Move Farmer, Miner, Lumberjack, etc. from `worker` to `building/worker`
+ - [x] **MIG-004** Move worker types under `building/gatherer`
+  - [x] Create `internal/building/gatherer` subpackage
+  - [x] Move Farmer, Miner, Lumberjack, etc. from `worker` to `building/gatherer`
   - [x] Update all references and imports accordingly
-  - [ ] Remove `worker` package after migration
+  - [x] Remove `worker` package after migration
 - [ ] **MIG-005** Update all imports and tests after renames
   - [ ] Search for any lingering references to old package names
   - [ ] Refactor integration and unit tests to use new structure
