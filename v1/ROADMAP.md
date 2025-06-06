@@ -30,7 +30,16 @@
   - [x] **T-012** Document the new architecture and handler/event pattern for contributors
   - [x] **T-013** Ensure `game.Game` acts as main renderer, coordinating rendering using handler state
   - [ ] **T-014** (Optional) Add migration/compatibility notes for contributors
-  - [ ] **Design Note:** The `game.Game` will act as the main renderer. Each handler's state (e.g., entities, UI, tech, towers) composes the overall game state. There is no separate/dedicated renderer; rendering is coordinated by the engine using handler state.
+    - [ ] **MIG-001** Core engine & state management (`game.go`, `state.go`, `pregame.go`, `timer.go`, `settings.go`, `performance.go`)
+    - [ ] **MIG-002** Entities & units (`entity.go`, `mob.go`, `enemy.go`, `footman.go`, `orcgrunt.go`, `farmer.go`, `lumberjack.go`, `miner.go`)
+    - [ ] **MIG-003** Buildings & military (`barracks.go`, `base.go`, `military.go`)
+    - [ ] **MIG-004** Towers & projectiles (`tower.go`, `projectile.go`, `modifier.go`)
+    - [ ] **MIG-005** User interface components (`hud.go`, `mainmenu.go`, `skill_tree_overlay_test.go`, and related UI files)
+    - [ ] **MIG-006** Tech & skill systems (`tech.go`, `tech_tree.go`, `skill_tree.go`, `letter_unlocks.go`)
+    - [ ] **MIG-007** Resources & economy (`resource.go`, `queue.go`, `tile.go`, `point.go`)
+    - [ ] **MIG-008** Content and assets (`content.go`, `palette.go`, `font.go`, `sound.go`)
+    - [ ] **MIG-009** Typing metrics & stats (`typing_stats.go`, `word_stats.go`)
+    - [ ] **MIG-010** Update all related tests to new module paths
 
 ---
 
