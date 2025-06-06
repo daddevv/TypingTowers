@@ -7,9 +7,15 @@
 ├── ROADMAP.md            - future features
 ├── v1/                   - main game module
 │   ├── cmd/game          - entry point for the Ebiten application
-│   ├── internal/game     - game logic packages (tower upgrades, shop logic, etc.)
-│   ├── internal/game/event.go - Core event types for pub/sub system.
-│   ├── internal/game/event_bus.go - EventBus implementation for handler communication.
+│   ├── internal/game     - main coordinator and shared logic
+│   ├── internal/content  - asset loading and management
+│   ├── internal/entity   - units and base entities
+│   ├── internal/event    - Core event types and EventBus
+│   ├── internal/phase    - turn/phase manager
+│   ├── internal/sprite   - sprite definitions and animations
+│   ├── internal/tech     - tech tree logic
+│   ├── internal/tower    - tower stats and behavior
+│   ├── internal/ui       - HUD and UI overlays
 │   └── assets            - sprites and other resources
 ```
 
