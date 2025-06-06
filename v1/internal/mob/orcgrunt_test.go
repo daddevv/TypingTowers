@@ -20,7 +20,6 @@ func TestCombatFootmanKillsGrunt(t *testing.T) {
 	o := NewOrcGrunt(0, 0)
 	o.Speed = 0
 
-
 	for i := 0; i < 6; i++ {
 		o.Update(0.1)
 	}

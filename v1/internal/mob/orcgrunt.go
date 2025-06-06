@@ -21,9 +21,9 @@ func NewOrcGrunt(x, y float64) *OrcGrunt {
 	return &OrcGrunt{
 		BaseEntity: entity.BaseEntity{
 			Position:     core.Point{X: x, Y: y},
-			Width:       w,
-			Height:      h,
-			Frame:       assets.ImgMobA,
+			Width:        w,
+			Height:       h,
+			Frame:        assets.ImgMobA,
 			FrameAnchorX: float64(w) / 2,
 			FrameAnchorY: float64(h) / 2,
 		},

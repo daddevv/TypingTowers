@@ -12,14 +12,14 @@ import (
 // Farmer represents a Gathering building that produces Food on cooldown.
 type Farmer struct {
 	Timer       core.CooldownTimer // cooldown timer for word generation
-	LetterPool  []rune        // available letters for word generation
-	UnlockStage int           // next letter stage index
+	LetterPool  []rune             // available letters for word generation
+	UnlockStage int                // next letter stage index
 	WordLenMin  int
 	WordLenMax  int
-	LastWord    string        // last generated word (for testing/debug)
-	PendingWord string        // word currently in queue (if any)
-	ResourceOut int           // amount of Food to output per completion
-	Active      bool          // is the Farmer running?
+	LastWord    string             // last generated word (for testing/debug)
+	PendingWord string             // word currently in queue (if any)
+	ResourceOut int                // amount of Food to output per completion
+	Active      bool               // is the Farmer running?
 	Queue       *word.QueueManager // optional global queue manager
 }
 
@@ -134,4 +134,3 @@ func (f *Farmer) UnlockNext(pool *econ.ResourcePool) bool {
 	}
 	return false
 }
-

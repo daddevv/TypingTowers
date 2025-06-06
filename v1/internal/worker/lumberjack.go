@@ -79,13 +79,13 @@ func (l *Lumberjack) OnWordCompleted(word string, pool *econ.ResourcePool) int {
 	return 0
 }
 
-func (l *Lumberjack) SetLetterPool(p []rune)     { l.LetterPool = p }
-func (l *Lumberjack) SetActive(a bool)           { l.Active = a }
-func (l *Lumberjack) SetInterval(d float64)      { l.Timer.SetInterval(d) }
-func (l *Lumberjack) SetCooldown(c float64)      { l.Timer.Remaining = c }
-func (l *Lumberjack) SetQueue(q *word.QueueManager)   { l.Queue = q }
-func (l *Lumberjack) CooldownProgress() float64  { return l.Timer.Progress() }
-func (l *Lumberjack) CooldownRemaining() float64 { return l.Timer.Remaining }
+func (l *Lumberjack) SetLetterPool(p []rune)        { l.LetterPool = p }
+func (l *Lumberjack) SetActive(a bool)              { l.Active = a }
+func (l *Lumberjack) SetInterval(d float64)         { l.Timer.SetInterval(d) }
+func (l *Lumberjack) SetCooldown(c float64)         { l.Timer.Remaining = c }
+func (l *Lumberjack) SetQueue(q *word.QueueManager) { l.Queue = q }
+func (l *Lumberjack) CooldownProgress() float64     { return l.Timer.Progress() }
+func (l *Lumberjack) CooldownRemaining() float64    { return l.Timer.Remaining }
 
 func (l *Lumberjack) NextUnlockCost() int {
 	stage := l.UnlockStage + 1

@@ -16,13 +16,13 @@ type Entity interface {
 	Static() bool                      // Check if the entity is static (does not move)
 	Alive() bool                       // Check if the entity is alive (for entities that can die)
 	ApplyDamage(amount int)            // Apply damage to the entity
-	Health() int                     // Get the current health of the entity (if applicable)
+	Health() int                       // Get the current health of the entity (if applicable)
 	Destroy()                          // Clean up resources when the entity is no longer needed
 }
 
 // BaseEntity provides common fields and methods for all entities.
 type BaseEntity struct {
-	Position           core.Point         // Position of the entity
+	Position      core.Point    // Position of the entity
 	Width, Height int           // Size of the entity
 	Frame         *ebiten.Image // Current image frame of the entity
 	FrameAnchorX  float64       // Anchor point for the frame (for positioning)
@@ -59,4 +59,3 @@ func (e *BaseEntity) Bounds() (x, y, width, height int) {
 func (e *BaseEntity) Hitbox() (x, y, width, height int) {
 	return e.Bounds()
 }
-

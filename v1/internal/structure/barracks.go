@@ -12,13 +12,13 @@ import (
 // Barracks represents a Military building that trains Footman units.
 type Barracks struct {
 	Timer       core.CooldownTimer // cooldown timer for word generation
-	LetterPool  []rune        // available letters for word generation
-	UnlockStage int           // next letter stage index
+	LetterPool  []rune             // available letters for word generation
+	UnlockStage int                // next letter stage index
 	WordLenMin  int
 	WordLenMax  int
-	LastWord    string        // last generated word (for testing/debug)
-	PendingWord string        // word currently in queue (if any)
-	Active      bool          // is the Barracks running?
+	LastWord    string             // last generated word (for testing/debug)
+	PendingWord string             // word currently in queue (if any)
+	Active      bool               // is the Barracks running?
 	Queue       *word.QueueManager // optional global queue manager
 }
 

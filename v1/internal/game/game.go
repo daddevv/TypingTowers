@@ -126,9 +126,9 @@ type Game struct {
 
 	// Per-word metrics
 	currentWord word.WordStat
-	wordHistory  []word.WordStat
+	wordHistory []word.WordStat
 
-	pauseCursor    int
+	pauseCursor int
 	// settingsOpen   bool
 	settingsCursor int
 
@@ -341,7 +341,7 @@ func NewGameWithHistory(cfg config.Config, hist *core.PerformanceHistory) *Game 
 	g.lumberjack.SetQueue(g.queue)
 	g.miner.SetQueue(g.queue)
 	g.barracks.SetQueue(g.queue)
-	
+
 	tx, ty = core.TileAtPosition(2, 16)
 	tower := structure.NewTower(float64(tx+16), float64(ty+16))
 	tower.ApplyModifiers(g.towerMods)

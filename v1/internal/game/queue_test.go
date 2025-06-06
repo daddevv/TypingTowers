@@ -74,7 +74,6 @@ func TestQueueBackPressureDamage(t *testing.T) {
 	}
 }
 
-
 func TestColorize(t *testing.T) {
 	w := assets.Word{Text: "foo", Family: "Gathering"}
 	got := w.Colorize()

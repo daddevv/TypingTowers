@@ -82,13 +82,13 @@ func (m *Miner) OnWordCompleted(word string, pool *econ.ResourcePool) (int, int)
 	return 0, 0
 }
 
-func (m *Miner) SetLetterPool(p []rune)     { m.letterPool = p }
-func (m *Miner) SetActive(a bool)           { m.active = a }
-func (m *Miner) SetInterval(d float64)      { m.timer.SetInterval(d) }
-func (m *Miner) SetCooldown(c float64)      { m.timer.Remaining = c }
-func (m *Miner) SetQueue(q *word.QueueManager)   { m.queue = q }
-func (m *Miner) CooldownProgress() float64  { return m.timer.Progress() }
-func (m *Miner) CooldownRemaining() float64 { return m.timer.Remaining }
+func (m *Miner) SetLetterPool(p []rune)        { m.letterPool = p }
+func (m *Miner) SetActive(a bool)              { m.active = a }
+func (m *Miner) SetInterval(d float64)         { m.timer.SetInterval(d) }
+func (m *Miner) SetCooldown(c float64)         { m.timer.Remaining = c }
+func (m *Miner) SetQueue(q *word.QueueManager) { m.queue = q }
+func (m *Miner) CooldownProgress() float64     { return m.timer.Progress() }
+func (m *Miner) CooldownRemaining() float64    { return m.timer.Remaining }
 
 func (m *Miner) NextUnlockCost() int {
 	stage := m.unlockStage + 1

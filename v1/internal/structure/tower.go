@@ -24,7 +24,7 @@ const (
 type Tower struct {
 	entity.BaseEntity
 	CooldownTimer core.CooldownTimer // Use proper timer instead of float64
-	Rate          float64       // seconds between shots
+	Rate          float64            // seconds between shots
 	RangeDst      float64
 	RangeImg      *ebiten.Image
 
@@ -82,7 +82,7 @@ func NewTowerWithTypeAndLevel(x, y float64, tt TowerType, level int) *Tower {
 	cfg := config.DefaultConfig
 	t := &Tower{
 		BaseEntity: entity.BaseEntity{
-			Position:          core.Point{X: x, Y: y},
+			Position:     core.Point{X: x, Y: y},
 			Width:        w,
 			Height:       h,
 			Frame:        assets.ImgTower,

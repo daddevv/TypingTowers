@@ -65,7 +65,7 @@ func NewProjectile(x, y float64, target Enemy, dmg int, speed float64, bounce in
 	w, h := assets.ImgProjectile.Bounds().Dx(), assets.ImgProjectile.Bounds().Dy()
 	return &Projectile{
 		BaseEntity: BaseEntity{
-			Position:          core.Point{X: x, Y: y},
+			Position:     core.Point{X: x, Y: y},
 			Width:        w,
 			Height:       h,
 			Frame:        assets.ImgProjectile,

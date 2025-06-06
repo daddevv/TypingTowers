@@ -22,9 +22,9 @@ func NewFootman(x, y float64) *Footman {
 	return &Footman{
 		BaseEntity: entity.BaseEntity{
 			Position:     core.Point{X: x, Y: y},
-			Width:       w,
-			Height:      h,
-			Frame:       assets.ImgFootman,
+			Width:        w,
+			Height:       h,
+			Frame:        assets.ImgFootman,
 			FrameAnchorX: float64(w) / 2,
 			FrameAnchorY: float64(h) / 2,
 		},

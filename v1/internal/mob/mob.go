@@ -32,7 +32,7 @@ func NewMob(x, y float64, target *structure.Base, hp int, speed float64) *Mob {
 	w, h := assets.ImgMobA.Bounds().Dx(), assets.ImgMobA.Bounds().Dy()
 	return &Mob{
 		BaseEntity: entity.BaseEntity{
-			Position:          core.Point{X: x, Y: y},
+			Position:     core.Point{X: x, Y: y},
 			Width:        w,
 			Height:       h,
 			Frame:        assets.ImgMobA,
@@ -64,7 +64,7 @@ func NewFastMob(x, y float64, target *structure.Base, hp int, speed, burst float
 	m.Burst = burst
 	m.BurstTimer = core.NewCooldownTimer(4.0)  // Longer cooldown between bursts
 	m.BurstActive = core.NewCooldownTimer(1.0) // Burst lasts 1 second
-	m.BurstActive.Remaining = 0                 // Start not in burst
+	m.BurstActive.Remaining = 0                // Start not in burst
 	m.MobType = entity.MobFast
 	return m
 }

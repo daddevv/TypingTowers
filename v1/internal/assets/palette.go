@@ -25,5 +25,3 @@ func FamilyColor(f string) color.RGBA {
 	}
 	return color.RGBA{255, 255, 255, 255}
 }
-
-
