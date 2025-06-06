@@ -36,96 +36,69 @@
     - [x] **MIG-004** Move worker types under `building/gatherer`
     - [ ] **MIG-005** Update all imports and tests after renames
     - [ ] **MIG-006** Remove deprecated package references
+- [ ] Ensure all core gameplay loop features are fully playable and testable
+  - [ ] Integrate combat and skill tree systems into the main loop
+  - [ ] Finalize and document any remaining edge cases in handler/event system
+  - [ ] Review and update contributor documentation as needed
 
 ---
 
-## Combat & Military
+## Typing Minigames & Metrics
 
-- [x] **TEST-COMBAT-EDGE** Simulation unit tests for all common and edge cases
-  - [x] Footman survives after killing a single grunt (verify HP > 0)
-  - [x] Footman dies if grunt damage is lethal (verify removal from military)
-  - [x] Multiple Footmen vs multiple Grunts: all combinations (1v2, 2v1, 2v2)
-  - [x] Simultaneous combat: overlapping units resolve damage correctly
-  - [x] No combat occurs if units do not overlap (verify no HP loss)
-  - [x] Dead units are removed from the military/orc lists immediately
-  - [x] Units with 0 HP cannot attack or be attacked further
-  - [x] Combat does not occur if either unit is already dead
-  - [x] Test for correct handling of edge cases (e.g., both units die in same tick)
-  - [x] Test for no panics or index errors when removing units during iteration
-  - [x] Add all tests to CI pipeline
+- [ ] **MINIGAME-001** Speed trial mode
+  - [ ] Design rules and win/lose conditions
+  - [ ] Implement timer and scoring logic
+  - [ ] Integrate with main game UI and stats
+  - [ ] Playtest and balance difficulty
+
+- [ ] **MINIGAME-002** Accuracy challenge mode
+  - [ ] Define accuracy thresholds and penalties
+  - [ ] Implement accuracy tracking and feedback
+  - [ ] Integrate with stats panel and results screen
+  - [ ] Playtest and adjust thresholds
+
+- [ ] **MINIGAME-003** Word puzzle/anagram mode
+  - [ ] Design puzzle generation logic
+  - [ ] Implement input and validation for anagrams
+  - [ ] Add scoring and feedback
+  - [ ] Playtest for variety and challenge
+
+- [ ] **MINIGAME-004** Boss practice mode
+  - [ ] Define boss mechanics and special rules
+  - [ ] Implement boss encounter logic
+  - [ ] Integrate with main game and stats
+  - [ ] Playtest and balance
 
 ---
 
 ## Art, Audio & Polish
 
 - [ ] **ART-001** 32x32 farmer, lumberjack, miner idle sprites
-  - [ ] Define sprite requirements and animation frames for each character
-  - [ ] Create initial 32x32 pixel art for each idle sprite
-  - [ ] Export spritesheets in required format (e.g., PNG)
-  - [ ] Integrate sprites into game asset pipeline
-  - [ ] Update entity rendering logic to use new idle sprites
-  - [ ] Test or visually check correct sprite display
+  - [ ] Define sprite requirements and animation frames
+  - [ ] Create and export spritesheets (PNG)
+  - [ ] Integrate into asset pipeline and entity rendering
+  - [ ] Test in-game display
 
 - [ ] **ART-002** Orc grunt walk + hit animation
-  - [ ] Define animation frame count and timing for walk and hit actions
-  - [ ] Create 32x32 orc grunt walk/hit animation frames
-  - [ ] Export animation spritesheets in required format
-  - [ ] Integrate orc grunt animations into asset pipeline
-  - [ ] Update orc grunt entity logic to trigger walk/hit animations
-  - [ ] Test animation playback in-game
+  - [ ] Define animation frames and timing
+  - [ ] Create and export spritesheets
+  - [ ] Integrate into asset pipeline and entity logic
+  - [ ] Test animation playback
 
 - [ ] **ART-003** Tower upgrade visual indicators
-  - [ ] Define visual indicator styles for each tower upgrade level
-  - [ ] Design and create upgrade icons or overlays for towers
-  - [ ] Integrate upgrade indicators into game asset pipeline
-  - [ ] Update tower rendering logic to display correct indicator based on upgrade level
-  - [ ] Test in-game to verify indicators update correctly
+  - [ ] Design and create upgrade icons/overlays
+  - [ ] Integrate into asset pipeline and tower rendering
+  - [ ] Test indicator updates in-game
 
 - [ ] **SFX-001** Key-hit, crit, jam placeholders (chiptune)
-  - [ ] Define required sound effects (key-hit, crit, jam)
-  - [ ] Create/source chiptune placeholder sounds
-  - [ ] Integrate sound effects into game asset pipeline
-  - [ ] Update game logic to trigger sounds on key-hit, crit, and jam events
-  - [ ] Test in-game for correct sound playback
+  - [ ] Define and source required sound effects
+  - [ ] Integrate into asset pipeline and game logic
+  - [ ] Test sound playback
 
 - [ ] **SFX-002** Background music for different game states
-  - [ ] Define music requirements for each game state
-  - [ ] Create/source chiptune background music tracks
-  - [ ] Integrate music tracks into game asset pipeline
-  - [ ] Update game state logic to play appropriate music for each state
-  - [ ] Test transitions for smooth music changes
-
----
-
-## Typing Metrics & Minigames
-
-- [x] **MET-001** Capture per-word accuracy & time
-  - [x] Define data structures to store per-word accuracy and completion time
-  - [x] Update queue processing logic to record accuracy and time for each word
-  - [x] Store per-word stats in a history buffer or log
-  - [x] Add unit tests to verify per-word stats are captured correctly
-  - [x] Expose per-word stats to HUD or stats panel
-
-- [x] **MET-002** Rolling WPM (last 30 s)
-  - [x] Implement a time-based buffer to track recent typing events
-  - [x] Calculate rolling WPM using only events from the last 30 seconds
-  - [x] Add method to TypingStats or a new struct for rolling WPM
-  - [x] Write tests to verify rolling WPM calculation
-  - [x] Display rolling WPM in the HUD or stats panel
-
-- [x] **UI-MET** Toggle stats panel (`Tab`)
-  - [x] Add a boolean field to Game for stats panel visibility
-  - [x] Capture `Tab` key in Input handler to toggle stats panel
-  - [x] Implement HUD rendering logic for the stats panel
-  - [x] Display per-word stats, rolling WPM, and accuracy in the panel
-  - [x] Add tests to verify panel toggling and display
-
-- [ ] **MINIGAME-001** Speed trial mode
-- [ ] **MINIGAME-002** Accuracy challenge mode
-- [ ] **MINIGAME-003** Word puzzle/anagram mode
-- [ ] **MINIGAME-004** Boss practice mode
-
-  *(See previous roadmap for detailed sub-tasks for each minigame.)*
+  - [ ] Define music requirements and source tracks
+  - [ ] Integrate into asset pipeline and game state logic
+  - [ ] Test music transitions
 
 ---
 
@@ -137,10 +110,9 @@
 - [ ] **IDLE-001** Auto-collection and offline progress
 - [ ] **IDLE-002** Upgradable idle generators
 - [ ] **IDLE-003** Prestige/reset system
-- [x] **FUZZ-001** Engine fuzz tester and robustness checks
 - [ ] **FUZZ-002** Stress test for performance and stability
 - [ ] **FUZZ-003** Automated regression tests for core systems
 
 ---
 
-*Focus all effort on the "Core Gameplay Loop Demo" and combat/skill tree integration until fully playable and testable. Archive completed sprints to `TODO_ARCHIVE.md` when merged.*
+*Focus all effort on the "Core Gameplay Loop Demo" and minigame integration until fully playable and testable. Archive completed sprints to `TODO_ARCHIVE.md` when merged.*
