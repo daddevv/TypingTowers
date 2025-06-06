@@ -1,4 +1,4 @@
-package structure
+package building
 
 // TowerHandler defines the API for tower logic and state management.
 type TowerHandler interface {

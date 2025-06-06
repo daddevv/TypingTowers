@@ -1,4 +1,4 @@
-package structure
+package building
 
 // TechNode represents a single unlockable technology in the game.
 type TechNode struct {

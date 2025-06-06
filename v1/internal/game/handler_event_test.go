@@ -15,7 +15,7 @@ func (s *stubHandler) Update(dt float64) { s.called = true }
 
 func TestHandlersUpdateCalled(t *testing.T) {
 	g := NewGame()
-	g.input = &stubInput{}
+	g.input = &mockInput{}
 	g.phase = core.PhasePlaying
 
 	e := &stubHandler{}
@@ -32,7 +32,6 @@ func TestHandlersUpdateCalled(t *testing.T) {
 	g.TowerHandler = to
 	g.PhaseHandler = ph
 	// g.ContentHandler = c
-	g.SpriteHandler = s
 
 	if err := g.Update(); err != nil {
 		t.Fatal(err)

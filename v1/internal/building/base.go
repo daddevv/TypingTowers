@@ -1,4 +1,4 @@
-package structure
+package building
 
 import (
 	"github.com/daddevv/type-defense/internal/assets"

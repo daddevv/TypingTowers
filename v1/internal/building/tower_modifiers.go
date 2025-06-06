@@ -1,4 +1,4 @@
-package structure
+package building
 
 // TowerModifiers defines adjustments applied globally to tower stats.
 type TowerModifiers struct {

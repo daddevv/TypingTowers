@@ -29,7 +29,7 @@ func TestAutoSaveCreatesFile(t *testing.T) {
 	dir := t.TempDir()
 	g := NewGame()
 	g.saveDir = dir
-	inp := &stubInput{}
+	inp := &mockInput{}
 	g.input = inp
 
 	// simulate until first wave completes

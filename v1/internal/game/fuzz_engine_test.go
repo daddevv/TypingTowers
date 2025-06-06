@@ -14,7 +14,7 @@ import (
 func FuzzGameRandomInput(f *testing.F) {
 	f.Fuzz(func(t *testing.T, data []byte) {
 		g := NewGame()
-		inp := &stubInput{}
+		inp := &mockInput{}
 		g.input = inp
 
 		captureState := func() string {
@@ -62,7 +62,7 @@ func FuzzGameRandomInput(f *testing.F) {
 func FuzzGameCoreLoopRandomInput(f *testing.F) {
 	f.Fuzz(func(t *testing.T, data []byte) {
 		g := NewGame()
-		inp := &stubInput{}
+		inp := &mockInput{}
 		g.input = inp
 		g.phase = core.PhasePlaying // force into main gameplay loop
 

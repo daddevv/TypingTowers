@@ -10,7 +10,7 @@ import (
 func TestWordStatsRecording(t *testing.T) {
 	g := NewGame()
 	g.phase = core.PhasePlaying
-	s := &stubInput{}
+	s := &mockInput{}
 	g.input = s
 
 	g.queue.Enqueue(assets.Word{Text: "ab", Source: "Farmer"})

@@ -10,7 +10,7 @@ import "testing"
 // Lumberjack and Miner should accumulate over the course of the simulation.
 func TestResourcesAccumulation(t *testing.T) {
 	g := NewGame()      // use default configuration
-	inp := &stubInput{} // deterministic input for testing
+	inp := &mockInput{} // deterministic input for testing
 	g.input = inp
 
 	const dt = 0.1         // simulation step size in seconds

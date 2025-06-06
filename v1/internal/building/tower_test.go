@@ -1,4 +1,4 @@
-package structure
+package building
 
 // func TestTowerApplyConfig(t *testing.T) {
 // 	cfg := DefaultConfig

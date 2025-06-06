@@ -15,6 +15,7 @@ import (
 	"unicode"
 
 	"github.com/daddevv/type-defense/internal/assets"
+	"github.com/daddevv/type-defense/internal/building"
 	"github.com/daddevv/type-defense/internal/config"
 	"github.com/daddevv/type-defense/internal/core"
 	"github.com/daddevv/type-defense/internal/econ"
@@ -23,8 +24,6 @@ import (
 	"github.com/daddevv/type-defense/internal/event"
 	"github.com/daddevv/type-defense/internal/phase"
 	"github.com/daddevv/type-defense/internal/skill"
-	"github.com/daddevv/type-defense/internal/sprite"
-	"github.com/daddevv/type-defense/internal/structure"
 	"github.com/daddevv/type-defense/internal/tech"
 	"github.com/daddevv/type-defense/internal/word"
 	"github.com/daddevv/type-defense/internal/worker"
@@ -73,10 +72,10 @@ type savedGame struct {
 type Game struct {
 	screen      *ebiten.Image
 	input       InputHandler
-	towers      []*structure.Tower
+	towers      []*building.Tower
 	mobs        []entity.Entity
 	projectiles []*projectile.Projectile
-	base        *structure.Base
+	base        *building.Base
 	hud         *core.HUD
 	gameOver    bool
 	paused      bool
@@ -96,10 +95,10 @@ type Game struct {
 
 	letterPool   []rune
 	unlockStage  int
-	techTree     *structure.TechTree
+	techTree     *building.TechTree
 	skillTree    *skill.SkillTree
 	achievements []string
-	towerMods    structure.TowerModifiers
+	towerMods    building.TowerModifiers
 	wpmBonus     int
 	autoCollect  bool
 	hotkeys      bool
@@ -158,7 +157,7 @@ type Game struct {
 	farmer     *worker.Farmer
 	lumberjack *worker.Lumberjack
 	miner      *worker.Miner
-	barracks   *structure.Barracks
+	barracks   *building.Barracks
 
 	// Typing state for the queue - jam indicator
 	queueJam bool
@@ -188,10 +187,9 @@ type Game struct {
 	EntityHandler  entity.EntityHandler
 	UIHandler      core.UiHandler
 	TechHandler    tech.TechHandler
-	TowerHandler   structure.TowerHandler
+	TowerHandler   building.TowerHandler
 	PhaseHandler   phase.PhaseHandler
 	EconomyHandler econ.EconomyHandler
-	SpriteHandler  sprite.SpriteHandler
 
 	// Event system
 	EventBus *event.EventBus
@@ -274,11 +272,11 @@ func NewGameWithHistory(cfg config.Config, hist *core.PerformanceHistory) *Game 
 		projectiles:     make([]*projectile.Projectile, 0),
 		letterPool:      make([]rune, 0),
 		unlockStage:     0,
-		techTree:        structure.DefaultTechTree(),
+		techTree:        building.DefaultTechTree(),
 		skillTree:       func() *skill.SkillTree { t, _ := skill.SampleSkillTree(); return t }(),
 		unlockedSkills:  make(map[string]bool),
 		achievements:    make([]string, 0),
-		towerMods:       structure.TowerModifiers{DamageMult: 1, RangeMult: 1, FireRateMult: 1},
+		towerMods:       building.TowerModifiers{DamageMult: 1, RangeMult: 1, FireRateMult: 1},
 		wpmBonus:        0,
 		autoCollect:     false,
 		hotkeys:         false,
@@ -309,7 +307,7 @@ func NewGameWithHistory(cfg config.Config, hist *core.PerformanceHistory) *Game 
 		farmer:          worker.NewFarmer(),
 		lumberjack:      worker.NewLumberjack(),
 		miner:           worker.NewMiner(),
-		barracks:        structure.NewBarracks(),
+		barracks:        building.NewBarracks(),
 		wordProcessX:    400,
 		wordProcessY:    900,
 		conveyorOffset:  0,
@@ -333,9 +331,9 @@ func NewGameWithHistory(cfg config.Config, hist *core.PerformanceHistory) *Game 
 		hp = int(cfg.J)
 	}
 	if hp <= 0 {
-		hp = structure.BaseStartingHealth
+		hp = building.BaseStartingHealth
 	}
-	g.base = structure.NewBase(float64(tx+32), float64(ty+16), hp)
+	g.base = building.NewBase(float64(tx+32), float64(ty+16), hp)
 
 	// Wire up shared systems
 	g.farmer.SetQueue(g.queue)
@@ -344,9 +342,9 @@ func NewGameWithHistory(cfg config.Config, hist *core.PerformanceHistory) *Game 
 	g.barracks.SetQueue(g.queue)
 
 	tx, ty = core.TileAtPosition(2, 16)
-	tower := structure.NewTower(float64(tx+16), float64(ty+16))
+	tower := building.NewTower(float64(tx+16), float64(ty+16))
 	tower.ApplyModifiers(g.towerMods)
-	g.towers = []*structure.Tower{tower}
+	g.towers = []*building.Tower{tower}
 	if tree, err := skill.SampleSkillTree(); err == nil {
 		g.skillTree = tree
 	}
@@ -357,10 +355,9 @@ func NewGameWithHistory(cfg config.Config, hist *core.PerformanceHistory) *Game 
 	g.EntityHandler = entity.NewHandler()
 	g.UIHandler = core.NewHandler()
 	g.TechHandler = tech.NewHandler()
-	g.TowerHandler = structure.NewHandler()
+	g.TowerHandler = building.NewHandler()
 	g.PhaseHandler = phase.NewHandler()
 	g.EconomyHandler = econ.NewHandler()
-	g.SpriteHandler = sprite.NewHandler()
 	g.EventBus = event.NewEventBus()
 
 	// Initialize event channels for each handler (T-007)
@@ -414,9 +411,6 @@ func (g *Game) Update() error {
 	}
 	if g.EconomyHandler != nil {
 		g.EconomyHandler.Update(dt)
-	}
-	if g.SpriteHandler != nil {
-		g.SpriteHandler.Update(dt)
 	}
 	// --- End handler updates ---
 
@@ -595,25 +589,25 @@ func (g *Game) Update() error {
 			g.buildCursor = (g.buildCursor - 1 + optionsCount) % optionsCount
 		}
 		if inpututil.IsKeyJustPressed(ebiten.Key1) {
-			g.buildTowerAtCursorType(structure.TowerBasic)
+			g.buildTowerAtCursorType(building.TowerBasic)
 			g.buildMenuOpen = false
 		}
 		if inpututil.IsKeyJustPressed(ebiten.Key2) {
-			g.buildTowerAtCursorType(structure.TowerSniper)
+			g.buildTowerAtCursorType(building.TowerSniper)
 			g.buildMenuOpen = false
 		}
 		if inpututil.IsKeyJustPressed(ebiten.Key3) {
-			g.buildTowerAtCursorType(structure.TowerRapid)
+			g.buildTowerAtCursorType(building.TowerRapid)
 			g.buildMenuOpen = false
 		}
 		if g.input.Enter() {
 			switch g.buildCursor {
 			case 0:
-				g.buildTowerAtCursorType(structure.TowerBasic)
+				g.buildTowerAtCursorType(building.TowerBasic)
 			case 1:
-				g.buildTowerAtCursorType(structure.TowerSniper)
+				g.buildTowerAtCursorType(building.TowerSniper)
 			case 2:
-				g.buildTowerAtCursorType(structure.TowerRapid)
+				g.buildTowerAtCursorType(building.TowerRapid)
 			}
 			g.buildMenuOpen = false
 		}
@@ -1209,7 +1203,7 @@ func (g *Game) validTowerPosition(tileX, tileY int) bool {
 	return true
 }
 
-func (g *Game) buildTowerAtCursorType(tt structure.TowerType) {
+func (g *Game) buildTowerAtCursorType(tt building.TowerType) {
 	if g.cfg == nil {
 		return
 	}
@@ -1224,7 +1218,7 @@ func (g *Game) buildTowerAtCursorType(tt structure.TowerType) {
 		return
 	}
 	tx, ty := core.TilePosition(g.cursorX, g.cursorY)
-	t := structure.NewTowerWithType(float64(tx+core.TileSize/2), float64(ty+core.TileSize/2), tt)
+	t := building.NewTowerWithType(float64(tx+core.TileSize/2), float64(ty+core.TileSize/2), tt)
 	t.ApplyModifiers(g.towerMods)
 	g.towers = append(g.towers, t)
 	g.SpendGold(cost)
@@ -1247,7 +1241,7 @@ func (g *Game) applyNextTech() {
 			}
 		}
 	}
-	if mods != (structure.TowerModifiers{}) {
+	if mods != (building.TowerModifiers{}) {
 		g.towerMods = g.towerMods.Merge(mods)
 		for _, t := range g.towers {
 			t.ApplyModifiers(mods)
@@ -1270,13 +1264,13 @@ func (g *Game) applySkillEffects(n *skill.SkillNode) {
 	for k, v := range n.Effects {
 		switch k {
 		case "damage_mult":
-			mod := structure.TowerModifiers{DamageMult: v}
+			mod := building.TowerModifiers{DamageMult: v}
 			g.towerMods = g.towerMods.Merge(mod)
 			for _, t := range g.towers {
 				t.ApplyModifiers(mod)
 			}
 		case "fire_rate_mult":
-			mod := structure.TowerModifiers{FireRateMult: v}
+			mod := building.TowerModifiers{FireRateMult: v}
 			g.towerMods = g.towerMods.Merge(mod)
 			for _, t := range g.towers {
 				t.ApplyModifiers(mod)
@@ -1654,7 +1648,7 @@ func (g *Game) reloadConfig(path string) error {
 		hp = int(cfg.J)
 	}
 	if hp <= 0 {
-		hp = structure.BaseStartingHealth
+		hp = building.BaseStartingHealth
 	}
 	g.base.Hp = hp
 	for _, t := range g.towers {
@@ -1723,7 +1717,7 @@ func (g *Game) loadGame(path string) error {
 	}
 	g.towers = nil
 	for _, st := range sg.Towers {
-		t := structure.NewTower(st.X, st.Y)
+		t := building.NewTower(st.X, st.Y)
 		t.Damage = st.Damage
 		t.RangeDst = st.Range
 		// t.RangeImg = generateRangeImage(t.RangeDst)

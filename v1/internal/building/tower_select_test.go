@@ -1,6 +1,6 @@
 //go:build test
 
-package structure
+package building
 
 // func TestEnterTowerSelectMode(t *testing.T) {
 // 	g := NewGame()

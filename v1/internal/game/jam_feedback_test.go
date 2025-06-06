@@ -11,7 +11,7 @@ import (
 func TestQueueJamMistypeFeedback(t *testing.T) {
 	g := NewGame()
 	g.phase = core.PhasePlaying // Ensure main update logic runs
-	inp := &stubInput{}
+	inp := &mockInput{}
 	g.input = inp
 	g.Queue().Enqueue(assets.Word{Text: "f"})
 

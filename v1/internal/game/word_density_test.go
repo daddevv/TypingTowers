@@ -3,7 +3,7 @@ package game
 import (
 	"testing"
 
-	"github.com/daddevv/type-defense/internal/structure"
+	"github.com/daddevv/type-defense/internal/building"
 	"github.com/daddevv/type-defense/internal/word"
 	"github.com/daddevv/type-defense/internal/worker"
 )
@@ -14,7 +14,7 @@ import (
 func TestWordDensitySimulation(t *testing.T) {
 	q := word.NewQueueManager()
 	f := worker.NewFarmer()
-	b := structure.NewBarracks()
+	b := building.NewBarracks()
 	f.SetQueue(q)
 	b.SetQueue(q)
 

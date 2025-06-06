@@ -5,14 +5,14 @@ package game
 import (
 	"testing"
 
-	"github.com/daddevv/type-defense/internal/structure"
+	structure "github.com/daddevv/type-defense/internal/building"
 )
 
 // TestCoreLoopSim runs the main game loop in headless mode and verifies core
 // systems interact as expected.
 func TestCoreLoopSim(t *testing.T) {
 	g := NewGame()
-	inp := &stubInput{}
+	inp := &mockInput{}
 	g.input = inp
 
 	// Unlock the next letter stage for both buildings to widen pools.
