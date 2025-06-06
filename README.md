@@ -67,7 +67,7 @@ Game logic lives in the `v1/internal` directory. The original monolithic
 `game` package has been decomposed into several packages such as `assets`,
 `config`, `core`, `entity`, `enemy`, `building` (with `gatherer` subpackage), `econ`, `word` and
 more. Each package exposes a `Handler` with an `Update(dt)` method. Handlers
-communicate through a lightweight event bus, and `game.Game` coordinates
+communicate through a lightweight event bus (with `Subscribe`/`Unsubscribe`), and `game.Game` coordinates
 rendering using their state. See
 [docs/ARCHITECTURE_OVERVIEW.md](docs/ARCHITECTURE_OVERVIEW.md) and
 [docs/INTERNAL_RESTRUCTURE.md](docs/INTERNAL_RESTRUCTURE.md) for the import

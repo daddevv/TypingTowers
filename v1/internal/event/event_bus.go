@@ -22,6 +22,19 @@ func (eb *EventBus) Subscribe(eventType string, ch chan Event) {
 	eb.subscribers[eventType] = append(eb.subscribers[eventType], ch)
 }
 
+// Unsubscribe removes a channel from receiving events of the given type.
+func (eb *EventBus) Unsubscribe(eventType string, ch chan Event) {
+	eb.mu.Lock()
+	defer eb.mu.Unlock()
+	subs := eb.subscribers[eventType]
+	for i, sub := range subs {
+		if sub == ch {
+			eb.subscribers[eventType] = append(subs[:i], subs[i+1:]...)
+			break
+		}
+	}
+}
+
 // Publish sends an event to all subscribers of its type.
 func (eb *EventBus) Publish(eventType string, evt Event) {
 	eb.mu.RLock()
