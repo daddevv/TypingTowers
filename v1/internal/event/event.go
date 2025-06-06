@@ -33,8 +33,8 @@ type PhaseEvent struct {
 	Payload interface{}
 }
 
-// ContentEvent represents asset/content loading events.
-type ContentEvent struct {
+// EconEvent represents economy-related events.
+type EconEvent struct {
 	Type    string
 	Payload interface{}
 }

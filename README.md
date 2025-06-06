@@ -64,7 +64,7 @@ any panic so unexpected crashes are easy to diagnose.
 ## Modular Handler Architecture
 
 Game logic is organized into modules under `internal/` (`entity`, `ui`, `tech`,
-`tower`, `phase`, `content`, `sprite`, and `event`). Each module exposes a
+`tower`, `phase`, `econ`, `sprite`, and `event`). Each module exposes a
 `Handler` with an `Update(dt)` method. Handlers communicate through a lightweight
 event bus, and `game.Game` coordinates rendering using the state from all
 handlers.

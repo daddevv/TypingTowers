@@ -15,7 +15,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/daddevv/type-defense/internal/content"
+	"github.com/daddevv/type-defense/internal/econ"
 	"github.com/daddevv/type-defense/internal/entity"
 	"github.com/daddevv/type-defense/internal/event"
 	"github.com/daddevv/type-defense/internal/phase"
@@ -75,7 +75,7 @@ type Game struct {
 	hud         *HUD
 	gameOver    bool
 	paused      bool
-	resources   ResourcePool
+	resources   econ.ResourcePool
 
 	shopOpen bool
 
@@ -186,20 +186,20 @@ type Game struct {
 	TechHandler    tech.TechHandler
 	TowerHandler   tower.TowerHandler
 	PhaseHandler   phase.PhaseHandler
-	ContentHandler content.ContentHandler
+	EconomyHandler econ.EconomyHandler
 	SpriteHandler  sprite.SpriteHandler
 
 	// Event system
 	EventBus *event.EventBus
 
 	// Event channels for handler pub/sub (T-007, T-008 implemented)
-	EntityEvents  chan event.Event
-	UIEvents      chan event.Event
-	TechEvents    chan event.Event
-	TowerEvents   chan event.Event
-	PhaseEvents   chan event.Event
-	ContentEvents chan event.Event
-	SpriteEvents  chan event.Event
+	EntityEvents chan event.Event
+	UIEvents     chan event.Event
+	TechEvents   chan event.Event
+	TowerEvents  chan event.Event
+	PhaseEvents  chan event.Event
+	EconEvents   chan event.Event
+	SpriteEvents chan event.Event
 }
 
 // Gold returns the player's current gold amount.
@@ -257,7 +257,7 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 		screen:          ebiten.NewImage(1920, 1080),
 		input:           NewInput(),
 		paused:          false,
-		resources:       ResourcePool{},
+		resources:       econ.ResourcePool{},
 		shopOpen:        false,
 		selectedTower:   0,
 		shopCursor:      0,
@@ -361,7 +361,7 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 	g.TechHandler = tech.NewHandler()
 	g.TowerHandler = tower.NewHandler()
 	g.PhaseHandler = phase.NewHandler()
-	g.ContentHandler = content.NewHandler()
+	g.EconomyHandler = econ.NewHandler()
 	g.SpriteHandler = sprite.NewHandler()
 	g.EventBus = event.NewEventBus()
 
@@ -371,7 +371,7 @@ func NewGameWithHistory(cfg Config, hist *PerformanceHistory) *Game {
 	g.TechEvents = make(chan event.Event, 8)
 	g.TowerEvents = make(chan event.Event, 8)
 	g.PhaseEvents = make(chan event.Event, 8)
-	g.ContentEvents = make(chan event.Event, 8)
+	g.EconEvents = make(chan event.Event, 8)
 	g.SpriteEvents = make(chan event.Event, 8)
 
 	// Example: subscribe UI handler to UIEvents channel
@@ -414,8 +414,8 @@ func (g *Game) Update() error {
 	if g.PhaseHandler != nil {
 		g.PhaseHandler.Update(dt)
 	}
-	if g.ContentHandler != nil {
-		g.ContentHandler.Update(dt)
+	if g.EconomyHandler != nil {
+		g.EconomyHandler.Update(dt)
 	}
 	if g.SpriteHandler != nil {
 		g.SpriteHandler.Update(dt)

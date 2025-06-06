@@ -1,6 +1,10 @@
 package game
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/daddevv/type-defense/internal/econ"
+)
 
 // SkillCategory is the high level grouping for a skill tree node.
 type SkillCategory int
@@ -76,7 +80,7 @@ func (t *SkillTree) UnlockOrder() []string {
 // CanUnlock reports whether the node can be unlocked with the provided resources.
 // It checks that all prerequisites are already unlocked and that enough King's
 // Points are available for the cost.
-func (t *SkillTree) CanUnlock(id string, pool *ResourcePool) bool {
+func (t *SkillTree) CanUnlock(id string, pool *econ.ResourcePool) bool {
 	node, ok := t.Nodes[id]
 	if !ok {
 		return false
@@ -97,7 +101,7 @@ func (t *SkillTree) CanUnlock(id string, pool *ResourcePool) bool {
 
 // Unlock attempts to purchase the given skill node using King's Points. It
 // returns true if the node was successfully unlocked and resources deducted.
-func (t *SkillTree) Unlock(id string, pool *ResourcePool) bool {
+func (t *SkillTree) Unlock(id string, pool *econ.ResourcePool) bool {
 	if !t.CanUnlock(id, pool) {
 		return false
 	}

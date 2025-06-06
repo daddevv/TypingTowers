@@ -1,10 +1,14 @@
 package game
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/daddevv/type-defense/internal/econ"
+)
 
 func TestLetterUnlockDeductsPoints(t *testing.T) {
 	f := NewFarmer()
-	pool := &ResourcePool{}
+	pool := &econ.ResourcePool{}
 	pool.AddKingsPoints(100)
 	cost := f.NextUnlockCost()
 	if !f.UnlockNext(pool) {
