@@ -3,6 +3,7 @@ package game
 import (
 	"testing"
 
+	"github.com/daddevv/type-defense/internal/assets"
 	"github.com/daddevv/type-defense/internal/building"
 	"github.com/daddevv/type-defense/internal/config"
 )
@@ -10,6 +11,7 @@ import (
 // TestBuildTowerCostsGold verifies that constructing a tower deducts gold and
 // spawns the correct tower type at the cursor position.
 func TestBuildTowerCostsGold(t *testing.T) {
+	assets.InitImages()
 	cfg := config.DefaultConfig
 	cfg.TowerConstructionCost = 5
 	g := NewGameWithConfig(cfg)

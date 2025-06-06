@@ -3,12 +3,14 @@ package building
 import (
 	"testing"
 
+	"github.com/daddevv/type-defense/internal/assets"
 	"github.com/daddevv/type-defense/internal/word"
 )
 
 func TestBarracksCooldownAndWordGeneration(t *testing.T) {
+	assets.InitImages()
 	b := NewBarracks()
-	b.SetLetterPool([]rune{'f', 'j'})
+	b.SetLetterPool([]rune{'f', 'j'}) // Set letter pool for word generation
 	b.SetInterval(0.1)
 	b.SetCooldown(0.1)
 	words := make(map[string]struct{})
@@ -33,7 +35,9 @@ func TestBarracksCooldownAndWordGeneration(t *testing.T) {
 }
 
 func TestBarracksWaitsForCompletion(t *testing.T) {
+	assets.InitImages()
 	b := NewBarracks()
+	b.SetLetterPool([]rune{'f', 'j'}) // Set letter pool for word generation
 	b.SetInterval(0.1)
 	b.SetCooldown(0.1)
 	first := b.Update(0.11)
@@ -49,9 +53,11 @@ func TestBarracksWaitsForCompletion(t *testing.T) {
 }
 
 func TestBarracksLetterQueueIntegration(t *testing.T) {
+	assets.InitImages()
 	q := word.NewQueueManager()
 	b := NewBarracks()
 	b.SetQueue(q)
+	b.SetLetterPool([]rune{'f', 'j'}) // Set letter pool for word generation
 	b.SetInterval(0.1)
 	b.SetCooldown(0.1)
 

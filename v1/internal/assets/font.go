@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
@@ -42,7 +43,8 @@ func loadFont(path string) {
 	//if testing add ../../ to path
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		// If the file does not exist, try to load it from a relative path.
-		path = "../../" + path
+		fp := filepath.Base(path)
+		path = "/home/bobbitt/projects/public/TypingTowers/v1/assets/fonts/" + fp
 	}
 	// Read the .ttf file into a byte slice.
 	data, err := os.ReadFile(path)

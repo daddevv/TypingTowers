@@ -3,12 +3,16 @@ package game
 import (
 	"fmt"
 	"image/color"
+	"math"
+	"strconv"
 	"strings"
 
 	"github.com/daddevv/type-defense/internal/assets"
+	"github.com/daddevv/type-defense/internal/building"
 	"github.com/daddevv/type-defense/internal/skill"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 // HUD displays placeholder UI elements with basic game information.
@@ -46,156 +50,160 @@ func NewHUD(game *Game) *HUD {
 // the text. Slanted stripes move with the conveyor offset to give an illusion
 // of motion.
 func (h *HUD) DrawConveyorBelt(screen *ebiten.Image, totalWidth float64) {
-	// beltHeight := 24.0
-	// beltY := h.game.wordProcessY - 18
-	// beltX := h.game.wordProcessX - h.game.conveyorOffset - 10
-	// beltW := totalWidth + 20
+	beltHeight := 24.0
+	beltY := h.game.wordProcessY - 18
+	beltX := h.game.wordProcessX - h.game.conveyorOffset - 10
+	beltW := totalWidth + 20
 
-	// // Draw base belt rectangle
-	// vector.DrawFilledRect(screen, float32(beltX), float32(beltY), float32(beltW), float32(beltHeight), color.RGBA{50, 50, 50, 180}, false)
+	// Draw base belt rectangle
+	vector.DrawFilledRect(screen, float32(beltX), float32(beltY), float32(beltW), float32(beltHeight), color.RGBA{50, 50, 50, 180}, false)
 
-	// // Draw slanted stripes to indicate movement
-	// stripeSpacing := 12.0
-	// offset := math.Mod(h.game.conveyorOffset, stripeSpacing)
-	// for x := -offset; x < beltW; x += stripeSpacing {
-	// 	vector.StrokeLine(screen,
-	// 		float32(beltX+x), float32(beltY),
-	// 		float32(beltX+x+beltHeight/2), float32(beltY+beltHeight),
-	// 		1, color.RGBA{80, 80, 80, 200}, false)
-	// }
+	// Draw slanted stripes to indicate movement
+	stripeSpacing := 12.0
+	offset := math.Mod(h.game.conveyorOffset, stripeSpacing)
+	for x := -offset; x < beltW; x += stripeSpacing {
+		vector.StrokeLine(screen,
+			float32(beltX+x), float32(beltY),
+			float32(beltX+x+beltHeight/2), float32(beltY+beltHeight),
+			1, color.RGBA{80, 80, 80, 200}, false)
+	}
 }
 
 // DrawResourceIcons renders resource amounts as letter icons at the top left.
 func (h *HUD) DrawResourceIcons(screen *ebiten.Image) {
-	// type icon struct {
-	// 	label  string
-	// 	amount int
-	// 	clr    color.RGBA
-	// }
+	type icon struct {
+		label  string
+		amount int
+		clr    color.RGBA
+	}
 
-	// icons := []icon{
-	// 	{"G", h.game.resources.GoldAmount(), color.RGBA{255, 215, 0, 255}},
-	// 	{"W", h.game.resources.WoodAmount(), color.RGBA{139, 69, 19, 255}},
-	// 	{"S", h.game.resources.StoneAmount(), color.RGBA{128, 128, 128, 255}},
-	// 	{"I", h.game.resources.IronAmount(), color.RGBA{169, 169, 169, 255}},
-	// 	{"M", 0, color.RGBA{75, 0, 130, 255}},
-	// }
+	icons := []icon{
+		{"G", h.game.resources.GoldAmount(), color.RGBA{255, 215, 0, 255}},
+		{"W", h.game.resources.WoodAmount(), color.RGBA{139, 69, 19, 255}},
+		{"S", h.game.resources.StoneAmount(), color.RGBA{128, 128, 128, 255}},
+		{"I", h.game.resources.IronAmount(), color.RGBA{169, 169, 169, 255}},
+		{"M", 0, color.RGBA{75, 0, 130, 255}},
+	}
 
-	// size := 20.0
-	// x := 10.0
-	// y := 10.0
+	size := 20.0
+	x := 10.0
+	y := 10.0
 
-	// for _, ic := range icons {
-	// 	vector.DrawFilledRect(screen, float32(x), float32(y), float32(size), float32(size), ic.clr, false)
+	for _, ic := range icons {
+		vector.DrawFilledRect(screen, float32(x), float32(y), float32(size), float32(size), ic.clr, false)
 
-	// 	opts := &text.DrawOptions{}
-	// 	opts.GeoM.Translate(x+4, y+4)
-	// 	opts.ColorScale.ScaleWithColor(color.Black)
-	// 	text.Draw(screen, ic.label, BoldFont, opts)
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(x+4, y+4)
+		opts.ColorScale.ScaleWithColor(color.Black)
+		text.Draw(screen, ic.label, assets.BoldFont, opts)
 
-	// 	numStr := strconv.Itoa(ic.amount)
-	// 	opts = &text.DrawOptions{}
-	// 	opts.GeoM.Translate(x+size+4, y+14)
-	// 	opts.ColorScale.ScaleWithColor(color.White)
-	// 	text.Draw(screen, numStr, BoldFont, opts)
+		numStr := strconv.Itoa(ic.amount)
+		opts = &text.DrawOptions{}
+		opts.GeoM.Translate(x+size+4, y+14)
+		opts.ColorScale.ScaleWithColor(color.White)
+		text.Draw(screen, numStr, assets.BoldFont, opts)
 
-	// 	x += size + float64(len(numStr))*13.0 + 16
-	// }
+		x += size + float64(len(numStr))*13.0 + 16
+	}
 }
 
 // drawQueue renders the global typing queue at the top center of the screen.
 func (h *HUD) DrawQueue(screen *ebiten.Image) {
-	// if h.game.queue == nil {
-	// 	return
-	// }
-	// words := h.game.queue.Words()
-	// if len(words) == 0 {
-	// 	return
-	// }
+	if h.game.queue == nil {
+		return
+	}
+	words := h.game.queue.Words()
+	if len(words) == 0 {
+		return
+	}
 
-	// spacing := 20.0
-	// total := 0.0
-	// for _, w := range words {
-	// 	total += float64(len(w.Text))*13.0 + spacing
-	// }
-	// total -= spacing
-	// h.drawConveyorBelt(screen, total)
-	// x := h.game.wordProcessX - h.game.conveyorOffset
-	// y := h.game.wordProcessY
+	spacing := 20.0
+	total := 0.0
+	for _, w := range words {
+		total += float64(len(w.Text))*13.0 + spacing
+	}
+	total -= spacing
+	h.DrawConveyorBelt(screen, total)
+	x := h.game.wordProcessX - h.game.conveyorOffset
+	y := h.game.wordProcessY
 
-	// for i, w := range words {
-	// 	opts := &text.DrawOptions{}
-	// 	opts.GeoM.Translate(x, y)
-	// 	if i == 0 {
-	// 		typed := h.game.queue.Index()
-	// 		if typed > 0 {
-	// 			done := w.Text[:typed]
-	// 			rem := w.Text[typed:]
-	// 			opts.ColorScale.ScaleWithColor(color.RGBA{160, 160, 160, 255})
-	// 			text.Draw(screen, done, BoldFont, opts)
-	// 			tw := float64(len(done)) * 13.0
-	// 			opts = &text.DrawOptions{}
-	// 			opts.GeoM.Translate(x+tw, y)
-	// 			opts.ColorScale.ScaleWithColor(FamilyColor(w.Family))
-	// 			text.Draw(screen, rem, BoldFont, opts)
-	// 			x += float64(len(w.Text))*13.0 + spacing
-	// 			continue
-	// 		}
-	// 	}
-	// 	opts.ColorScale.ScaleWithColor(FamilyColor(w.Family))
-	// 	text.Draw(screen, w.Text, BoldFont, opts)
-	// 	x += float64(len(w.Text))*13.0 + spacing
-	// }
+	for i, w := range words {
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(x, y)
+		if i == 0 {
+			typed := h.game.queue.Index()
+			if typed > 0 {
+				done := w.Text[:typed]
+				rem := w.Text[typed:]
+				opts.ColorScale.ScaleWithColor(color.RGBA{160, 160, 160, 255})
+				text.Draw(screen, done, assets.BoldFont, opts)
+				tw := float64(len(done)) * 13.0
+				opts = &text.DrawOptions{}
+				opts.GeoM.Translate(x+tw, y)
+				opts.ColorScale.ScaleWithColor(assets.FamilyColor(w.Family))
+				text.Draw(screen, rem, assets.BoldFont, opts)
+				x += float64(len(w.Text))*13.0 + spacing
+				continue
+			}
+		}
+		opts.ColorScale.ScaleWithColor(assets.FamilyColor(w.Family))
+		text.Draw(screen, w.Text, assets.BoldFont, opts)
+		x += float64(len(w.Text))*13.0 + spacing
+	}
 
-	// if h.game.queueJam {
-	// 	opts := &text.DrawOptions{}
-	// 	opts.GeoM.Translate(x+10, y)
-	// 	opts.ColorScale.ScaleWithColor(color.RGBA{255, 0, 0, 255})
-	// 	text.Draw(screen, "[JAM]", BoldFont, opts)
-	// }
+	if h.game.queueJam {
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(x+10, y)
+		opts.ColorScale.ScaleWithColor(color.RGBA{255, 0, 0, 255})
+		text.Draw(screen, "[JAM]", assets.BoldFont, opts)
+	}
 }
 
 // DrawTowerSelectionOverlay draws letter labels and highlight boxes over each
 // tower when tower selection mode is active.
 func (h *HUD) DrawTowerSelectionOverlay(screen *ebiten.Image) {
-	// if !h.game.towerSelectMode {
-	// 	return
-	// }
-	// for label, idx := range h.game.towerLabels {
-	// 	if idx < 0 || idx >= len(h.game.towers) {
-	// 		continue
-	// 	}
-	// 	t := h.game.towers[idx]
-	// 	bx, by, bw, bh := t.Bounds()
-	// 	vector.StrokeRect(screen, float32(bx-4), float32(by-4), float32(bw+8), float32(bh+8), 2, color.RGBA{255, 255, 0, 200}, false)
+	if !h.game.towerSelectMode {
+		return
+	}
+	for label, idx := range h.game.towerLabels {
+		if idx < 0 || idx >= len(h.game.towers) {
+			continue
+		}
+		t := h.game.towers[idx]
+		bx, by, bw, bh := t.Bounds()
+		vector.StrokeRect(screen, float32(bx-4), float32(by-4), float32(bw+8), float32(bh+8), 2, color.RGBA{255, 255, 0, 200}, false)
 
-	// 	opts := &text.DrawOptions{}
-	// 	opts.GeoM.Translate(float64(bx)+float64(bw)/2-6, float64(by)-20)
-	// 	opts.ColorScale.ScaleWithColor(color.White)
-	// 	text.Draw(screen, label, BoldFont, opts)
-	// }
+		opts := &text.DrawOptions{}
+		opts.GeoM.Translate(float64(bx)+float64(bw)/2-6, float64(by)-20)
+		opts.ColorScale.ScaleWithColor(color.White)
+		text.Draw(screen, label, assets.BoldFont, opts)
+	}
 }
 
 // DrawTechMenu renders the tech purchase overlay when active.
 func (h *HUD) DrawTechMenu(screen *ebiten.Image) {
-	// if !h.game.techMenuOpen {
-	// 	return
-	// }
-	// nodes := h.game.filteredTechNodes()
-	// lines := []string{"-- TECH --", "Search: " + h.game.searchBuffer}
-	// for i, n := range nodes {
-	// 	letters := strings.Builder{}
-	// 	for _, r := range n.Letters {
-	// 		letters.WriteRune(r)
-	// 	}
-	// 	line := fmt.Sprintf("%s [%s] - %s", n.Name, letters.String(), n.Achievement)
-	// 	prefix := "  "
-	// 	if i == h.game.techCursor {
-	// 		prefix = "> "
-	// 	}
-	// 	lines = append(lines, prefix+line)
-	// }
-	// drawMenu(screen, lines, 760, 300)
+	if !h.game.techMenuOpen {
+		return
+	}
+	nodesAny := h.game.FilteredTechNodes()
+	nodes, ok := nodesAny.([]*building.TechNode)
+	if !ok {
+		return
+	}
+	lines := []string{"-- TECH --", "Search: " + h.game.searchBuffer}
+	for i, n := range nodes {
+		letters := strings.Builder{}
+		for _, r := range n.Letters {
+			letters.WriteRune(r)
+		}
+		line := fmt.Sprintf("%s [%s] - %s", n.Name, letters.String(), n.Achievement)
+		prefix := "  "
+		if i == h.game.techCursor {
+			prefix = "> "
+		}
+		lines = append(lines, prefix+line)
+	}
+	DrawMenu(screen, lines, 760, 300)
 }
 
 // DrawSkillMenu renders the global skill tree overlay when active.

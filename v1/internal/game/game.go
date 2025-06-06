@@ -206,6 +206,10 @@ type Game struct {
 	SpriteEvents chan event.Event
 }
 
+func (g *Game) FilteredTechNodes() any {
+	panic("unimplemented")
+}
+
 // Gold returns the player's current gold amount.
 func (g *Game) Gold() int { return g.resources.GoldAmount() }
 
@@ -244,6 +248,10 @@ func NewGame() *Game {
 
 // NewGameWithConfig creates a new instance of the Game using the provided configuration.
 func NewGameWithConfig(cfg config.Config) *Game {
+	// Ensure images are initialized for tests
+	if assets.ImgBase == nil {
+		assets.InitImages()
+	}
 	return NewGameWithHistory(cfg, &core.PerformanceHistory{})
 }
 

@@ -1,6 +1,6 @@
 package assets
 
 func init() {
-	assetPrefix = "../../"
+	AssetPrefix = "../../"
 	InitImages()
 }

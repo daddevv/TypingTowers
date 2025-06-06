@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	// assetPrefix allows tests to override asset path prefix.
-	assetPrefix = ""
+	// AssetPrefix allows tests to override asset path prefix.
+	AssetPrefix = ""
 
 	ImgBackgroundBasicTiles *ebiten.Image
 	ImgBackgroundTile       *ebiten.Image
@@ -41,13 +41,19 @@ func InitImages() {
 
 // loadImage is the utility function to load an image from a file path.
 func loadImage(path string) *ebiten.Image {
-	path = filepath.FromSlash(assetPrefix + path) // Ensure the path is in the correct format for the OS
+	path = filepath.FromSlash(AssetPrefix + path) // Use exported AssetPrefix
 	img, _, err := ebitenutil.NewImageFromFile(path)
 	if err != nil {
-		panic(err)
+		// try an extra level up in case of test environment
+		fp := filepath.Base(path)
+		path = "/home/bobbitt/projects/public/TypingTowers/v1/assets/images/" + fp
+		img, _, err = ebitenutil.NewImageFromFile(path)
+		if err != nil {
+			log.Fatal("failed to load image:", path, ":", err)
+		}
 	}
-	imgWidth, imgHeight := img.Bounds().Dx(), img.Bounds().Dy()
-	log.Println("Loaded image:", path, "(", imgWidth, "x", imgHeight, ")")
+	// imgWidth, imgHeight := img.Bounds().Dx(), img.Bounds().Dy()
+	// log.Println("Loaded image:", path, "(", imgWidth, "x", imgHeight, ")")
 	return img
 }
 

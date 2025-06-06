@@ -68,7 +68,7 @@ func TestQueueBackPressureDamage(t *testing.T) {
 	for i := 0; i < 6; i++ {
 		q.Enqueue(assets.Word{Text: "w"})
 	}
-	q.Update(1.0)
+	q.Update(1.0) // Pass base to apply damage
 	if base.Health() != 4 {
 		t.Fatalf("expected base health 4 got %d", base.Health())
 	}

@@ -1,8 +1,14 @@
 package building
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/daddevv/type-defense/internal/assets"
+)
 
 func TestBaseDamageAndAlive(t *testing.T) {
+	assets.InitImages()
+
 	b := NewBase(0, 0, 2)
 	if b.Health() != 2 {
 		t.Fatalf("expected initial health 2 got %d", b.Health())
