@@ -68,6 +68,7 @@ Game logic is organized into modules under `internal/` (`entity`, `ui`, `tech`,
 `Handler` with an `Update(dt)` method. Handlers communicate through a lightweight
 event bus, and `game.Game` coordinates rendering using the state from all
 handlers.
+For a deeper look at the pattern, see [docs/ARCHITECTURE_OVERVIEW.md](docs/ARCHITECTURE_OVERVIEW.md).
 
 -## Current prototype
 
