@@ -1,13 +1,14 @@
-package skill
+package game
 
 import (
 	"testing"
 
 	"github.com/daddevv/type-defense/internal/econ"
+	"github.com/daddevv/type-defense/internal/skill"
 )
 
 func TestSampleSkillTree(t *testing.T) {
-	tree, err := SampleSkillTree()
+	tree, err := skill.SampleSkillTree()
 	if err != nil {
 		t.Fatalf("sample skill tree: %v", err)
 	}
@@ -40,17 +41,17 @@ func TestSampleSkillTree(t *testing.T) {
 }
 
 func TestSkillTreeCycleDetect(t *testing.T) {
-	tree := &SkillTree{Nodes: map[string]*SkillNode{
+	tree := &skill.SkillTree{Nodes: map[string]*skill.SkillNode{
 		"a": {ID: "a", Prereqs: []string{"b"}},
 		"b": {ID: "b", Prereqs: []string{"a"}},
 	}}
-	if err := tree.validate(); err == nil {
+	if err := tree.Validate(); err == nil {
 		t.Fatalf("expected cycle error")
 	}
 }
 
 func TestSkillUnlockFlow(t *testing.T) {
-	tree, err := SampleSkillTree()
+	tree, err := skill.SampleSkillTree()
 	if err != nil {
 		t.Fatalf("sample tree: %v", err)
 	}
@@ -65,7 +66,7 @@ func TestSkillUnlockFlow(t *testing.T) {
 	if !tree.Unlock("sharp_arrows", pool) {
 		t.Fatalf("failed to unlock sharp_arrows")
 	}
-	if !tree.unlocked["sharp_arrows"] {
+	if !tree.Unlocked["sharp_arrows"] {
 		t.Fatalf("sharp_arrows not marked unlocked")
 	}
 
@@ -79,7 +80,7 @@ func TestSkillUnlockFlow(t *testing.T) {
 	if pool.KingsAmount() != 20 {
 		t.Fatalf("expected 20 KP remaining got %d", pool.KingsAmount())
 	}
-	if !tree.unlocked["rapid_fire"] {
+	if !tree.Unlocked["rapid_fire"] {
 		t.Fatalf("rapid_fire not marked unlocked")
 	}
 }

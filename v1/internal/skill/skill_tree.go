@@ -48,14 +48,14 @@ type SkillNode struct {
 // SkillTree holds all skill nodes keyed by ID.
 type SkillTree struct {
 	Nodes    map[string]*SkillNode
-	order    []string
-	unlocked map[string]bool
+	Order    []string
+	Unlocked map[string]bool
 }
 
 // NodesByCategory returns a slice of skill nodes belonging to the given category.
 func (t *SkillTree) NodesByCategory(cat SkillCategory) []*SkillNode {
 	var out []*SkillNode
-	for _, id := range t.order {
+	for _, id := range t.Order {
 		n := t.Nodes[id]
 		if n.Category == cat {
 			out = append(out, n)
@@ -74,7 +74,7 @@ func (t *SkillTree) GetPrerequisites(id string) []string {
 
 // UnlockOrder returns a topological order of node IDs based on prerequisites.
 func (t *SkillTree) UnlockOrder() []string {
-	return append([]string(nil), t.order...)
+	return append([]string(nil), t.Order...)
 }
 
 // CanUnlock reports whether the node can be unlocked with the provided resources.
@@ -85,11 +85,11 @@ func (t *SkillTree) CanUnlock(id string, pool *econ.ResourcePool) bool {
 	if !ok {
 		return false
 	}
-	if t.unlocked != nil && t.unlocked[id] {
+	if t.Unlocked != nil && t.Unlocked[id] {
 		return false
 	}
 	for _, p := range node.Prereqs {
-		if t.unlocked == nil || !t.unlocked[p] {
+		if t.Unlocked == nil || !t.Unlocked[p] {
 			return false
 		}
 	}
@@ -108,14 +108,14 @@ func (t *SkillTree) Unlock(id string, pool *econ.ResourcePool) bool {
 	if pool != nil && !pool.SpendKingsPoints(t.Nodes[id].Cost) {
 		return false
 	}
-	if t.unlocked == nil {
-		t.unlocked = map[string]bool{}
+	if t.Unlocked == nil {
+		t.Unlocked = map[string]bool{}
 	}
-	t.unlocked[id] = true
+	t.Unlocked[id] = true
 	return true
 }
 
-func (t *SkillTree) validate() error {
+func (t *SkillTree) Validate() error {
 	for id, n := range t.Nodes {
 		for _, p := range n.Prereqs {
 			if _, ok := t.Nodes[p]; !ok {
@@ -125,7 +125,7 @@ func (t *SkillTree) validate() error {
 	}
 	visited := map[string]bool{}
 	stack := map[string]bool{}
-	t.order = nil
+	t.Order = nil
 	var visit func(string) error
 	visit = func(id string) error {
 		if stack[id] {
@@ -142,7 +142,7 @@ func (t *SkillTree) validate() error {
 		}
 		stack[id] = false
 		visited[id] = true
-		t.order = append(t.order, id)
+		t.Order = append(t.Order, id)
 		return nil
 	}
 	for id := range t.Nodes {
@@ -202,12 +202,12 @@ func SampleSkillTree() (*SkillTree, error) {
 			Effects:  map[string]float64{"hotkeys": 1},
 		},
 	}
-	tree := &SkillTree{Nodes: map[string]*SkillNode{}, unlocked: map[string]bool{}}
+	tree := &SkillTree{Nodes: map[string]*SkillNode{}, Unlocked: map[string]bool{}}
 	for i := range nodes {
 		n := nodes[i]
 		tree.Nodes[n.ID] = &n
 	}
-	if err := tree.validate(); err != nil {
+	if err := tree.Validate(); err != nil {
 		return nil, err
 	}
 	return tree, nil

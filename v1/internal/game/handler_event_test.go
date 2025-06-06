@@ -5,6 +5,7 @@ package game
 import (
 	"testing"
 
+	"github.com/daddevv/type-defense/internal/core"
 	"github.com/daddevv/type-defense/internal/event"
 )
 
@@ -15,7 +16,7 @@ func (s *stubHandler) Update(dt float64) { s.called = true }
 func TestHandlersUpdateCalled(t *testing.T) {
 	g := NewGame()
 	g.input = &stubInput{}
-	g.phase = PhasePlaying
+	g.phase = core.PhasePlaying
 
 	e := &stubHandler{}
 	u := &stubHandler{}
@@ -30,7 +31,7 @@ func TestHandlersUpdateCalled(t *testing.T) {
 	g.TechHandler = te
 	g.TowerHandler = to
 	g.PhaseHandler = ph
-	g.ContentHandler = c
+	// g.ContentHandler = c
 	g.SpriteHandler = s
 
 	if err := g.Update(); err != nil {

@@ -1,6 +1,6 @@
 //go:build test
 
-package skill
+package game
 
 import (
 	"os"

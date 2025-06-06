@@ -5,6 +5,8 @@ package game
 import (
 	"testing"
 	"time"
+
+	"github.com/daddevv/type-defense/internal/core"
 )
 
 type cmdInput struct {
@@ -50,7 +52,7 @@ func TestEnterCommandMode(t *testing.T) {
 	if err := g.Update(); err != nil {
 		t.Fatal(err)
 	}
-	if g.phase != PhasePaused {
+	if g.phase != core.PhasePaused {
 		t.Fatalf("expected command executed")
 	}
 	if g.commandMode {

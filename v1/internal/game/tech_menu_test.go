@@ -73,7 +73,7 @@ func TestTechMenuPurchase(t *testing.T) {
 	if err := g.Update(); err != nil {
 		t.Fatal(err)
 	}
-	if g.techTree.stage != 1 {
-		t.Fatalf("expected tech stage 1 got %d", g.techTree.stage)
+	if g.techTree.Stage != 1 {
+		t.Fatalf("expected tech stage 1 got %d", g.techTree.Stage)
 	}
 }

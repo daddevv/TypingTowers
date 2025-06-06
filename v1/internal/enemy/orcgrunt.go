@@ -1,4 +1,4 @@
-package mob
+package enemy
 
 import (
 	"github.com/daddevv/type-defense/internal/assets"

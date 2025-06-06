@@ -5,6 +5,8 @@ package game
 import (
 	"testing"
 	"time"
+
+	"github.com/daddevv/type-defense/internal/core"
 )
 
 // pgInput implements InputHandler for pregame tests.
@@ -37,7 +39,7 @@ func (p *pgInput) StatsPanel() bool   { return false }
 // TestPreGameFlow ensures the setup screens progress to playing state.
 func TestPreGameFlow(t *testing.T) {
 	g := NewGame()
-	g.phase = PhasePreGame
+	g.phase = core.PhasePreGame
 	g.preGame = NewPreGame()
 	inp := &pgInput{enter: true}
 	g.input = inp
@@ -79,7 +81,7 @@ func TestPreGameFlow(t *testing.T) {
 	if err := g.Update(); err != nil {
 		t.Fatal(err)
 	}
-	if g.phase != PhasePlaying {
+	if g.phase != core.PhasePlaying {
 		t.Fatalf("expected PhasePlaying got %v", g.phase)
 	}
 }
@@ -87,7 +89,7 @@ func TestPreGameFlow(t *testing.T) {
 // TestPreGameCursorWrap checks selection cursor wrapping.
 func TestPreGameCursorWrap(t *testing.T) {
 	g := NewGame()
-	g.phase = PhasePreGame
+	g.phase = core.PhasePreGame
 	g.preGame = NewPreGame()
 	inp := &pgInput{up: true}
 	g.input = inp

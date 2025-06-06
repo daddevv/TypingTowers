@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/daddevv/type-defense/internal/core"
+	"github.com/daddevv/type-defense/internal/word"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -55,8 +57,8 @@ func TestStatsPanelToggle(t *testing.T) {
 func TestDrawStatsPanel(t *testing.T) {
 	g := NewGame()
 	g.statsPanelOpen = true
-	g.wordHistory = []WordStat{{Text: "ab", Correct: 2, Incorrect: 0, Duration: time.Second}}
-	hud := NewHUD(g)
+	g.wordHistory = []word.WordStat{{Text: "ab", Correct: 2, Incorrect: 0, Duration: time.Second}}
+	hud := core.NewHUD()
 	img := ebiten.NewImage(1920, 1080)
-	hud.drawStatsPanel(img)
+	hud.DrawStatsPanel(img)
 }

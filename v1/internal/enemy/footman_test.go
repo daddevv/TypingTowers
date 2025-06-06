@@ -1,4 +1,4 @@
-package mob
+package enemy
 
 import "testing"
 

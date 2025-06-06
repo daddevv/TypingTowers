@@ -1,4 +1,4 @@
-package mob
+package enemy
 
 // func TestMobUpdateVelocity(t *testing.T) {
 // 	b := NewBase(100, 0, 1)

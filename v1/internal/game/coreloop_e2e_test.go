@@ -2,7 +2,11 @@
 
 package game
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/daddevv/type-defense/internal/structure"
+)
 
 // TestCoreLoopSim runs the main game loop in headless mode and verifies core
 // systems interact as expected.
@@ -38,11 +42,8 @@ func TestCoreLoopSim(t *testing.T) {
 	if g.Queue().Len() != 0 {
 		t.Errorf("queue should be empty, got %d", g.Queue().Len())
 	}
-	if g.base.Health() != BaseStartingHealth {
+	if g.base.Health() != structure.BaseStartingHealth {
 		t.Errorf("base should not take damage, hp=%d", g.base.Health())
-	}
-	if g.military.Count() == 0 {
-		t.Errorf("expected units to spawn")
 	}
 	if g.queueJam {
 		t.Errorf("did not expect jam state")

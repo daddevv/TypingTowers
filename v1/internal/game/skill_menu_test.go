@@ -1,10 +1,12 @@
 //go:build test
 
-package skill
+package game
 
 import (
 	"testing"
 	"time"
+
+	"github.com/daddevv/type-defense/internal/skill"
 )
 
 type skillInput struct {
@@ -73,7 +75,7 @@ func TestSkillMenuNavigation(t *testing.T) {
 	if err := g.Update(); err != nil {
 		t.Fatal(err)
 	}
-	if g.skillCategory != SkillDefense {
+	if g.skillCategory != skill.SkillDefense {
 		t.Fatalf("expected category to advance")
 	}
 }
