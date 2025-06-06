@@ -8,7 +8,7 @@ we continue to break the original monolithic `game` package into smaller compone
 
 ```
 assets    config    core     event
-entity    mob       structure worker
+entity    enemy     building gatherer
 econ      word      sprite   input
 phase     skill     tech     game
 ```
@@ -20,9 +20,9 @@ phase     skill     tech     game
 - **econ** – resource values and tech tree parsing.
 - **word** – the global queue, typing stats and word types.
 - **entity** – shared interfaces for anything that appears on screen.
-- **mob** – enemy implementations (currently various "Mob" types).
-- **structure** – buildings, towers and the player base.
-- **worker** – resource gathering buildings such as the Farmer and Miner.
+- **enemy** – enemy implementations (currently various "Mob" types).
+- **building** – buildings, towers and the player base.
+- **gatherer** – resource gathering buildings such as the Farmer and Miner.
 - **sprite** – helpers for image manipulation.
 - **input** – keyboard input processing.
 - **phase** – game state enumeration and helpers.
@@ -46,9 +46,9 @@ The packages form a loose hierarchy. `game` imports every other package but noth
 interfaces. Avoid circular dependencies by following these guidelines:
 
 - `entity` imports `core` and `assets` only.
-- `mob` imports `assets`, `core`, `entity` and `structure`.
-- `structure` imports `assets`, `core`, `entity`, `econ` and `word`.
-- `worker` imports `assets`, `core`, `econ` and `word`.
+- `enemy` imports `assets`, `core`, `entity` and `building`.
+- `building` imports `assets`, `core`, `entity`, `econ` and `word`.
+- `gatherer` imports `assets`, `core`, `econ` and `word`.
 - `econ` and `word` do not depend on other domain packages.
 - `input`, `phase`, `skill`, `sprite` and `tech` depend only on base packages and optionally
   on `econ` or `word` where required.

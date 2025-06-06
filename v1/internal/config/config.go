@@ -52,11 +52,11 @@ type Config struct {
 
 	BaseHealth int `json:"base_health"`
 
-	MobSpeed       float64 `json:"mob_speed"`
-	MobBaseHealth  int     `json:"mob_base_health"`
-	MobsPerWave    int     `json:"mobs_per_wave_base"`
-	MobsPerWaveInc int     `json:"mobs_per_wave_growth"`
-	SpawnInterval  float64 `json:"spawn_interval"` // milliseconds between spawns
+	EnemySpeed        float64 `json:"enemy_speed"`
+	EnemyBaseHealth   int     `json:"enemy_base_health"`
+	EnemiesPerWave    int     `json:"enemies_per_wave_base"`
+	EnemiesPerWaveInc int     `json:"enemies_per_wave_growth"`
+	SpawnInterval     float64 `json:"spawn_interval"` // milliseconds between spawns
 }
 
 // DefaultConfig provides baseline parameters used when a new game starts.
@@ -102,11 +102,11 @@ var DefaultConfig = Config{
 
 	BaseHealth: 10,
 
-	MobSpeed:       1.0,
-	MobBaseHealth:  1,
-	MobsPerWave:    3,
-	MobsPerWaveInc: 3,
-	SpawnInterval:  1000, // ms
+	EnemySpeed:        1.0,
+	EnemyBaseHealth:   1,
+	EnemiesPerWave:    3,
+	EnemiesPerWaveInc: 3,
+	SpawnInterval:     1000, // ms
 }
 
 // LoadConfig reads configuration values from the given JSON file.

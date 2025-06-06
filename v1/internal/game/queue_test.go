@@ -5,7 +5,7 @@ import (
 
 	"github.com/daddevv/type-defense/internal/assets"
 	"github.com/daddevv/type-defense/internal/building"
-	"github.com/daddevv/type-defense/internal/building/worker"
+	gatherer "github.com/daddevv/type-defense/internal/building/gatherer"
 	"github.com/daddevv/type-defense/internal/word"
 )
 
@@ -44,7 +44,7 @@ func TestQueueDequeueValidation(t *testing.T) {
 
 func TestQueueEnqueueFromBuildings(t *testing.T) {
 	q := word.NewQueueManager()
-	f := worker.NewFarmer()
+	f := gatherer.NewFarmer()
 	b := building.NewBarracks()
 	f.SetQueue(q)
 	b.SetQueue(q)
