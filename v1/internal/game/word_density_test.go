@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/daddevv/type-defense/internal/building"
+	"github.com/daddevv/type-defense/internal/building/worker"
 	"github.com/daddevv/type-defense/internal/word"
-	"github.com/daddevv/type-defense/internal/worker"
 )
 
 // TestWordDensitySimulation runs a 5 minute simulation with the default Farmer

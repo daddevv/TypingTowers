@@ -16,6 +16,7 @@ import (
 
 	"github.com/daddevv/type-defense/internal/assets"
 	"github.com/daddevv/type-defense/internal/building"
+	"github.com/daddevv/type-defense/internal/building/worker"
 	"github.com/daddevv/type-defense/internal/config"
 	"github.com/daddevv/type-defense/internal/core"
 	"github.com/daddevv/type-defense/internal/econ"
@@ -26,7 +27,6 @@ import (
 	"github.com/daddevv/type-defense/internal/skill"
 	"github.com/daddevv/type-defense/internal/tech"
 	"github.com/daddevv/type-defense/internal/word"
-	"github.com/daddevv/type-defense/internal/worker"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"

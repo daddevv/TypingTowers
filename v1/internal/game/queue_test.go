@@ -5,8 +5,8 @@ import (
 
 	"github.com/daddevv/type-defense/internal/assets"
 	"github.com/daddevv/type-defense/internal/building"
+	"github.com/daddevv/type-defense/internal/building/worker"
 	"github.com/daddevv/type-defense/internal/word"
-	"github.com/daddevv/type-defense/internal/worker"
 )
 
 func TestQueueFIFO(t *testing.T) {
