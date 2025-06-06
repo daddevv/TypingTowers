@@ -1,6 +1,10 @@
 package game
 
-import "math/rand"
+import (
+	"math/rand"
+
+	"github.com/daddevv/type-defense/internal/econ"
+)
 
 // Barracks represents a Military building that trains Footman units.
 type Barracks struct {
@@ -107,7 +111,7 @@ func (b *Barracks) NextUnlockCost() int {
 }
 
 // UnlockNext attempts to unlock the next letter stage for the Barracks.
-func (b *Barracks) UnlockNext(pool *ResourcePool) bool {
+func (b *Barracks) UnlockNext(pool *econ.ResourcePool) bool {
 	stage := b.unlockStage + 1
 	letters := LetterStageLetters(stage)
 	cost := LetterStageCost(stage)

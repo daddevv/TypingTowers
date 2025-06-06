@@ -1,6 +1,10 @@
 package game
 
-import "math/rand"
+import (
+	"math/rand"
+
+	"github.com/daddevv/type-defense/internal/econ"
+)
 
 // Lumberjack represents a Gathering building that produces Wood on cooldown.
 type Lumberjack struct {
@@ -59,7 +63,7 @@ func (l *Lumberjack) generateWord() string {
 }
 
 // OnWordCompleted should be called when the word is typed. Returns wood gained.
-func (l *Lumberjack) OnWordCompleted(word string, pool *ResourcePool) int {
+func (l *Lumberjack) OnWordCompleted(word string, pool *econ.ResourcePool) int {
 	if word == l.pendingWord {
 		l.pendingWord = ""
 		l.timer.Reset()
@@ -85,7 +89,7 @@ func (l *Lumberjack) NextUnlockCost() int {
 	return LetterStageCost(stage)
 }
 
-func (l *Lumberjack) UnlockNext(pool *ResourcePool) bool {
+func (l *Lumberjack) UnlockNext(pool *econ.ResourcePool) bool {
 	stage := l.unlockStage + 1
 	letters := LetterStageLetters(stage)
 	cost := LetterStageCost(stage)

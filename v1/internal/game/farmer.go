@@ -2,6 +2,8 @@ package game
 
 import (
 	"math/rand"
+
+	"github.com/daddevv/type-defense/internal/econ"
 )
 
 // Farmer represents a Gathering building that produces Food on cooldown.
@@ -68,7 +70,7 @@ func (f *Farmer) generateWord() string {
 
 // OnWordCompleted should be called when the player completes the Farmer's word.
 // Returns the amount of Food produced.
-func (f *Farmer) OnWordCompleted(word string, pool *ResourcePool) int {
+func (f *Farmer) OnWordCompleted(word string, pool *econ.ResourcePool) int {
 	if word == f.pendingWord {
 		f.pendingWord = ""
 		f.timer.Reset()
@@ -115,7 +117,7 @@ func (f *Farmer) NextUnlockCost() int {
 }
 
 // UnlockNext attempts to unlock the next letter stage using the provided pool.
-func (f *Farmer) UnlockNext(pool *ResourcePool) bool {
+func (f *Farmer) UnlockNext(pool *econ.ResourcePool) bool {
 	stage := f.unlockStage + 1
 	letters := LetterStageLetters(stage)
 	cost := LetterStageCost(stage)

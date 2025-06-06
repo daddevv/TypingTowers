@@ -1,4 +1,4 @@
-package game
+package econ
 
 // Gold tracks the player's gold resources.
 type Gold struct {

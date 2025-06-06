@@ -1,6 +1,10 @@
 package game
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/daddevv/type-defense/internal/econ"
+)
 
 func TestFarmerCooldownAndWordGeneration(t *testing.T) {
 	f := NewFarmer()
@@ -51,7 +55,7 @@ func TestFarmerResourceOutput(t *testing.T) {
 	f := NewFarmer()
 	word := f.generateWord()
 	f.pendingWord = word
-	pool := &ResourcePool{}
+	pool := &econ.ResourcePool{}
 	food := f.OnWordCompleted(word, pool)
 	if food != f.resourceOut {
 		t.Errorf("Expected %d food, got %d", f.resourceOut, food)
@@ -70,7 +74,7 @@ func TestFarmerAddsResourcesToPool(t *testing.T) {
 	f.SetLetterPool([]rune{'f', 'j'})
 	f.SetInterval(0.1)
 	f.SetCooldown(0.1)
-	pool := &ResourcePool{}
+	pool := &econ.ResourcePool{}
 	word := f.Update(0.11)
 	if word == "" {
 		t.Fatalf("expected word generated")

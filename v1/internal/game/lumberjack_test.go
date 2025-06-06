@@ -1,6 +1,10 @@
 package game
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/daddevv/type-defense/internal/econ"
+)
 
 func TestLumberjackCooldownAndWordGeneration(t *testing.T) {
 	l := NewLumberjack()
@@ -28,7 +32,7 @@ func TestLumberjackResourceOutput(t *testing.T) {
 	l := NewLumberjack()
 	word := l.generateWord()
 	l.pendingWord = word
-	pool := &ResourcePool{}
+	pool := &econ.ResourcePool{}
 	wood := l.OnWordCompleted(word, pool)
 	if wood != l.resourceOut {
 		t.Fatalf("expected %d wood got %d", l.resourceOut, wood)

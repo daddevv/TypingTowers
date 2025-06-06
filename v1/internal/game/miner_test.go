@@ -1,6 +1,10 @@
 package game
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/daddevv/type-defense/internal/econ"
+)
 
 func TestMinerCooldownAndWordGeneration(t *testing.T) {
 	m := NewMiner()
@@ -28,7 +32,7 @@ func TestMinerResourceOutput(t *testing.T) {
 	m := NewMiner()
 	word := m.generateWord()
 	m.pendingWord = word
-	pool := &ResourcePool{}
+	pool := &econ.ResourcePool{}
 	stone, iron := m.OnWordCompleted(word, pool)
 	if stone != m.stoneOut || iron != m.ironOut {
 		t.Fatalf("unexpected resource amounts")

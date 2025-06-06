@@ -1,6 +1,10 @@
 package game
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/daddevv/type-defense/internal/econ"
+)
 
 func TestSampleSkillTree(t *testing.T) {
 	tree, err := SampleSkillTree()
@@ -50,7 +54,7 @@ func TestSkillUnlockFlow(t *testing.T) {
 	if err != nil {
 		t.Fatalf("sample tree: %v", err)
 	}
-	pool := &ResourcePool{}
+	pool := &econ.ResourcePool{}
 	pool.AddKingsPoints(50)
 
 	// cannot unlock rapid_fire before sharp_arrows

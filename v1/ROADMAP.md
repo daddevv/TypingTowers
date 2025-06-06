@@ -14,7 +14,7 @@
     - `tech`: Tech tree, skill tree, upgrades, and related systems
     - `tower`: Tower logic, projectiles, and related mechanics
     - `phase`: Game phase/state enums and transitions
-    - `content`: Asset/content loaders and resource management
+    - `econ`: Economy resources and asset loading management
     - `sprite`: Sprite/image providers and ebiten.Image helpers
     - `game`: Core engine, main loop, and glue code
   - [x] **T-002** For each module, define a `Handler` struct (e.g., `EntityHandler`, `UIHandler`, etc.) with basic state and interface

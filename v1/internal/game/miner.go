@@ -1,6 +1,10 @@
 package game
 
-import "math/rand"
+import (
+	"math/rand"
+
+	"github.com/daddevv/type-defense/internal/econ"
+)
 
 // Miner represents a Gathering building that produces Stone and Iron on cooldown.
 type Miner struct {
@@ -61,7 +65,7 @@ func (m *Miner) generateWord() string {
 }
 
 // OnWordCompleted should be called when the word is typed. Returns stone gained.
-func (m *Miner) OnWordCompleted(word string, pool *ResourcePool) (int, int) {
+func (m *Miner) OnWordCompleted(word string, pool *econ.ResourcePool) (int, int) {
 	if word == m.pendingWord {
 		m.pendingWord = ""
 		m.timer.Reset()
@@ -88,7 +92,7 @@ func (m *Miner) NextUnlockCost() int {
 	return LetterStageCost(stage)
 }
 
-func (m *Miner) UnlockNext(pool *ResourcePool) bool {
+func (m *Miner) UnlockNext(pool *econ.ResourcePool) bool {
 	stage := m.unlockStage + 1
 	letters := LetterStageLetters(stage)
 	cost := LetterStageCost(stage)
