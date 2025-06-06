@@ -63,12 +63,15 @@ any panic so unexpected crashes are easy to diagnose.
 
 ## Modular Handler Architecture
 
-Game logic is organized into modules under `internal/` (`entity`, `ui`, `tech`,
-`tower`, `phase`, `econ`, `sprite`, and `event`). Each module exposes a
-`Handler` with an `Update(dt)` method. Handlers communicate through a lightweight
-event bus, and `game.Game` coordinates rendering using the state from all
-handlers.
-For a deeper look at the pattern, see [docs/ARCHITECTURE_OVERVIEW.md](docs/ARCHITECTURE_OVERVIEW.md).
+Game logic lives in the `v1/internal` directory. The original monolithic
+`game` package has been decomposed into several packages such as `assets`,
+`config`, `core`, `entity`, `mob`, `structure`, `worker`, `econ`, `word` and
+more. Each package exposes a `Handler` with an `Update(dt)` method. Handlers
+communicate through a lightweight event bus, and `game.Game` coordinates
+rendering using their state. See
+[docs/ARCHITECTURE_OVERVIEW.md](docs/ARCHITECTURE_OVERVIEW.md) and
+[docs/INTERNAL_RESTRUCTURE.md](docs/INTERNAL_RESTRUCTURE.md) for the import
+map and package descriptions.
 
 -## Current prototype
 
