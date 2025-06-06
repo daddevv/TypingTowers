@@ -25,6 +25,16 @@
     - [ ] **T-007** Each handler exposes channels for publishing/subscribing to events
     - [ ] **T-008** Implement event communication between handlers (e.g., UI notification on tech unlock)
   - [ ] **T-009** Migrate all existing logic/files into new module structure
+    - [ ] **MIG-001** Core engine & state management (`game.go`, `state.go`, `pregame.go`, `timer.go`, `settings.go`, `performance.go`)
+    - [ ] **MIG-002** Entities & units (`entity.go`, `mob.go`, `enemy.go`, `footman.go`, `orcgrunt.go`, `farmer.go`, `lumberjack.go`, `miner.go`)
+    - [ ] **MIG-003** Buildings & military (`barracks.go`, `base.go`, `military.go`)
+    - [ ] **MIG-004** Towers & projectiles (`tower.go`, `projectile.go`, `modifier.go`)
+    - [ ] **MIG-005** User interface components (`hud.go`, `mainmenu.go`, `skill_tree_overlay_test.go`, and related UI files)
+    - [ ] **MIG-006** Tech & skill systems (`tech.go`, `tech_tree.go`, `skill_tree.go`, `letter_unlocks.go`)
+    - [ ] **MIG-007** Resources & economy (`resource.go`, `queue.go`, `tile.go`, `point.go`)
+    - [ ] **MIG-008** Content and assets (`content.go`, `palette.go`, `font.go`, `sound.go`)
+    - [ ] **MIG-009** Typing metrics & stats (`typing_stats.go`, `word_stats.go`)
+    - [ ] **MIG-010** Update all related tests to new module paths
   - [ ] **T-010** Update all imports and references to match new structure
   - [ ] **T-011** Write/adjust tests for new handler/event system
   - [ ] **T-012** Document the new architecture and handler/event pattern for contributors
