@@ -4,15 +4,16 @@ import (
 	"testing"
 
 	"github.com/daddevv/type-defense/internal/assets"
-	"github.com/daddevv/type-defense/internal/word"
+	"github.com/daddevv/type-defense/internal/core"
 )
 
 func TestBarracksCooldownAndWordGeneration(t *testing.T) {
 	assets.InitImages()
-	b := NewBarracks()
-	b.SetLetterPool([]rune{'f', 'j'}) // Set letter pool for word generation
-	b.SetInterval(0.1)
-	b.SetCooldown(0.1)
+	b := NewBarracksWithOptions(
+		WithLetterPool([]rune{'f', 'j'}),
+		WithInterval(0.1),
+		WithCooldown(0.1),
+	)
 	words := make(map[string]struct{})
 	for i := 0; i < 10; i++ {
 		w := b.Update(0.11)
@@ -55,7 +56,7 @@ func TestBarracksWaitsForCompletion(t *testing.T) {
 
 func TestBarracksLetterQueueIntegration(t *testing.T) {
 	assets.InitImages()
-	q := word.NewQueueManager()
+	q := core.NewQueueManager()
 	b := NewBarracks()
 	b.SetQueue(q)
 	b.SetLetterPool([]rune{'f', 'j'}) // Set letter pool for word generation

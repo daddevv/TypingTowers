@@ -4,15 +4,15 @@ import (
 	"testing"
 
 	"github.com/daddevv/type-defense/internal/building"
-	gatherer "github.com/daddevv/type-defense/internal/building/gatherer"
-	"github.com/daddevv/type-defense/internal/word"
+	"github.com/daddevv/type-defense/internal/building/gatherer"
+	"github.com/daddevv/type-defense/internal/core"
 )
 
 // TestWordDensitySimulation runs a 5 minute simulation with the default Farmer
 // and Barracks to ensure word generation stays within the 0.1-0.3 words/sec
 // target. Words are assumed to be completed instantly when generated.
 func TestWordDensitySimulation(t *testing.T) {
-	q := word.NewQueueManager()
+	q := core.NewQueueManager()
 	f := gatherer.NewFarmer()
 	b := building.NewBarracks()
 	f.SetQueue(q)

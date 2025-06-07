@@ -3,39 +3,81 @@ package building
 import (
 	"math/rand"
 
-	"github.com/daddevv/type-defense/internal/assets"
 	"github.com/daddevv/type-defense/internal/core"
 	"github.com/daddevv/type-defense/internal/econ"
-	"github.com/daddevv/type-defense/internal/word"
 )
 
 // Barracks represents a Military building that trains Footman units.
 type Barracks struct {
 	Timer       core.CooldownTimer // cooldown timer for word generation
 	LetterPool  []rune             // available letters for word generation
-	UnlockStage int                // next letter stage index
+	UnlockStage int                // stage index
 	WordLenMin  int
 	WordLenMax  int
 	LastWord    string             // last generated word (for testing/debug)
 	PendingWord string             // word currently in queue (if any)
 	Active      bool               // is the Barracks running?
-	Queue       *word.QueueManager // optional global queue manager
+	Queue       *core.WordQueue // global queue manager
 }
 
-// NewBarracks creates a new Barracks with default settings.
-func NewBarracks() *Barracks {
-	return &Barracks{
-		// Slower cadence to reduce overall word rate
-		Timer:       core.NewCooldownTimer(9.0), // 9 seconds base cooldown (was 2.0)
-		LetterPool:  []rune{'f', 'j'},
-		UnlockStage: 0,
-		// Longer words for more time per word
-		WordLenMin: 4, // was 3
-		WordLenMax: 6, // was 5
-		Active:     true,
-		Queue:      nil,
+// NewBarracksWithOptions creates a Barracks with the provided options.
+func NewBarracksWithOptions(options ...BarracksOption) *Barracks {
+	b := &Barracks{
+		Timer:       core.NewCooldownTimer(15.0), // default cooldown interval
+		LetterPool:  []rune{'f', 'j'},            // default letter pool
+		UnlockStage: 0,                           // default letter stage
+		WordLenMin:  2,                           // default minimum word length
+		WordLenMax:  3,                           // default maximum word length
+		Active:      true,                        // default active state
+		Queue:       nil,                         // no queue by default
+	}
+	// Apply all provided options to the Barracks instance
+	for _, opt := range options {
+		opt(b)
+	}
+	return b
+}
+
+// BarracksOption defines a function type for configuring Barracks options.
+// It allows for flexible configuration of Barracks instances using functional options.
+type BarracksOption func(*Barracks)
+
+// WithLetterPool sets a custom letter pool for the Barracks.
+func WithLetterPool(pool []rune) BarracksOption {
+	return func(b *Barracks) {
+		b.LetterPool = pool
 	}
 }
+
+// WithUnlockStage sets the initial letter stage for the Barracks.
+func WithUnlockStage(stage int) BarracksOption {
+	return func(b *Barracks) {
+		b.UnlockStage = stage
+	}
+}
+
+// WithWordLength sets the minimum and maximum word lengths for the Barracks.
+func WithWordLength(min, max int) BarracksOption {
+	return func(b *Barracks) {
+		b.WordLenMin = min
+		b.WordLenMax = max
+	}
+}
+
+// WithActive sets the active state of the Barracks.
+func WithActive(active bool) BarracksOption {
+	return func(b *Barracks) {
+		b.Active = active
+	}
+}
+
+// WithQueue sets the QueueManager for the Barracks.
+func WithQueue(q *core.WordQueue) BarracksOption {
+	return func(b *Barracks) {
+		b.Queue = q
+	}
+}
+
 
 // Update ticks the Barracks cooldown and returns a word when ready.
 func (b *Barracks) Update(dt float64) string {
@@ -46,7 +88,7 @@ func (b *Barracks) Update(dt float64) string {
 		word := b.GenerateWord()
 		b.PendingWord = word
 		if b.Queue != nil {
-			b.Queue.Enqueue(assets.Word{Text: word, Source: "Barracks", Family: "Military"})
+			b.Queue.Enqueue(core.Word{Text: word, Source: "Barracks", Family: "Military"})
 		}
 		return word
 	}
@@ -80,7 +122,7 @@ func (b *Barracks) SetInterval(interval float64) { b.Timer.SetInterval(interval)
 func (b *Barracks) SetCooldown(c float64) { b.Timer.Remaining = c }
 
 // SetQueue assigns a QueueManager for global word management.
-func (b *Barracks) SetQueue(q *word.QueueManager) { b.Queue = q }
+func (b *Barracks) SetQueue(q *core.WordQueue) { b.Queue = q }
 
 // CooldownProgress returns 0 when the timer was just reset and 1 when ready.
 func (b *Barracks) CooldownProgress() float64 { return b.Timer.Progress() }
@@ -111,7 +153,7 @@ func (b *Barracks) UnlockNext(pool *econ.ResourcePool) bool {
 }
 
 // OnWordCompleted notifies the Barracks that its word was completed.
-func (b *Barracks) OnWordCompleted(word string, w *assets.Word) {
+func (b *Barracks) OnWordCompleted(word string, w *core.Word) {
 	if b.PendingWord == word {
 		b.PendingWord = ""
 	}

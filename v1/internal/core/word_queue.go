@@ -1,30 +1,28 @@
-package word
+package core
 
 import (
 	"unicode"
-
-	"github.com/daddevv/type-defense/internal/core"
 )
 
-// QueueManager maintains a global FIFO queue of words.
-type QueueManager struct {
-	queue    []core.Word
+// WordQueue maintains a global FIFO queue of words.
+type WordQueue struct {
+	queue    []Word
 	timer    float64
 	progress int // typed letters progress for first word
 }
 
 // NewQueueManager initializes an empty queue.
-func NewQueueManager() *QueueManager {
-	return &QueueManager{queue: make([]core.Word, 0), timer: 0, progress: 0}
+func NewQueueManager() *WordQueue {
+	return &WordQueue{queue: make([]Word, 0), timer: 0, progress: 0}
 }
 
 // Enqueue adds a word to the end of the queue.
-func (q *QueueManager) Enqueue(w core.Word) {
+func (q *WordQueue) Enqueue(w Word) {
 	q.queue = append(q.queue, w)
 }
 
 // Progress returns the completion ratio of the first word, 0-1.
-func (q *QueueManager) Progress() float64 {
+func (q *WordQueue) Progress() float64 {
 	if len(q.queue) == 0 {
 		return 0
 	}
@@ -35,24 +33,24 @@ func (q *QueueManager) Progress() float64 {
 }
 
 // Index returns the current typed letter index for the first word.
-func (q *QueueManager) Index() int { return q.progress }
+func (q *WordQueue) Index() int { return q.progress }
 
 // ResetProgress clears the current letter index for the first word.
-func (q *QueueManager) ResetProgress() {
+func (q *WordQueue) ResetProgress() {
 	q.progress = 0
 }
 
 // TryLetter validates a single typed letter against the first word.
 // It returns (matched, completed, word).
-func (q *QueueManager) TryLetter(r rune) (bool, bool, core.Word) {
+func (q *WordQueue) TryLetter(r rune) (bool, bool, Word) {
 	if len(q.queue) == 0 {
-		return false, false, core.Word{}
+		return false, false, Word{}
 	}
 	w := q.queue[0]
 	expected := rune(w.Text[q.progress])
 	if unicode.ToLower(r) != unicode.ToLower(expected) {
 		q.progress = 0
-		return false, false, core.Word{}
+		return false, false, Word{}
 	}
 	q.progress++
 	if q.progress >= len(w.Text) {
@@ -64,7 +62,7 @@ func (q *QueueManager) TryLetter(r rune) (bool, bool, core.Word) {
 }
 
 // Update applies back-pressure damage if backlog length exceeds threshold.
-func (q *QueueManager) Update(dt float64, base ...interface{ ApplyDamage(int) }) {
+func (q *WordQueue) Update(dt float64, base ...interface{ ApplyDamage(int) }) {
 	const threshold = 5
 	if len(q.queue) > threshold && len(base) > 0 && base[0] != nil {
 		// Apply 1 damage per update if backlog exceeds threshold
@@ -73,31 +71,31 @@ func (q *QueueManager) Update(dt float64, base ...interface{ ApplyDamage(int) })
 }
 
 // Len returns the number of words currently in the queue.
-func (q *QueueManager) Len() int { return len(q.queue) }
+func (q *WordQueue) Len() int { return len(q.queue) }
 
 // Peek returns the first word without removing it. ok is false if the queue is empty.
-func (q *QueueManager) Peek() (w core.Word, ok bool) {
+func (q *WordQueue) Peek() (w Word, ok bool) {
 	if len(q.queue) == 0 {
-		return core.Word{}, false
+		return Word{}, false
 	}
 	return q.queue[0], true
 }
 
 // TryDequeue compares input with the first word. If they match, the word is removed
 // and returned with ok=true. Otherwise the queue is unchanged and ok=false.
-func (q *QueueManager) TryDequeue(input string) (core.Word, bool) {
+func (q *WordQueue) TryDequeue(input string) (Word, bool) {
 	if len(q.queue) == 0 {
-		return core.Word{}, false
+		return Word{}, false
 	}
 	if q.queue[0].Text == input {
 		w := q.queue[0]
 		q.queue = q.queue[1:]
 		return w, true
 	}
-	return core.Word{}, false
+	return Word{}, false
 }
 
 // Words returns the slice of queued words (read-only).
-func (q *QueueManager) Words() []core.Word {
+func (q *WordQueue) Words() []Word {
 	return q.queue
 }

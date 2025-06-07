@@ -3,16 +3,15 @@ package game
 import (
 	"testing"
 
-	"github.com/daddevv/type-defense/internal/assets"
 	"github.com/daddevv/type-defense/internal/building"
-	gatherer "github.com/daddevv/type-defense/internal/building/gatherer"
-	"github.com/daddevv/type-defense/internal/word"
+	"github.com/daddevv/type-defense/internal/building/gatherer"
+	"github.com/daddevv/type-defense/internal/core"
 )
 
 func TestQueueFIFO(t *testing.T) {
-	q := word.NewQueueManager()
-	q.Enqueue(assets.Word{Text: "one", Source: "farmer", Family: "Gathering"})
-	q.Enqueue(assets.Word{Text: "two", Source: "barracks", Family: "Military"})
+	q := core.NewQueueManager()
+	q.Enqueue(core.Word{Text: "one", Source: "farmer", Family: "Gathering"})
+	q.Enqueue(core.Word{Text: "two", Source: "barracks", Family: "Military"})
 
 	if q.Len() != 2 {
 		t.Fatalf("expected queue length 2 got %d", q.Len())
@@ -24,8 +23,8 @@ func TestQueueFIFO(t *testing.T) {
 }
 
 func TestQueueDequeueValidation(t *testing.T) {
-	q := word.NewQueueManager()
-	q.Enqueue(assets.Word{Text: "alpha", Source: "farmer", Family: "Gathering"})
+	q := core.NewQueueManager()
+	q.Enqueue(core.Word{Text: "alpha", Source: "farmer", Family: "Gathering"})
 
 	if _, ok := q.TryDequeue("beta"); ok {
 		t.Fatalf("dequeue should fail for wrong input")
@@ -43,7 +42,7 @@ func TestQueueDequeueValidation(t *testing.T) {
 }
 
 func TestQueueEnqueueFromBuildings(t *testing.T) {
-	q := word.NewQueueManager()
+	q := core.NewQueueManager()
 	f := gatherer.NewFarmer()
 	b := building.NewBarracks()
 	f.SetQueue(q)
@@ -63,10 +62,10 @@ func TestQueueEnqueueFromBuildings(t *testing.T) {
 }
 
 func TestQueueBackPressureDamage(t *testing.T) {
-	q := word.NewQueueManager()
+	q := core.NewQueueManager()
 	base := building.NewBase(0, 0, 5)
 	for i := 0; i < 6; i++ {
-		q.Enqueue(assets.Word{Text: "w"})
+		q.Enqueue(core.Word{Text: "w"})
 	}
 	q.Update(1.0, base) // Pass base to apply damage
 	if base.Health() != 4 {
@@ -75,7 +74,7 @@ func TestQueueBackPressureDamage(t *testing.T) {
 }
 
 func TestColorize(t *testing.T) {
-	w := assets.Word{Text: "foo", Family: "Gathering"}
+	w := core.Word{Text: "foo", Family: "Gathering"}
 	got := w.Colorize()
 	expected := "\033[32mfoo\033[0m"
 	if got != expected {

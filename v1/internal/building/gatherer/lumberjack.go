@@ -3,7 +3,6 @@ package gatherer
 import (
 	"math/rand"
 
-	"github.com/daddevv/type-defense/internal/assets"
 	"github.com/daddevv/type-defense/internal/core"
 	"github.com/daddevv/type-defense/internal/econ"
 	"github.com/daddevv/type-defense/internal/word"
@@ -45,7 +44,7 @@ func (l *Lumberjack) Update(dt float64) string {
 		w := l.GenerateWord()
 		l.PendingWord = w
 		if l.Queue != nil {
-			l.Queue.Enqueue(assets.Word{Text: w, Source: "Lumberjack", Family: "Gathering"})
+			l.Queue.Enqueue(core.Word{Text: w, Source: "Lumberjack", Family: "Gathering"})
 		}
 		return w
 	}

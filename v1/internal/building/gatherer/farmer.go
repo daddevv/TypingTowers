@@ -3,10 +3,8 @@ package gatherer
 import (
 	"math/rand"
 
-	"github.com/daddevv/type-defense/internal/assets"
 	"github.com/daddevv/type-defense/internal/core"
 	"github.com/daddevv/type-defense/internal/econ"
-	"github.com/daddevv/type-defense/internal/word"
 )
 
 // Farmer represents a Gathering building that produces Food on cooldown.
@@ -20,7 +18,7 @@ type Farmer struct {
 	PendingWord string             // word currently in queue (if any)
 	ResourceOut int                // amount of Food to output per completion
 	Active      bool               // is the Farmer running?
-	Queue       *word.QueueManager // optional global queue manager
+	Queue       *core.WordQueue // optional global queue manager
 }
 
 // NewFarmer creates a new Farmer with default settings.
@@ -50,7 +48,7 @@ func (f *Farmer) Update(dt float64) string {
 		f.PendingWord = w
 		if f.Queue != nil {
 			// Enqueue the full word; Game processes it letter by letter
-			f.Queue.Enqueue(assets.Word{Text: w, Source: "Farmer", Family: "Gathering"})
+			f.Queue.Enqueue(core.Word{Text: w, Source: "Farmer", Family: "Gathering"})
 		}
 		return w
 	}
@@ -105,7 +103,7 @@ func (f *Farmer) SetInterval(interval float64) {
 func (f *Farmer) SetCooldown(c float64) { f.Timer.Remaining = c }
 
 // SetQueue assigns a QueueManager for global word management.
-func (f *Farmer) SetQueue(q *word.QueueManager) { f.Queue = q }
+func (f *Farmer) SetQueue(q *core.WordQueue) { f.Queue = q }
 
 // CooldownProgress returns 0 when the timer was just reset and 1 when ready.
 func (f *Farmer) CooldownProgress() float64 { return f.Timer.Progress() }
