@@ -2,12 +2,14 @@ package core
 
 import (
 	"typingtowers/internal/config"
+	"typingtowers/internal/tiles"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Game struct {
 	Config *config.GameConfig // Config holds the game configuration.
+	Tiles  *tiles.TileMap     // Tiles holds the tile map for the game.
 	// Add other fields as necessary, such as game state, player data, etc.
 }
 
@@ -20,12 +22,17 @@ func NewGame() *Game {
 func NewGameWithConfig(cfg *config.GameConfig) *Game {
 	return &Game{
 		Config: cfg,
+		Tiles:  tiles.NewTileMap(cfg.TileMapWidth, cfg.TileMapHeight, cfg.TileMapTopMargin, cfg.TileMapLeftMargin, cfg.TileSize),
 		// Initialize other fields as necessary.
 	}
 }
 
 // Update updates the game state. This method will be called on each frame.
 func (g *Game) Update() error {
+	if g.Tiles.Tiles[0][0] == nil {
+		// Initialize the tile map if it is not already initialized.
+		g.Tiles.InitializeTiles()
+	}
 	// Update game logic here.
 	// This is a placeholder for the game update logic.
 	// For example, you can update player positions, check for collisions, etc.
@@ -37,6 +44,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// Draw the game state to the screen.
 	// This is a placeholder for the game drawing logic.
 	// For example, you can draw the player, enemies, background, etc.
+	g.Tiles.Draw(screen)
 }
 
 // Layout returns the layout of the game screen.

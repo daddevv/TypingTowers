@@ -6,6 +6,12 @@ var DefaultConfig = GameConfig{
 	ScreenHeight: 600,
 	Fullscreen:   false,
 	Volume:       1.0, // Default volume level
+
+	TileMapWidth:      20, // Default tile map width in tiles
+	TileMapHeight:     15, // Default tile map height in tiles
+	TileMapTopMargin:  10, // Default top margin of the tile map in pixels
+	TileMapLeftMargin: 10, // Default left margin of the tile map in pixels
+	TileSize:          32, // Default size of each tile in pixels
 }
 
 // ConfigFile defines the name of the configuration file.
@@ -17,6 +23,12 @@ type GameConfig struct {
 	ScreenHeight int     // ScreenHeight defines the height of the game screen in pixels.
 	Fullscreen   bool    // Fullscreen defines whether the game is in fullscreen mode.
 	Volume       float64 // Volume defines the audio volume level.
+
+	TileMapWidth      int // TileMapWidth defines the width of the tile map in tiles.
+	TileMapHeight     int // TileMapHeight defines the height of the tile map in tiles.
+	TileMapTopMargin  int // TileMapTopMargin defines the top margin of the tile map in pixels.
+	TileMapLeftMargin int // TileMapLeftMargin defines the left margin of the tile map in pixels.
+	TileSize          int // TileSize defines the size of each tile in pixels.
 }
 
 func ConfigFilePath() string {
