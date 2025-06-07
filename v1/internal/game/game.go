@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"image/color"
 	"math"
 	"math/rand"
 	"os"
@@ -13,7 +12,6 @@ import (
 	"time"
 
 	"strings"
-	"unicode"
 
 	"github.com/daddevv/type-defense/internal/assets"
 	"github.com/daddevv/type-defense/internal/building"
@@ -30,9 +28,6 @@ import (
 	"github.com/daddevv/type-defense/internal/tech"
 	"github.com/daddevv/type-defense/internal/word"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"github.com/hajimehoshi/ebiten/v2/text/v2"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 const jamFlashDuration = 0.15

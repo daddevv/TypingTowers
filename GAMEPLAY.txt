@@ -1,0 +1,98 @@
+Main Menu:
+    Play -> Save Select
+    Settings
+        Audio
+        Controls
+        Graphics
+    Exit
+
+Save Select:
+    3 Save Slots displaying information about the saved game:
+        Slot 1: [Empty/Last Played Date/Player Name]
+        Slot 2: [Empty/Last Played Date/Player Name]
+        Slot 3: [Empty/Last Played Date/Player Name]
+    New Game (if selected slot is empty) -> New Game
+    Continue (if a game is saved in the selected slot) -> Gameplay
+    Back to Main Menu
+
+New Game:
+    Select Difficulty
+        Easy
+        Normal
+        Hard
+    Confirm -> Gameplay
+
+Gameplay:
+    HUD
+        Populations
+            Farmers
+            Lumberjacks
+            Miners
+            Builders
+            Librarians
+            Footman
+        Number of Houses
+        Base Health Bar
+        Wall Health Bar (if wall unlocked)
+        Farmer Cooldown Timer [producing food]
+        Lumberjack Cooldown Timer [producing wood]
+        Miner Cooldown Timer [producing stone]
+        Builder Cooldown Timer [building/repairing structures]
+        Librarian Cooldown Timer [producing research points]
+        Barracks Cooldown Timer [training soldiers]
+        Resources
+        Player Level
+    Pause Menu:
+        Resume Game
+        Save Game
+        Load Game
+        Exit to Main Menu (without saving) with confirmation
+
+Mechanics:
+    Builders can build structures:
+        Houses
+        Farms
+        Lumber Mills
+        Mines
+        Barracks
+        Libraries
+        Walls
+        Towers
+    Farmers produce food:
+        Cooldown Timer for food production
+        Food is used to feed the population.
+        Farmers can be upgraded to produce more food with shortened cooldowns.
+    Lumberjacks produce wood:
+        Cooldown Timer for wood production
+        Wood is used for building structures.
+        Lumberjacks can be upgraded to produce more wood with shortened cooldowns.
+    Miners produce stone:
+        Cooldown Timer for stone production
+        Stone is used for building and upgrading structures.
+        Miners can be upgraded to produce more stone with shortened cooldowns.
+    Builders repair and build structures:
+        Cooldown Timer for building/repairing
+        Builders can be upgraded to build faster and repair more efficiently.
+    Librarians produce research points:
+        Cooldown Timer for research point production
+        Research points are used to unlock new technologies and upgrades.
+        Librarians can be upgraded to produce more research points with shortened cooldowns.
+    Barracks train soldiers:
+        Cooldown Timer for soldier training
+        Soldiers can be upgraded to become stronger and more efficient.
+        Barracks can be upgraded to train soldiers faster and in larger numbers.
+        Barracks can be upgraded to unlock new soldier types.
+    Walls provide defense:
+        Cooldown Timer for wall construction
+        Walls can be upgraded to provide more defense.
+    Towers provide ranged defense:
+        Cooldown Timer for tower construction
+        Towers can be upgraded to increase their range and damage.
+    Resources are collected and displayed in the HUD:
+        Food
+        Wood
+        Stone
+        Research Points
+    Player Level increases with experience:
+        Gained from killing enemies.
+        Leveling up unlocks new abilities and upgrades available for purchase

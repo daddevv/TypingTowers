@@ -1,0 +1,46 @@
+[
+    {
+        "level": 0,
+        "fingers": {
+            "index": true,
+            "middle": false,
+            "ring": false,
+            "pinky": false
+        },
+        "rows": {
+            "numbers": false,
+            "top": false,
+            "home": true,
+            "bottom": false
+        },
+        "cooldown": 30,
+        "name": "Harvest",
+        "reward": {
+            "type": "resource",
+            "id": "food",
+            "amount": 1
+        }
+    },
+    {
+        "level": 1,
+        "fingers": {
+            "index": true,
+            "middle": false,
+            "ring": false,
+            "pinky": false
+        },
+        "rows": {
+            "numbers": false,
+            "top": true,
+            "home": true,
+            "bottom": false
+        },
+        "cooldown": 25,
+        "name": "Harvest",
+        "reward": {
+            "type": "resource",
+            "id": "food",
+            "amount": 2
+        }
+    }
+]
