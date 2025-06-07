@@ -47,6 +47,7 @@ func TestBarracksWaitsForCompletion(t *testing.T) {
 	if next := b.Update(0.11); next != "" {
 		t.Fatalf("expected no new word until completion")
 	}
+	b.OnWordCompleted(first, nil)
 	if w := b.Update(0.11); w == "" {
 		t.Fatalf("expected new word after completion")
 	}

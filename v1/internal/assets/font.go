@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
@@ -39,15 +40,20 @@ func getFontSource(font string) (*text.GoTextFaceSource, error) {
 	return fontSource, nil
 }
 
-func loadFont(path string) {
-	//if testing add ../../ to path
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		// If the file does not exist, try to load it from a relative path.
-		fp := filepath.Base(path)
-		path = "/home/bobbitt/projects/public/TypingTowers/v1/assets/fonts/" + fp
+func loadFont(relPath string) {
+	// Get the directory of this source file (font.go)
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		log.Fatal("unable to determine caller path for font.go")
 	}
-	// Read the .ttf file into a byte slice.
-	data, err := os.ReadFile(path)
+	baseDir := filepath.Dir(filename)
+	fontPath := filepath.Join(baseDir, "..", "..", relPath) // relative to v1/
+
+	if _, err := os.Stat(fontPath); os.IsNotExist(err) {
+		log.Fatalf("font file not found: %s", fontPath)
+	}
+	// Read the font file into a byte slice.
+	data, err := os.ReadFile(fontPath)
 	if err != nil {
 		log.Fatal("unable to read font file:", err)
 	}

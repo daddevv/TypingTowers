@@ -26,8 +26,8 @@ func TestCombatFootmanKillsGrunt(t *testing.T) {
 	o.Speed = 0
 
 	for i := 0; i < 6; i++ {
+		f.Update(0.1) // Footman attacks first
 		o.Update(0.1)
-		f.Update(0.1) // Ensure footman attacks too
 	}
 
 	if o.Alive() {

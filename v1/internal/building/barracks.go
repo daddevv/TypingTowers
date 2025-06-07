@@ -109,3 +109,10 @@ func (b *Barracks) UnlockNext(pool *econ.ResourcePool) bool {
 	}
 	return false
 }
+
+// OnWordCompleted notifies the Barracks that its word was completed.
+func (b *Barracks) OnWordCompleted(word string, w *assets.Word) {
+	if b.PendingWord == word {
+		b.PendingWord = ""
+	}
+}

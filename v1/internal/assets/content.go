@@ -2,7 +2,6 @@ package assets
 
 import (
 	"image/color"
-	"log"
 	"path/filepath"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -49,7 +48,7 @@ func loadImage(path string) *ebiten.Image {
 		path = "/home/bobbitt/projects/public/TypingTowers/v1/assets/images/" + fp
 		img, _, err = ebitenutil.NewImageFromFile(path)
 		if err != nil {
-			log.Fatal("failed to load image:", path, ":", err)
+			img = ebiten.NewImage(32, 32) // Fallback to a blank image
 		}
 	}
 	// imgWidth, imgHeight := img.Bounds().Dx(), img.Bounds().Dy()

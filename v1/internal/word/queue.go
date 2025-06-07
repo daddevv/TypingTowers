@@ -64,8 +64,12 @@ func (q *QueueManager) TryLetter(r rune) (bool, bool, assets.Word) {
 }
 
 // Update applies back-pressure damage if backlog length exceeds threshold.
-func (q *QueueManager) Update(dt float64) {
-
+func (q *QueueManager) Update(dt float64, base ...interface{ ApplyDamage(int) }) {
+	const threshold = 5
+	if len(q.queue) > threshold && len(base) > 0 && base[0] != nil {
+		// Apply 1 damage per update if backlog exceeds threshold
+		base[0].ApplyDamage(1)
+	}
 }
 
 // Len returns the number of words currently in the queue.

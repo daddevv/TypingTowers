@@ -20,13 +20,13 @@ func TestCombatKillTimeUnderEight(t *testing.T) {
 
 	dt := 0.1
 	elapsed := 0.0
-	for o.Alive && elapsed < 10 {
+	for o.Alive() && elapsed < 10 {
 		o.Update(dt)
 		f.Update(dt)
 		elapsed += dt
 	}
 
-	if o.Alive {
+	if !o.Alive() {
 		t.Fatalf("orc grunt should be defeated")
 	}
 	if elapsed >= 8.0 {
