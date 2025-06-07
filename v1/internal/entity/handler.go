@@ -1,5 +1,7 @@
 package entity
 
+import "github.com/daddevv/type-defense/internal/event"
+
 // EntityHandler defines the API for entity logic and state management.
 type EntityHandler interface {
 	Update(dt float64)
@@ -7,12 +9,14 @@ type EntityHandler interface {
 
 // EntityHandler manages all entity logic and state.
 type Handler struct {
-	// Add fields for entity state here
+	// Events is the outbound channel for entity-related events.
+	// Consumers can subscribe via the central event bus.
+	Events chan event.Event
 }
 
 // NewHandler creates a new EntityHandler.
 func NewHandler() *Handler {
-	return &Handler{}
+	return &Handler{Events: make(chan event.Event, 8)}
 }
 
 // Update updates all entities managed by the handler.
